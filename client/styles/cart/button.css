@@ -1,0 +1,42 @@
+.green-button {
+    width: 100%;
+    display: flex;
+    height: 51px;
+    padding: 0 23px;
+    justify-content: center;
+    align-items: center;
+    align-self: stretch;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-01, #6F9B8C);
+}
+
+.green-button h6 {
+    color: var(--white);
+
+}
+
+.green-button:hover {
+    background-color: var(--primary-04, #9DB8AF);
+}
+.green-button h6:hover {
+    color: var(--color-gray-900);
+
+}
+
+.white-button {
+    width: 100%;
+    display: flex;
+    height: 51px;
+    padding: 0 23px;
+    justify-content: center;
+    align-items: center;
+    align-self: stretch;
+    border-radius: 5px;
+    border: 2px solid var(--color-gray-600, #ABABAB);
+    background-color: var(--white, #FFF);
+}
+
+.white-button:hover {
+    background-color: var(--primary-04, #9DB8AF);
+}

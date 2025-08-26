@@ -1,0 +1,64 @@
+.contact-person {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact {
+    display: flex;
+    flex-direction: row;
+}
+
+.contact-detail1 {
+    display: flex;
+    width: 400px;
+    flex-direction: row;
+    align-items: flex-start;
+}
+.contact-detail2 {
+    display: flex;
+    width: 400px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-end;
+
+}
+
+.details {
+    display: flex;
+    width: 300px;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.detail-one {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.detail-button {
+    border: none;
+    background-color: var(--white);
+}
+
+.detail-button p {
+    color: var(--secondary-02);
+}
+
+.contact-line{
+    width: 1px;
+    height: 244px;
+    background-color: var(--color-gray-600);
+    margin: auto;
+}
+
+.same-person{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.same-person p{
+    padding-left: 10px;
+}

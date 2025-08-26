@@ -1,0 +1,16 @@
+.delivery{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.d-list{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.delivery p{
+    padding-left: 20px;
+    color: var(--primary-05);
+}

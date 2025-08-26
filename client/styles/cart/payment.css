@@ -1,0 +1,27 @@
+.payment {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.pay {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+}
+
+.p-line {
+    width: 1px;
+    height: 100%;
+    background-color: var(--color-gray-600);
+    margin: auto;
+}
+
+.invoice {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
