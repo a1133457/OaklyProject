@@ -1,7 +1,7 @@
 import LinkArrow from '@/app/_components/LinkArrow'
 import styles from '@/styles/userOrganizer/userOrganizer.module.css'
 
-export default function ListCard({ status = 1 }) {
+export default function ListCard({ status = 3 }) {
   const statusConfig = {
     1: {
       label: '諮詢中',

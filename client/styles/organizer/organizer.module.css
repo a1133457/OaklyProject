@@ -6,7 +6,8 @@
   padding: 0 24px;
   background: url(/img/hui/space/organizer-banner.jpg);
   background-repeat: no-repeat;
-  background-size: cover; /* 改成 cover */
+  background-size: cover;
+  /* 改成 cover */
   background-position: 55% center;
 
   @media (min-width: 1200px) {
@@ -17,6 +18,10 @@
   h3 {
     position: relative;
     z-index: 3;
+
+    @media (min-width: 1200px) {
+      margin-left: 40px;
+    }
   }
 
   &::before {
@@ -32,10 +37,18 @@
   }
 }
 
+.borderLeft {
+  @media (min-width: 1200px) {
+    padding-left:24px;
+    border-left: 7px solid  #FFF;
+  }
+}
+
 .section01Img {
   height: 247px;
   width: 100%;
   object-fit: cover;
+
   @media (min-width: 1200px) {
     height: 630px;
     width: 100%;
@@ -44,15 +57,19 @@
 
 .imageContainer {
   flex: 0 0 auto;
+
   @media (max-width: 767px) {
-    width: 100%; /* 手機版時填滿寬度 */
+    width: 100%;
+    /* 手機版時填滿寬度 */
   }
 }
 
 .serviceContainer {
   flex: 1 1 0;
+
   @media (max-width: 767px) {
-    width: 100%; /* 手機版時填滿寬度 */
+    width: 100%;
+    /* 手機版時填滿寬度 */
   }
 }
 
@@ -79,6 +96,7 @@
   align-items: flex-start;
   gap: 8px;
   border-bottom: 1px solid var(--primary-03, #919191);
+
   &:last-child {
     border-bottom: none;
   }
@@ -104,6 +122,7 @@
 
 .gap10 {
   gap: 10px;
+
   @media (min-width: 1200px) {
     gap: 16px;
   }
@@ -119,7 +138,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0; /* 預設背景色 */
+  background-color: #f0f0f0;
+  /* 預設背景色 */
 
   @media (min-width: 1200px) {
     width: 160px;
@@ -141,6 +161,7 @@
   gap: 32px 16px;
   justify-content: center;
   max-width: 100%;
+
   @media (min-width: 1200px) {
     grid-template-columns: repeat(auto-fit, 296px);
     gap: 32px;
@@ -164,7 +185,7 @@
   align-content: space-between;
   background: var(--primary-04, #9db8af);
   padding: 80px 24px;
-  
+
   @media (min-width: 1200px) {
     padding: 128px 0;
   }
@@ -174,7 +195,7 @@
   display: none;
 
   @media (min-width: 1200px) {
-  display: block;
+    display: block;
     width: 20px;
     height: 33px;
     background: url(/img/hui/icon/singleArrow.svg) no-repeat center;
@@ -199,7 +220,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff; /* 預設背景色 */
+  background-color: #ffffff;
+  /* 預設背景色 */
 
   @media (min-width: 1200px) {
     width: 135px;

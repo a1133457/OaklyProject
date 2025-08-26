@@ -5,6 +5,7 @@ import styles from '@/styles/coupon/coupon.module.css'
 export default function MemberCard({
   variant,
   icon,
+  hoverIcon,
   lv,
   text1,
   text2,
@@ -15,7 +16,7 @@ export default function MemberCard({
   return (
     <>
       <div
-        className={`d-flex ${styles.memberCard} ${styles[`memberCard${variant}`]} flex-column align-items-center card-shadow`}
+        className={`d-flex ${styles.memberCard} ${styles[`memberCard${variant}`]} flex-column align-items-center`}
       >
         <div
           className={`gap-xs d-flex flex-column align-items-center ${styles.memberHead}`}
@@ -27,6 +28,7 @@ export default function MemberCard({
             height={105}
             className={styles.memberCardIcon}
           />
+          
           <h5 >{lv}</h5>
         </div>
         <div className="gap-sm d-flex flex-column align-items-center">

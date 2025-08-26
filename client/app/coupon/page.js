@@ -16,8 +16,8 @@ export default function CouponPage(props) {
       <section
         className={`${styles.couponHeader} d-flex flex-column justify-content-center gap-lg`}
       >
-        <h1 className="text-center text-white">找一張專屬你空間的優惠</h1>
-        <h3 className="text-center text-white">
+        <h1 className="text-lg-start text-center text-white">找一張專屬你空間的優惠</h1>
+        <h3 className={`text-lg-start text-center text-white ${styles.borderLeft}`}>
           本月限定空間選物禮券，讓你的生活整理多一點餘裕。
         </h3>
       </section>

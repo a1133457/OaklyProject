@@ -3,11 +3,10 @@ import ListCard from "./_components/ListCard";
 //CSS
 import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 // 自訂組件(全域)
-import TabItem from "@/app/_components/TabItem";
-import ItemTab from "./_components/ItemTab";
 // 自訂組件 (專用)
+import ItemTab from "./_components/ItemTab";
 
-export default function UserCouponPage() {
+export default function UserOrganizerPage() {
   return (
     <>
       <section>

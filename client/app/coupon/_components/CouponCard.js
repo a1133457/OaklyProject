@@ -6,7 +6,7 @@ export default function CouponCard({ tag, date, discountNumber, smallSpend }) {
   return (
     <>
       <div
-        className={`${styles.coupon} card-shadow justify-content-between d-flex flex-column`}
+        className={`${styles.coupon} justify-content-between d-flex flex-column`}
       >
         <div className="gap-xs d-flex flex-column align-items-center">
           <div className="d-flex flex-column align-items-center gap-xs">

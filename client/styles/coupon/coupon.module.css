@@ -11,12 +11,16 @@
 
   @media (min-width: 1200px) {
     height: 700px;
+    background-size: 130% auto;
   }
 
   h1,
   h3 {
     position: relative;
     z-index: 3;
+      @media (min-width: 1200px) {
+        margin-left: 40px;
+      }
   }
 
   &::before {
@@ -29,6 +33,13 @@
     background-color: rgba(0, 0, 0, 0.4);
     pointer-events: none;
     z-index: 2;
+  }
+}
+
+.borderLeft {
+  @media (min-width: 1200px) {
+    padding-left:24px;
+    border-left: 7px solid  #FFF;
   }
 }
 
@@ -59,6 +70,12 @@
   background: url(/img/hui/card/coupon-bg.png) no-repeat center center;
   background-size: cover;
   padding-top: 24px;
+  box-shadow: 2px 4px 10px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 3px 7px 13px 0 rgba(0, 0, 0, 0.20);
+  }
 
   @media (min-width: 1200px) {
     width: 225px;
@@ -118,7 +135,14 @@
 .memberCard {
   width: 250px;
   gap: 36px;
-  flex-shrink: 0; /* 重要：防止卡片被壓縮 */
+  flex-shrink: 0;
+  /* 重要：防止卡片被壓縮 */
+  box-shadow: 2px 4px 10px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 3px 7px 13px 0 rgba(0, 0, 0, 0.20);
+  }
 
   @media (min-width: 1200px) {
     width: 280px;
@@ -127,6 +151,7 @@
 
 .memberHead {
   padding-top: 32px;
+
   @media (min-width: 1200px) {
     padding-top: 36px;
   }
@@ -143,6 +168,8 @@
   }
 }
 
+
+
 .memberCard1 {
   border: 1.5px solid var(--primary-02);
 
@@ -151,10 +178,12 @@
     height: 80px;
     width: 100%;
   }
+
   h5 {
     color: var(--primary-02);
   }
 }
+
 
 .memberCard2 {
   border: 1.5px solid var(--secondary-03);
@@ -164,6 +193,7 @@
     height: 80px;
     width: 100%;
   }
+
   h5 {
     color: var(--secondary-01);
   }
@@ -177,14 +207,28 @@
     height: 80px;
     width: 100%;
   }
+
   h5 {
     color: var(--primary-01);
   }
 }
 
+.memberCard1:hover .memberCardIcon {
+  content: url('/img/hui/icon/sprout.gif');
+}
+
+.memberCard2:hover .memberCardIcon {
+  content: url('/img/hui/icon/autumn-tree.gif');
+}
+
+.memberCard3:hover .memberCardIcon {
+  content: url('/img/hui/icon/forest.gif');
+}
+
 .qaText {
   padding-bottom: 24px;
   gap: 10px;
+
   &:not(:last-child) {
     border-bottom: 1px solid var(--primary-03, #919191);
   }
