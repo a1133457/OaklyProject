@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import styles from '../auth.module.css'
 import UserTextInput from '@/app/_components/UserTextInput'
+import Button from '@/app/auth/_components/Button'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -39,7 +40,8 @@ export default function LoginPage() {
                         required
                     />
 
-                    <button className={styles.btnPrimary} type="submit">登入</button>
+                    {/* <button className={styles.btnPrimary} type="submit">登入</button> */}
+                    <Button type="submit" variant="primary01" size="lg">登入</Button>
 
                     <div className={styles.links}>
                         <Link href="#">忘記密碼</Link>
