@@ -1,7 +1,7 @@
 'use client'
 
-import { useAuth } from '@/hooks/use-auth'
-import { useState } from 'react'
+//import { useAuth } from '@/hooks/use-auth'
+//import { useState } from 'react'
 import styles from './sidebar.module.css'
 import Link from 'next/link'
 
@@ -11,7 +11,7 @@ export default function UserSidebarPage() {
         <div className="row">
         {/* 左側功能列 */}
             <div className={`col-md-3 ${styles.sidebar}`}>
-                <a href="#">我的資料</a>
+                <a href="/user/edit">我的資料</a>
                 <a href="#">訂單查詢</a>
                 <a href="#">我的優惠券</a>
                 <a href="#">我的最愛</a>

@@ -1,0 +1,118 @@
+.container {
+    color: #919191;
+    padding: 20px 0;
+}
+
+.avatarUpload {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avatarUpload label {
+    cursor: pointer;
+}
+
+.avatarImg {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+}
+
+/* 避免 CSS Modules 的「pure selector」錯誤：加上本地類名當前綴 */
+.uploader input[type="file"] {
+    display: none;
+}
+
+.formButtons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.btnSave {
+    background-color: #6c9c8f;
+    color: #fff;
+    border: none;
+}
+
+.btnSave:hover {
+    background-color: #5b887b;
+}
+
+.btnCancel {
+    background-color: #fff;
+    color: #6c9c8f;
+    border: 1px solid #6c9c8f;
+}
+
+.btnCancel:hover {
+    background-color: #f0f0f0;
+}
+
+.itemRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.productName,
+.productPrice {
+    color: #494949;
+    font-weight: 600;
+}
+
+.iconActions {
+    display: flex;
+    gap: 16px;
+    font-size: 20px;
+}
+
+.heart {
+    color: #d4a373;
+}
+
+.bookmarkRow {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    padding: 20px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.bookmarkTitle {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: .25rem;
+}
+
+.bookmarkText {
+    font-size: .875rem;
+    color: #555;
+    margin-bottom: .5rem;
+}
+
+.bookmarkFooter {
+    display: flex;
+    justify-content: space-between;
+    font-size: .8rem;
+}
+
+.bookmarkLink {
+    text-decoration: none;
+    color: #d4a373;
+}
+
+.bookmarkLink:hover {
+    text-decoration: underline;
+}
+
+.bookmarkIcon {
+    color: #d4a373;
+    align-self: center;
+    font-size: 1.2rem;
+}
