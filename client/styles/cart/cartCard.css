@@ -5,6 +5,9 @@
     
 
 }
+.cart-card-phone{
+    display: none;
+}
 
 .cart-main {
     display: flex;
@@ -171,4 +174,13 @@
 
 .quantity {
     width: 100%;
+}
+
+@media (max-width: 430px) {
+    .cart-card{
+        display: none;
+    }
+    .cart-card-phone{
+        display: block;
+    }
 }
