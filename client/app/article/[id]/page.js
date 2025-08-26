@@ -8,27 +8,23 @@ import Image from "next/image";
 export default function ArticleOnePage() {
   return (
     <>
-      <div className="orange-background">
-        <div className="container-fluid">
-          <div className="article-background">
+      <div className="container-fluid">
+        <div className="article-background">
+          <div className="orange-background">
             <div className="article">
               <div className="bread-crumb">
                 <h6 lang="en">home</h6>
               </div>
               <div className="t-line"></div>
               <div className="article-contents">
-                <div className="article-titles">
+                <div className="article-title">
                   <div className="article-category">
                     <h5 lang="zh">居家生活</h5>
-                    <h6 lang="zh">居家生活</h6>
                   </div>
                   <div className="article-title">
                     <h2 lang="zh">
                       從設計到情感：家具如何塑造我們的生活空間與內在世界
                     </h2>
-                    <h5>
-                       從設計到情感：家具如何塑造我們的生活空間與內在世界
-                    </h5>
                   </div>
                   {/* <div className="article-label">
                     <div className="aLabels">
@@ -49,7 +45,7 @@ export default function ArticleOnePage() {
                   </div> */}
                 </div>
                 <div className="article-Image">
-                  <img
+                  <Image
                     className="title-img"
                     src="/img/living-room.jpg"
                     alt=""
@@ -64,10 +60,12 @@ export default function ArticleOnePage() {
                     自古以來，人類就不斷創造與演進家具。從古埃及石製座椅，到中世紀歐洲的雕花木椅，再到現代極簡的金屬結構沙發，家具隨著文明的演進而改變其形式與意義。最初，家具只是為了滿足基本的生理需求——一張能坐的椅子、一張能睡的床。然而，隨著設計理念的興起與手工藝的進步，家具逐漸演變為藝術的一部分，成為身份與品味的象徵。
                   </div>
                   <div className="content-Image">
-                    <img
+                    <Image
                       className="content-img"
                       src="/img/living-room.jpg"
                       alt=""
+                      width={918}
+                      height={323}
                     />
                   </div>
                   <div className="content">
@@ -76,7 +74,7 @@ export default function ArticleOnePage() {
                     當一個空間內的家具風格統一、尺寸合宜、動線順暢，整體居住體驗就會明顯提升。這種「看不見的設計」，才是真正改變生活品質的關鍵。
                   </div>
                   <div className="content-Image">
-                    <img
+                    <Image
                       className="content-img"
                       src="/img/living-room.jpg"
                       alt=""
@@ -107,20 +105,14 @@ export default function ArticleOnePage() {
                 </div>
                 <div className="article-info">
                   <div className="left-info">
-                    <h5>作者：ABC 先生</h5>
-                    <h5>
+                    <div className="author">作者：ABC 先生</div>
+                    <div className="published-date">
                       發佈日期：2025 / 07 / 18
-                    </h5>
-                  </div>
-                  <div className="phone-left-info">
-                    <h6>作者：ABC 先生</h6>
-                    <h6>
-                      發佈日期：2025 / 07 / 18
-                    </h6>
+                    </div>
                   </div>
                   <div className="right-info">
                     <button>
-                      <i className="fa-regular fa-share-from-square"></i>
+                      <i className="fa-regular fa-share-from-square"></i>{" "}
                     </button>
                     <button>
                       <i className="fa-regular fa-bookmark"></i>
@@ -131,7 +123,7 @@ export default function ArticleOnePage() {
             </div>
             {/* ------------------------------------------- */}
             <div className="sub-article">
-              <div className="sub-line"></div>
+              <div className="line"></div>
               <RecommendProduct />
               <RecommendArticle />
 

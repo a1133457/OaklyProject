@@ -6,7 +6,7 @@ import "@/styles/header.css";
 
 export default function Header() {
   return (
-    <div className="container-fluid header">
+    <div className="container-fluid header" style={{ padding: "0 64px" }}>
       <div className="frame">
         <Link href="/" alt="">
           <img src="/img/Oakly-green.svg" alt="Oakly首頁" />
@@ -34,46 +34,41 @@ export default function Header() {
           <i className="fa-solid fa-cart-shopping"></i>
         </Link>
 
-        <div className="user-log">
-          <Link href="/">
-            <h6>註冊</h6>
-          </Link>
-          <Link href="/">
-            <h6>登入</h6>
-          </Link>
-        </div>
-
-        <button className="menu-toggle">
-          <i className="fa-solid fa-circle-user"></i>
-        </button>
-        <button className="menu-toggle"  type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
-          <i className="fa-solid fa-bars"></i>
+        {/* <button className="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
+          <i className="fa-solid fa-cart-shopping"></i>
         </button>
 
         <div
-          className="offcanvas offcanvas-end"
+          class="offcanvas offcanvas-end"
           data-bs-scroll="true"
-          tabIndex="-1"
+          tabindex="-1"
           id="offcanvasScrolling"
           aria-labelledby="offcanvasScrollingLabel"
         >
-          <div className="offcanvas-header">
-            <h5 className="offcanvas-title" id="offcanvasScrollingLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasScrollingLabel">
               購物車
             </h5>
             <button
               type="button"
-              className="btn-close"
+              class="btn-close"
               data-bs-dismiss="offcanvas"
               aria-label="Close"
             ></button>
           </div>
-          <div className="offcanvas-body">
+          <div class="offcanvas-body">
             <p>
               Try scrolling the rest of the page to see this option in action.
             </p>
           </div>
-        </div>
+        </div> */}
+
+        <Link href="/">
+          <h6>註冊</h6>
+        </Link>
+        <Link href="/">
+          <h6>登入</h6>
+        </Link>
       </div>
     </div>
   );
