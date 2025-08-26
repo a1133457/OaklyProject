@@ -1,0 +1,11 @@
+.sidebar a {
+    display: block;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+    color: #919191;
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    color: #C89571;
+}
