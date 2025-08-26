@@ -3,9 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Script from "next/script";
 import { ArticleProvider } from "@/hooks/use-article";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "@/styles/basic.css";
-import "@/styles/reset.css";
 import Header from "./_components/header";
+import Footer from "./_components/footer"
 
 export const metadata = {
   title: "Create Next App",
@@ -30,8 +29,10 @@ export default function RootLayout({ children }) {
         <body>
           <Header />
           {children}
+           <Footer />
         </body>
       </ArticleProvider>
+     
     </html>
   );
 }

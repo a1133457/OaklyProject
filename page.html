@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/bs/css/bootstrap.css">
+    <title>使用者登入</title>
+</head>
+<body>
+ <div class="container">
+  <div class="form mt-2  d-none" action="">
+  <div class="input-group mb-2">
+    <span class="input-group-text">帳號</span>
+    <input type="text" name="account" class="form-control">
+  </div>
+  <div class="input-group mb-2">
+    <span class="input-group-text">密碼</span>
+    <input type="password" name="password" class="form-control">
+  </div>
+  <div class="d-flex">
+    <div class="btn btn-primary ms-auto btn-login">送出</div>
+  </div>
+  
+  </div>
+ <div class="main d-none">
+  <h1>NAME HERE</h1>
+  <section class="user mb-3">
+    <div class="head">
+      <img src="" alt="head img here">
+    </div>
+    <div class="account fs-3">account here</div>
+    <div class="mail">mail here</div>
+    <div class="d-flex">
+      <div class="btn btn-primary ms-auto btn-logout">登出</div>
+    </div>
+  </section>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+<script>
+const btnLogin = document.querySelector(".btn-login");
+const btnLogout = document.querySelector(".btn-logout");
+const form = document.querySelector(".form");
+const main = document.querySelector(".main");
+const h1 = document.querySelector(".main h1");
+const img = document.querySelector(".main img");
+const account = document.querySelector(".main .account");
+const mail = document.querySelector(".main .mail");
+const appKey = "loginWithToken";
+let user, token;
+
+init();
+
+
+btnLogin.addEventListener("click",async e =>{
+    const API="http://localhost:3000/api/users/login";
+    const accountInput = document.querySelector("input[name=account]").value;
+    const passwordInput = document.querySelector("input[name=password]").value;
+    
+   const params = {
+    account:accountInput,
+    password:passwordInput
+   };
+
+    const res = await fetch(API,{
+        method: "POST",
+        body:JSON.stringify(params),
+        headers:{
+            "Content-type":"application/json"
+        }
+    });
+    //credentials:"include" //使用cookie 傳token時會需要這個設定
+    const result = await res.json();
+    token = result.data;
+    user=jwt_decode(token);
+    localStorage.setItem(appKey,token);
+    setMain();
+
+});
+
+
+
+  btnLogout.addEventListener("click", async (e) => {
+        token = localStorage.getItem(appKey);
+        if (token) {
+          const API = "http://localhost:3000/api/users/logout";
+          const res = await fetch(API, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const result = await res.json();
+          alert(result.message);
+          if (result.status == "success") {
+            token = result.data;
+            user = jwt_decode(token);
+            localStorage.setItem(appKey, token);
+            setForm();
+          } else {
+            setForm();
+          }
+        } else {
+          setForm();
+        }
+      });
+
+      async function init() {
+        token = localStorage.getItem(appKey);
+        if (token) {
+          const API = "http://localhost:3000/api/users/status";
+          const res = await fetch(API, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const result = await res.json();
+          if (result.status == "success") {
+            token = result.data;
+            user = jwt_decode(token);
+            localStorage.setItem(appKey, token);
+            setMain();
+          } else {
+            setForm();
+          }
+        } else {
+          setForm();
+        }
+      }
+
+function setForm(){
+    form.classList.remove("d-none")
+    main.classList.add("d-none")
+}
+function setMain(){
+h1.textContent=user.name;
+account.textContent = user.account;
+mail.textContent = user.mail;
+img.src=user.head;
+form.classList.add("d-none")
+main.classList.remove("d-none")
+
+}
+
+
+
+</script>
+
+</body>
+</html>
