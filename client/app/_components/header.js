@@ -63,10 +63,10 @@ export default function Header() {
           </div>
         </div> */}
 
-        <Link href="/">
+        <Link href="/auth/register">
           <h6>註冊</h6>
         </Link>
-        <Link href="/">
+        <Link href="/auth/login">
           <h6>登入</h6>
         </Link>
       </div>
