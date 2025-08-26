@@ -32,11 +32,16 @@ export default function Total({ type }) {
                     <div className="total">
                         <h6>總金額</h6>
                         <h6>$12,000</h6>
+                        <h3>$12,000</h3>
                     </div>
                 </div>
                 <div className="nextOrBack">
                     <GreenButton step={"前往下一步"} to="/cart/detail"/>
                     <WhiteButton step={"繼續購物"} to="/product"/>
+                </div>
+                <div className="nextOrBack-phone">
+                    <WhiteButton step={"繼續購物"} to="/product"/>
+                    <GreenButton step={"前往下一步"} to="/cart/detail"/>
                 </div>
             </>
         )
