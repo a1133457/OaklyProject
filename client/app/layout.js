@@ -3,8 +3,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Script from "next/script";
 import { ArticleProvider } from "@/hooks/use-article";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "@/styles/basic.css";
-import "@/styles/reset.css";
+// import "@/styles/basic.css";
+// import "@/styles/reset.css";
+import "@/styles/globalsHui.css";
 import Header from "./_components/header";
 
 export const metadata = {
