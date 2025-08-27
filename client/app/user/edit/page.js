@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Sidebar from '../_components/sidebar'
 import HeaderImg from '../_components/HeaderImg'
 import styles from '../user.module.css'
+import Button from '@/app/auth/_components/Button'
 
 // 共用元件
 import UserTextInput from '@/app/_components/UserTextInput'
@@ -102,8 +103,10 @@ export default function UserEditForm() {
                                 value={pw2} onChange={e => setPw2(e.target.value)} error={errors.pw2} />
 
                             <div className="d-flex justify-content-center gap-3 mt-3">
-                                <button type="submit" className="btn btn-success">確認修改</button>
-                                <button type="reset" className="btn btn-outline-success">取消</button>
+                                <Button type="submit" variant="primary01" size="lg">確認修改</Button>
+                                <Button type="reset" variant="white" size="lg">取消</Button>
+                                {/* <button type="submit" className="btn btn-success">確認修改</button>
+                                <button type="reset" className="btn btn-outline-success">取消</button> */}
                             </div>
                         </form>
 
