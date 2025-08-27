@@ -1,3 +1,6 @@
+use okaly;
+SELECT DATABASE();
+
 -- 1.coupons 主表
 CREATE TABLE coupons (
   id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -244,6 +247,7 @@ CREATE TABLE organizers (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );          
 
+DESCRIBE organizers;
 
 ---------------------------整理師假資料------------------------------------
 
@@ -269,16 +273,14 @@ INSERT INTO organizers (name, photo, introduction, region, is_valid) VALUES
 ('Evan', '/img/organizers/001.jpg', '書房與工作空間整理師，提升居家辦公效率與舒適度', 1, 1),
 
 ('花花', '/img/organizers/009.jpg', '極簡生活顧問，幫助客戶斷捨離，打造清爽舒適生活環境', 1, 1),
-
 -- 中部地區 (4位)
 ('Jason', '/img/organizers/002.jpg', '辦公室與商業空間整理專家，協助企業提升工作效率', 2, 1),
 
 ('小宜', '/img/organizers/010.jpg', '老屋收納改造專家，善於活化老舊空間創造新價值', 2, 1),
 
-('瑜恩', '/img/organizers/0011.jpg', '玩具與兒童用品整理師，讓孩子學會自主收納整理', 2, 1),
+('瑜恩', '/img/organizers/011.jpg', '玩具與兒童用品整理師，讓孩子學會自主收納整理', 2, 1),
 
 ('Emma', '/img/organizers/012.jpg', '季節性收納專家，協助客戶建立四季衣物換季整理系統', 2, 1),
-
 -- 南部地區 (3位)
 ('阿賢', '/img/organizers/003.jpg', '極簡生活實踐者，幫助客戶斷捨離打造清爽生活空間', 3, 1),
 
