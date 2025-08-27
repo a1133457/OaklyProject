@@ -15,7 +15,7 @@ export default function UserSidebarPage() {
                 <a href="#">訂單查詢</a>
                 <a href="#">我的優惠券</a>
                 <a href="/user/favorites">我的最愛</a>
-                <a href="#">收藏文章</a>
+                <a href="/user/bookmarks">收藏文章</a>
                 <a href="#">預約紀錄</a>
             </div>
         </div>

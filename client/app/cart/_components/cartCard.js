@@ -66,7 +66,7 @@ export default function CartCard({ type }) {
             </div>
             <div className="card-right">
               <button className="buttonX">
-                <i class="fa-solid fa-trash"></i>
+                <i className="fa-solid fa-trash"></i>
               </button>
               <div className="price-num">
                 <h4>$1000</h4>
