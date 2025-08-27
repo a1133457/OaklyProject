@@ -1,5 +1,7 @@
 "use client"
 
+import "@/styles/cart/contactPerson.css";
+
 export default function ContactPerson({ name, phone, email, address }) {
     return (
         <div className="contact-person">

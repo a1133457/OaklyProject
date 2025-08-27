@@ -1,6 +1,7 @@
 "use client"
 
 import CartCard from "../_components/cartCard";
+import Gradation from "../_components/gradation";
 import GreenButton from "../_components/greenButton";
 import Total from "../_components/total";
 import WhiteButton from "../_components/whiteButton";
@@ -9,29 +10,7 @@ import "@/styles/cart/cartFin.css";
 export default function CartFinPage() {
     return (
         <div className="container-fluid">
-            <div className="top">
-                <div className="cart-title">
-                    <h2>購物車</h2>
-                </div>
-                <div className="gradation">
-                    {/* 有重複------------------------- */}
-                    <div className="name">
-                        <div className="round1">1</div>
-                        <h5>訂單資訊</h5>
-                    </div>
-                    <div className="top-line1"></div>
-                    <div className="name">
-                        <div className="round1">2</div>
-                        <h5>填寫地址與付款</h5>
-                    </div>
-                    <div className="top-line1"></div>
-                    <div className="name">
-                        <div className="round1">3</div>
-                        <h5>完成訂單</h5>
-                    </div>
-                    {/* ------------------------------ */}
-                </div>
-            </div>
+           <Gradation/>
             <div className="cart">
                 <div className="main-side">
                     <div className="cart-main-first">

@@ -1,5 +1,7 @@
 "use client"
 
+import "@/styles/cart/delivery.css";
+
 export default function Delivery() {
     return (
         <>

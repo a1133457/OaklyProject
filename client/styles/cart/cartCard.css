@@ -2,10 +2,11 @@
     width: auto;
     display: flex;
     flex-direction: column;
-    
+
 
 }
-.cart-card-phone{
+
+.cart-card-phone {
     display: none;
 }
 
@@ -60,10 +61,6 @@
     color: var(--color-gray-900, #494949);
 }
 
-.card-title p {
-    align-self: stretch;
-}
-
 .card-right {
     display: flex;
     flex-direction: column;
@@ -76,13 +73,13 @@
 }
 
 .card-right .buttonX {
-     font-size: 30px;
+    font-size: 30px;
     color: var(--primary-05);
     border: none;
     background-color: var(--white);
 }
 
-.card-right .buttonX:hover{
+.card-right .buttonX:hover {
     color: var(--primary-04)
 }
 
@@ -96,7 +93,10 @@
     align-self: stretch;
 }
 
+
+
 .quantity {
+    width: 100%;
     display: flex;
     padding: 2px 1px;
     justify-content: center;
@@ -119,7 +119,7 @@
     background-color: var(--white);
 }
 
-.minus:hover{
+.minus:hover {
     color: var(--white);
     border: 2px solid var(--primary-04);
     background-color: var(--primary-04);
@@ -140,7 +140,7 @@
     background-color: var(--white);
 }
 
-.plus:hover{
+.plus:hover {
     color: var(--white);
     border: 2px solid var(--primary-04);
     background-color: var(--primary-04);
@@ -159,28 +159,60 @@
 }
 
 .cart-line {
-    margin-top: 20px;
+    margin: 20px 0;
     background-color: var(--color-gray-200);
     width: auto;
     height: 2px;
 }
 
-.card-right{
+.card-right {
     display: flex;
     flex-direction: column;
     height: auto;
     width: auto;
 }
 
-.quantity {
-    width: 100%;
-}
 
 @media (max-width: 430px) {
     .cart-card{
         display: none;
     }
-    .cart-card-phone{
+    .cart-card-phone {
         display: block;
+    }
+
+    .card-left {
+        gap: 10px;
+    }
+
+    .card-left input[type=checkbox] {
+        display: none;
+    }
+
+    .card-left img {
+        width: 100px;
+        height: 95px;
+    }
+
+    .card-title {
+        width: 190px;
+
+    }
+
+    .card-title h6 {
+        height: 20px;
+    }
+
+    .cart-main {
+        gap: 5px;
+    }
+
+    .price-one {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .card-right{
+        height: 100%;
     }
 }

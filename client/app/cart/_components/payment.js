@@ -1,5 +1,7 @@
 "use client"
 
+import "@/styles/cart/payment.css";
+
 export default function Payment() {
     return (
         <>
