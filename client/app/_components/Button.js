@@ -1,5 +1,5 @@
 'use client'
-import styles from './button.module.css'
+import styles from '@/styles/_components/button.module.css'
 import clsx from 'clsx'  // 建議用這個套件幫忙組 className
 
 export default function Button({

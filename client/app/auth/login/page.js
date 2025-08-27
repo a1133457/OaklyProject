@@ -2,8 +2,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from '../auth.module.css'
+
 import UserTextInput from '@/app/_components/UserTextInput'
-import Button from '@/app/auth/_components/Button'
+import styles from '@/styles/_components/button.module.css'
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')

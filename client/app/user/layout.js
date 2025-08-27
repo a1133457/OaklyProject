@@ -1,5 +1,6 @@
 // 導入組裝的元件
 // import Sidebar from './_components/layout/sidebar'
+// import Sidebar from './_components/sidebar'
 
 export const metadata = {
   title: '會員中心',
@@ -10,6 +11,7 @@ export default function AdminLayout({ children }) {
   return (
     <>
       {/* <Sidebar /> */}
+      {/* <div className="col-md-3"><Sidebar /></div> */}
       {children}
     </>
   )

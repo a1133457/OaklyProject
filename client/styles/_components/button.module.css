@@ -1,10 +1,11 @@
 /* 共用基底 */
 .btn {
-  display: block; 
+  display: inline-block;
   margin: 0 auto;
   padding: 10px 16px;   /* 調整按鈕厚度（上下/左右） */
   font-size: 16px;      /* 文字大小 */
   line-height: 1;       /* 避免文字加高 */
+  text-align: center;
   /* height: 44px;         想固定高度就加這行；不要固定就刪掉 */
   cursor: pointer; /* 游標小手 */
   /* border-radius: 1px; */
@@ -17,11 +18,21 @@
 .primary01:hover { filter: brightness(0.95); }
 
 /* size */
-.sm { padding: 6px 12px; font-size: 16px; height: 36px; width: auto;}
+.sm { padding: 6px 12px; font-size: 16px; height: 44px; width: 191px;}
 .md { padding: 10px 16px; font-size: 16px; height: 44px; }
 .userlg { padding: 6px 12px; font-size: 16px; height: 44px; width: 100%;}
 
-/* RWD 可以照你之前的規則 */
+
+
+/* 按鈕群組 */
+.btnGroup {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap; /* RWD 遇到小螢幕自動換行 */
+}
+
+/* RWD: 小螢幕時每顆佔滿一行 */
 @media (max-width: 576px) {
   .btn {
     width: 100%;
