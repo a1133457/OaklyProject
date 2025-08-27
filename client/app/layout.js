@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 // import "@/styles/reset.css";
 import "@/styles/globalsHui.css"
 import Header from "./_components/header";
+import Footer from "./_components/footer"
 
 export const metadata = {
   title: "Create Next App",
@@ -32,8 +33,10 @@ export default function RootLayout({ children }) {
         <body>
           <Header />
           {children}
+           <Footer />
         </body>
       </ArticleProvider>
+     
     </html>
   );
 }
