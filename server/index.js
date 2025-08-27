@@ -5,6 +5,7 @@ import moment from "moment";
 import {v4 as uuidv4} from "uuid";
 import usersRouter from "./routes/users.js";
 import productsRouter from "./routes/products.js";
+import organizersRouter from "./routes/organizers.js";
 
 // 設定區
 const upload = multer();
@@ -32,6 +33,8 @@ app.get("/", (req, res)=>{
 
 app.use("/api/users", usersRouter);
 app.use("/api/pts", productsRouter);
+app.use("/api/organizers", organizersRouter);
+app.use("/api/coupon", coupon);
 
 
 app.listen(3005, ()=>{

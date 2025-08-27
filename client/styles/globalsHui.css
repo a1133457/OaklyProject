@@ -1,0 +1,410 @@
+/* reset */
+@import '_resetHui.css';
+/* 導入 google Noto Sans TC 還有 INTER 英文字體 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+TC:wght@100..900&display=swap');
+/* bootstrap.css */
+@import '../node_modules/bootstrap/dist/css/bootstrap.css';
+/* 自訂root */
+@import '_variablesHui.css';
+
+/* Typography Styles - Traditional Chinese */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-noto-sans);
+  font-weight: 700;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  letter-spacing: var(--letter-spacing-2);
+}
+
+h6 {
+  letter-spacing: var(--letter-spacing-1);
+}
+
+h1 {
+  font-size: var(--font-h1);
+  line-height: var(--line-height-h1);
+}
+
+h2 {
+  font-size: var(--font-h2);
+  line-height: var(--line-height-h2);
+}
+
+h3 {
+  font-size: var(--font-h3);
+  line-height: var(--line-height-h3);
+}
+
+h4 {
+  font-size: var(--font-h4);
+  line-height: var(--line-height-h4);
+}
+
+h5 {
+  font-size: var(--font-h5);
+  line-height: var(--line-height-h5);
+}
+
+h6 {
+  font-size: var(--font-h6);
+  line-height: var(--line-height-h6);
+}
+
+p {
+  font-family: var(--font-noto-sans);
+  font-weight: 400;
+  font-size: var(--font-h6);
+  line-height: var(--line-height-p);
+  letter-spacing: var(--letter-spacing-1);
+}
+
+form {
+  font-family: var(--font-noto-sans);
+  font-size: var(--font-p);
+  line-height: var(--line-height-p);
+  label {
+    font-weight: 700;
+  }
+}
+
+/* Typography Styles - English */
+h1.font-en,
+h2.font-en,
+h3.font-en,
+h4.font-en,
+h5.font-en,
+h6.font-en {
+  font-family: var(--font-inter);
+  font-weight: 900;
+}
+
+p.font-en {
+  font-family: var(--font-inter);
+  font-weight: 700;
+}
+
+/* 字體顏色 */
+
+.t-primary01 {
+  color: var(--primary-01);
+}
+
+.t-primary02 {
+  color: var(--primary-02);
+}
+
+.t-primary03 {
+  color: var(--primary-03);
+}
+
+.t-primary04 {
+  color: var(--primary-04);
+}
+
+.t-primary05 {
+  color: var(--primary-05);
+}
+
+.t-secondary01 {
+  color: var(--secondary-01);
+}
+
+.t-secondary02 {
+  color: var(--secondary-02);
+}
+
+.t-secondary03 {
+  color: var(--secondary-03);
+}
+
+.t-gray600 {
+  color: var(--color-gray-600);
+}
+
+.t-gray500 {
+  color: var(--color-gray-500);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-bottom: 0;
+}
+
+.gap-xxxl {
+  gap: var(--gap-xxxl);
+}
+
+.gap-xxl {
+  gap: var(--gap-xxl);
+}
+
+.gap-xl {
+  gap: var(--gap-xl);
+}
+
+.gap-lg {
+  gap: var(--gap-lg);
+}
+
+.gap-md {
+  gap: var(--gap-md);
+}
+
+.gap-sm {
+  gap: var(--gap-sm);
+}
+
+.gap-xs {
+  gap: var(--gap-xs);
+}
+
+.gap-xxs {
+  gap: var(--gap-xxs);
+}
+
+/* margin-bottom */
+
+.mb-xxxl {
+  margin-bottom: var(--gap-xxxl);
+}
+
+.mb-xxl {
+  margin-bottom: var(--gap-xxl);
+}
+
+.mb-xl {
+  margin-bottom: var(--gap-xl);
+}
+
+.mb-lg {
+  margin-bottom: var(--gap-lg);
+}
+
+.mb-md {
+  margin-bottom: var(--gap-md);
+}
+
+.mb-sm {
+  margin-bottom: var(--gap-sm);
+}
+
+.mb-xs {
+  margin-bottom: var(--gap-xs);
+}
+
+.mb-xxs {
+  margin-bottom: var(--gap-xxs);
+}
+
+/* margin-top */
+
+.mt-xxxl {
+  margin-top: var(--gap-xxxl);
+}
+
+.mt-xxl {
+  margin-top: var(--gap-xxl);
+}
+
+.mt-xl {
+  margin-top: var(--gap-xl);
+}
+
+.mt-lg {
+  margin-top: var(--gap-lg);
+}
+
+.mt-md {
+  margin-top: var(--gap-md);
+}
+
+.mt-sm {
+  margin-top: var(--gap-sm);
+}
+
+.mt-xs {
+  margin-top: var(--gap-xs);
+}
+
+.mt-xxs {
+  margin-top: var(--gap-xxs);
+}
+
+/* =====================  共用CSS  ===================== */
+.section {
+  overflow-x: hidden;
+  padding: 80px 24px;
+
+  @media (min-width: 1200px) {
+    padding: 128px 0px;
+  }
+}
+
+.section-fluid {
+  overflow-x: hidden;
+  padding: 80px 0;
+
+  @media (min-width: 1200px) {
+    padding: 128px 0;
+  }
+}
+
+.readmore {
+  color: var(--secondary-01);
+  font-family: var(--font-noto-sans);
+  font-size: var(--font-tw-h6, 16px);
+  letter-spacing: 1px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+
+  &::after {
+    content: '';
+    margin-left: 12px;
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    background-color: var(--secondary-01);
+    mask: url(../public/img/hui/icon/double-arrow.svg) no-repeat center;
+    mask-size: contain;
+    -webkit-mask: url(../public/img/hui/icon/double-arrow.svg) no-repeat center;
+    -webkit-mask-size: contain;
+    transition: all 0.3s ease;
+  }
+
+  &:hover,
+  &:active {
+    color: var(--secondary-02);
+    border: none;
+  }
+
+  &:hover::after,
+  &:active::after {
+    background-color: var(--secondary-02);
+    transform: translateX(3px);
+  }
+}
+
+.card-shadow {
+  box-shadow: 2px 4px 10px 0 rgba(0, 0, 0, 0.15);
+}
+
+.btn.tab-items {
+  display: flex;
+  padding: 5px 0;
+  justify-content: center;
+  font-family: var(--font-noto-sans) !important;
+  font-weight: 700 !important;
+  color: var(--primary-02, #9fa79a) !important;
+
+  &:hover {
+    color: var(--primary-03, #919191) !important;
+  }
+
+  &:active,
+  &.active {
+    border-bottom: 2px solid var(--primary-03, #919191) !important;
+  }
+}
+
+/* 移除 Bootstrap 按鈕所有 focus/active 黑框和樣式 */
+.btn {
+  border-radius: 0 !important;
+}
+
+.btn,
+button {
+  &:not(.btn-green) {
+    &:focus,
+    &:focus-visible,
+    &:active,
+    &:active:focus,
+    &.active,
+    &.active:focus,
+    &.show,
+    &:not(:disabled):not(.disabled):active,
+    &:not(:disabled):not(.disabled):active:focus {
+      border-color: transparent !important;
+    }
+  }
+}
+
+.btn-green {
+  display: inline-flex;
+  padding: 16px 48px;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--primary-01, #6f9b8c);
+  color: var(--primary-01, #6f9b8c);
+  font-family: var(--font-noto-sans);
+  font-weight: 700;
+  border-radius: 0;
+
+  @media (min-width: 1200px) {
+    padding: 16px 62px;
+  }
+
+  &:hover {
+    color: white;
+    background-color: var(--primary-01);
+  }
+  &:active {
+    background-color: var(--primary-05) !important;
+    border: 1px solid var(--primary-05) !important;
+    color: white !important;
+  }
+}
+
+/* 表單元素樣式 */
+.form-select,
+.form-control:not(textarea) {
+  border: none;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+
+  &:focus {
+    border-bottom: 2px solid var(--primary-03);
+    box-shadow: none;
+  }
+}
+
+textarea.form-control:focus {
+  border: 2px solid var(--primary-03);
+  box-shadow: none;
+}
+
+/* checkbox/radio 樣式 */
+.form-check-input {
+  &:checked {
+    background-color: var(--primary-01);
+    border-color: var(--primary-01);
+  }
+
+  &:focus {
+    border-color: var(--primary-03);
+    box-shadow: none;
+  }
+}
+
+.container-xl{
+    @media (max-width: 1200px) {
+    padding: 0px;
+  }
+}

@@ -1,0 +1,65 @@
+.full {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.left {
+    display: none;
+    background-size: cover;
+    background-position: center;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #919191;
+}
+
+.form {
+    width: 100%;
+    max-width: 400px;
+}
+
+.title {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #000;
+    margin-bottom: 30px;
+}
+
+/* .btnPrimary {
+    background-color: #6c9c8f;
+    color: #fff;
+    border: none;
+    width: 100%;
+}
+
+.btnPrimary:hover {
+    background-color: #5b887b;
+} */
+
+.links {
+    margin-top: 12px;
+    font-size: .9rem;
+    display: flex;
+    gap: 12px;
+}
+
+.links a {
+    color: #919191;
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+/* RWD：>=768px 才顯示左圖 */
+@media (min-width: 768px) {
+    .left {
+        display: block;
+    }
+}
