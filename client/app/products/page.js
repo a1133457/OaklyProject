@@ -112,10 +112,7 @@ const MainProduct = () => {
       </section>
       <div className="sub-nav">
         <div className="sub-nav-links">
-          <a href="#" className="sub-nav-link">
-            專屬整理師諮詢
-          </a>
-
+         
           <a href="#" className="sub-nav-link">
             最新商品
           </a>
@@ -123,32 +120,88 @@ const MainProduct = () => {
             熱賣
           </a>
           <div className="dropdown hover-dropdown">
-            <a
-              href="#"
-              className="sub-nav-link dropdown-toggle"
-              data-bs-toggle="dropdown"
+            <div className="sub-nav-link dropdown-toggle"
+              // data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              家具
-            </a>
+              空間
+            </div>
             <div className="dropdown-menu dropdown-megamenu">
               <div className="megamenu-column">
                 <h6 className="dropdown-header">客廳</h6>
                 <a className="dropdown-item" href="#">
-                  桌子
+                  邊桌
                 </a>
                 <a className="dropdown-item" href="#">
-                  椅子
+                  單椅/單人沙發
+                </a>
+                <a className="dropdown-item" href="#">
+                  茶几
+                </a>
+                <a className="dropdown-item" href="#">
+                  書櫃 / 書架
+                </a>
+                  <a className="dropdown-item" href="#">
+                  書桌 / 書桌椅
+                </a>
+                  <a className="dropdown-item" href="#">
+                  邊櫃 / 收納櫃
                 </a>
               </div>
               <div className="megamenu-column">
                 <h6 className="dropdown-header">廚房</h6>
                 <a className="dropdown-item" href="#">
-                  椅子
+                  實木餐桌
                 </a>
                 <a className="dropdown-item" href="#">
-                  桌子
+                  餐椅 / 椅子
                 </a>
+                <a className="dropdown-item" href="#">
+                  吧台桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  吧台椅
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">臥室</h6>
+                <a className="dropdown-item" href="#">
+                  床架
+                </a>
+                <a className="dropdown-item" href="#">
+                  床邊桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  化妝台
+                </a>
+                <a className="dropdown-item" href="#">
+                  全身鏡 / 鏡子
+                </a>
+                <a className="dropdown-item" href="#">
+                  衣櫃 / 衣架
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">兒童房</h6>
+                <a className="dropdown-item" href="#">
+                  桌椅組
+                </a>
+                <a className="dropdown-item" href="#">
+                  衣櫃
+                </a>
+                <a className="dropdown-item" href="#">
+                  床架
+                </a>
+                <a className="dropdown-item" href="#">
+                  收納櫃
+                </a>
+              </div>
+               <div className="megamenu-column">
+                <h6 className="dropdown-header">收納空間</h6>
+                <a className="dropdown-item" href="#">
+                  收納盒 / 收納箱
+                </a>
+               
               </div>
             </div>
           </div>
@@ -270,7 +323,7 @@ const MainProduct = () => {
                 <div className="filter-section">
                   <h3 className="filter-title">材質</h3>
                   <div className="filter-options">
-                    {["棉", "麻", "絲", "羊毛", "聚酯纖維", "其他"].map(
+                    {["金屬", "木頭", "塑膠", "皮革", "布料", "其他"].map(
                       (material) => (
                         <div key={material} className="option">
                           <input type="checkbox" />
@@ -281,40 +334,30 @@ const MainProduct = () => {
                   </div>
                 </div>
 
-                {/* 優惠 */}
-                <div className="filter-section">
-                  <h3 className="filter-title">優惠</h3>
-                  <div className="filter-options">
-                    <div className="option">
-                      <input type="checkbox" />
-                      <span>折扣商品</span>
-                    </div>
-                    <div className="option">
-                      <input type="checkbox" />
-                      <span>免運商品</span>
-                    </div>
-                  </div>
-                </div>
+             
 
-                {/* 品牌 */}
+                {/* 系列 */}
                 <div className="filter-section">
-                  <h3 className="filter-title">品牌</h3>
+                  <h3 className="filter-title">系列</h3>
                   <div className="filter-options">
-                    {["SOMNULI", "TJENA", "CLABOW", "GOREN", "其他"].map(
+                    {["SOMNULI", "TJENA", "CLABOW", "GOREN"].map(
                       (brand) => (
                         <div key={brand} className="option">
                           <input type="checkbox" />
                           <span>{brand}</span>
+                          
                         </div>
                       )
                     )}
+                    <span>更多</span>
                   </div>
                 </div>
               </div>
 
               {/* 篩選按鈕 */}
               <div className="filter-buttons">
-                <button className="filter-btn">套用篩選</button>
+                <button className="filter-btn">
+                <img src="img/lan/filter2.svg"></img>套用篩選</button>
                 <button className="reset-btn">清除</button>
               </div>
             </aside>

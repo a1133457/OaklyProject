@@ -28,13 +28,96 @@ export default function PidPage(){
       {/* 麵包屑導航 */}
       <div className="sub-nav">
         <div className="sub-nav-links">
-          <a href="#" className="sub-nav-link">專屬整理師諮詢</a>
           <a href="#" className="sub-nav-link">最新商品</a>
           <a href="#" className="sub-nav-link">
             熱賣
           </a>
-          <a href="#" className="sub-nav-link">家具 <i className="fas fa-chevron-down"></i></a>
-          <a href="#" className="sub-nav-link">It's Oakly</a>
+            <div className="dropdown hover-dropdown">
+            <div className="sub-nav-link dropdown-toggle"
+              // data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              空間
+            </div>
+            <div className="dropdown-menu dropdown-megamenu">
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">客廳</h6>
+                <a className="dropdown-item" href="#">
+                  邊桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  單椅/單人沙發
+                </a>
+                <a className="dropdown-item" href="#">
+                  茶几
+                </a>
+                <a className="dropdown-item" href="#">
+                  書櫃 / 書架
+                </a>
+                  <a className="dropdown-item" href="#">
+                  書桌 / 書桌椅
+                </a>
+                  <a className="dropdown-item" href="#">
+                  邊櫃 / 收納櫃
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">廚房</h6>
+                <a className="dropdown-item" href="#">
+                  實木餐桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  餐椅 / 椅子
+                </a>
+                <a className="dropdown-item" href="#">
+                  吧台桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  吧台椅
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">臥室</h6>
+                <a className="dropdown-item" href="#">
+                  床架
+                </a>
+                <a className="dropdown-item" href="#">
+                  床邊桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  化妝台
+                </a>
+                <a className="dropdown-item" href="#">
+                  全身鏡 / 鏡子
+                </a>
+                <a className="dropdown-item" href="#">
+                  衣櫃 / 衣架
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">兒童房</h6>
+                <a className="dropdown-item" href="#">
+                  桌椅組
+                </a>
+                <a className="dropdown-item" href="#">
+                  衣櫃
+                </a>
+                <a className="dropdown-item" href="#">
+                  床架
+                </a>
+                <a className="dropdown-item" href="#">
+                  收納櫃
+                </a>
+              </div>
+               <div className="megamenu-column">
+                <h6 className="dropdown-header">收納空間</h6>
+                <a className="dropdown-item" href="#">
+                  收納盒 / 收納箱
+                </a>
+               
+              </div>
+            </div>
+          </div>          <a href="#" className="sub-nav-link">It's Oakly</a>
         </div>
 
       </div>
@@ -221,7 +304,7 @@ export default function PidPage(){
        
       </div>
       <div className="end-content">
-      <img src="/images/clean.jpg" alt="clean" /> {/* 這樣可以！ */}
+      <img src="/img/lan/clean.jpg" alt="clean" /> 
           <div className="end-content-text">
         
             <div className="end-content-text-title-container">

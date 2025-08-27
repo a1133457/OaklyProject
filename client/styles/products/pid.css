@@ -18,7 +18,7 @@ body {
 }
 
 body {
-    font-family: 'Inter', 'Noto Sans TC';
+    font-family:'Noto Sans TC';
     color: white;
     min-width: 1200px;
     max-width: 1920px;
@@ -165,37 +165,109 @@ body {
     color: #494949;
 }
 
-/* 麵包屑導航 */
-.breadcrumb-nav {
-    display: flex;
-    color: white;
-    font-family: Noto Sans TC;
-    font-weight: 400;
-    line-height: 24px;
-    letter-spacing: 1px;
-    word-wrap: break-word;
-    background-color: #9FA79A;
-    gap: 12px;
+/* 基本 hover 行為 */
+.dropdown-toggle{
+  cursor: pointer;
+}
+.hover-dropdown:hover .dropdown-menu {
+  display: flex;
+  margin-top: 0;
+  cursor: pointer;
+  
+ 
 }
 
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    max-width: 1440px;
-    font-size: 12px;
+/* 多欄式下拉選單設定 */
+.dropdown-megamenu {
+  display: none;
+  position: absolute;
+  background-color: white;
+  padding: 20px;
+  flex-direction: row;
+  gap: 40px;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  
+}
+
+/* 每一欄 */
+.megamenu-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+/* 標題樣式 */
+.dropdown-header {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: left;
+  padding: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #EDEDED;
+  color: #6A6A6A;
+  
+}
+
+/* 子項目樣式微調） */
+.dropdown-item {
+  padding: 5px 0;
+  white-space: nowrap;
+  color: #6A6A6A;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.dropdown-item:hover{
+  background-color: #fff;
+}
+
+
+/* 麵包屑導航 */
+.breadcrumb-nav {
+  display: flex;
+  color: white;
+  font-size: 16px;
+  font-family: Noto Sans TC;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  background-color: #9FA79A;
+  gap: 12px;
 
 }
 
 .breadcrumb a {
-    color: white;
-    text-decoration: none;
-    text-wrap: wrap;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+  color: white;
+  font-size: 14px;
+  font-family: Noto Sans TC;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  text-decoration: none;
 }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  color: white;
+  font-size: 14px;
+  font-family: Noto Sans TC;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  text-decoration: none;
+}
+.sub-nav-content {
+    padding: 5px 64px;}
 
 .breadcrumb a:hover {
     cursor: pointer;
@@ -311,7 +383,6 @@ body {
 .pid-name {
     color: #6A6A6A;
     font-size: 30px;
-    font-family: Inter;
     font-weight: 700;
     word-wrap: break-word
 }
@@ -331,7 +402,6 @@ body {
 .product-price {
     color: #9FA79A;
     font-size: 20px;
-    font-family: Inter;
     font-weight: 700;
     word-wrap: break-word
 }
@@ -443,7 +513,6 @@ body {
     height: 42px;
     color: #6A6A6A;
     font-size: 16px;
-    font-family: Inter;
     font-weight: 700;
     word-wrap: break-word;
 }
@@ -693,7 +762,6 @@ body {
 .rating-icon-container span {
     color: #8B8B8B;
     font-size: 14px;
-    font-family: Inter;
     font-weight: 500;
     word-wrap: break-word
 }
