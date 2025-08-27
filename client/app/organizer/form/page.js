@@ -1,4 +1,6 @@
 'use client'
+//react
+import { useState, useEffect } from 'react';
 
 // 針對單一頁面使用css modules技術
 import styles from '@/styles/organizer/organizer.module.css'
@@ -15,7 +17,25 @@ const memberData = {
   phone: '0912345678',
 }
 
-export default function FormPage(props) {
+export default function FormPage() {
+  const [taiwanData, setTaiwanData] = useState([]);
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+
+  useEffect(() => {
+    const fetchTaiwanData = async () => {
+      try {
+        const res = await fetch('/TwCities.json') //請求檔案
+        const data = await res.json() //得到json內容
+        setTaiwanData(data)
+      } catch (error) {
+        console.error('載入地區失敗:', error);
+      }
+    }
+    fetchTaiwanData()
+  }, [])
+
+
   return (
     <>
       <Hero />
@@ -83,17 +103,39 @@ export default function FormPage(props) {
                   <label className="form-label t-primary03">服務地址*</label>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
-                  <select className="form-select mb-sm" name="city" required>
-                    <option value="">請選擇縣市</option>
+                  <select
+                    value={selectedCity}
+                    onChange={e => {
+                      setSelectedCity(e.target.value)
+                      setSelectedDistrict('')
+                    }}
+                    className="form-select mb-sm"
+                    name="city"
+                    required>
+                    <option value="" disabled selected>請選擇縣市</option>
+                    {taiwanData.map(city => (
+                      <option key={city.name} value={city.name}>{city.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
+                    value={selectedDistrict}
+                    onChange={e => {
+                      setSelectedDistrict(e.target.value)
+                    }}
                     className="form-select mb-sm"
                     name="district"
                     required
                   >
-                    <option value="">請選擇區域</option>
+                    <option value="" disabled>請選擇區域</option>
+                    {taiwanData
+                      .find(city => city.name === selectedCity)
+                      ?.districts.map(district => (
+                        <option key={district.zip} value={district.name}>
+                          {district.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <div className="col-12 col-lg-6 mb-xl">
