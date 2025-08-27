@@ -5,7 +5,7 @@
   padding: 10px 16px;   /* 調整按鈕厚度（上下/左右） */
   font-size: 16px;      /* 文字大小 */
   line-height: 1;       /* 避免文字加高 */
-  height: 44px;         /* 想固定高度就加這行；不要固定就刪掉 */
+  /* height: 44px;         想固定高度就加這行；不要固定就刪掉 */
   cursor: pointer; /* 游標小手 */
   /* border-radius: 1px; */
 }
@@ -19,7 +19,7 @@
 /* size */
 .sm { padding: 6px 12px; font-size: 16px; height: 36px; width: auto;}
 .md { padding: 10px 16px; font-size: 16px; height: 44px; }
-.lg { padding: 6px 12px; font-size: 16px; height: 44px; width: 100%;}
+.userlg { padding: 6px 12px; font-size: 16px; height: 44px; width: 100%;}
 
 /* RWD 可以照你之前的規則 */
 @media (max-width: 576px) {

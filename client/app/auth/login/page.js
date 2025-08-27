@@ -41,7 +41,7 @@ export default function LoginPage() {
                     />
 
                     {/* <button className={styles.btnPrimary} type="submit">登入</button> */}
-                    <Button type="submit" variant="primary01" size="lg">登入</Button>
+                    <Button type="submit" variant="primary01" size="userlg">登入</Button>
 
                     <div className={styles.links}>
                         <Link href="#">忘記密碼</Link>
