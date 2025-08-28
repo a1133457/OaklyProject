@@ -2,7 +2,10 @@
 
 // 針對單一頁面使用css modules技術
 import styles from '@/styles/organizer/organizer.module.css'
+
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
+
 // 靜態圖片
 import spaceImage from '@/public/img/hui/space/2148857489.jpg'
 import reserveImage from '@/public/img/hui/space/11171.jpg'
@@ -17,6 +20,24 @@ import OrganizerCard from './_components/OrganizerCard'
 import Step from './_components/Step'
 
 export default function CouponPage() {
+
+  //organizers (讀取資料)  setOrganizers (寫入資料)
+  const [organizers, setOrganizers] = useState([]);
+  useEffect(() => {
+    const fetchOrganizers = async () => {
+      try {
+        const res = await fetch("http://localhost:3005/api/organizers")
+        const data = await res.json();
+        console.log('解析後JSON', data);
+        setOrganizers(data.data)
+      } catch (err) {
+        console.log('錯誤', err);
+      }
+    }
+    fetchOrganizers()
+  }, []);
+
+
   return (
     <>
       <Hero />
@@ -74,89 +95,52 @@ export default function CouponPage() {
               <div className="d-flex flex-column align-items-center gap-xl">
                 <h3 className="t-primary03 text-center">北部區域</h3>
                 <div className={styles.organizerGrid}>
-                  <OrganizerCard
-                    name="小美"
-                    area="北部"
-                    // imageUrl="/img/hui/defaultimg.png"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="小美"
-                    area="北部"
-                    // imageUrl="/img/hui/defaultimg.png"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="小美"
-                    area="北部"
-                    // imageUrl="/img/defaultimg.png"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
+                  {organizers
+                    .filter(organizers => organizers.region === 1)
+                    .map((organizer) => (
+                      <OrganizerCard
+                      key={organizer.id}
+                        name={organizer.name}
+                        area="北部"
+                        imageUrl={`http://localhost:3005${organizer.photo}`}
+                        contentText={organizer.introduction}
+                      />
+                    ))
+                  }
                 </div>
               </div>
               <div className="d-flex flex-column align-items-center gap-xl">
                 <h3 className="t-primary03 text-center">中部區域</h3>
                 <div className={styles.organizerGrid}>
-                  <OrganizerCard
-                    name="小美"
-                    area="北部"
-                    // imageUrl="/img/defaultimg.png"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
+                  {organizers
+                    .filter(organizers => organizers.region === 2)
+                    .map((organizer) => (
+                      <OrganizerCard
+                      key={organizer.id}
+                        name={organizer.name}
+                        area="中部"
+                        imageUrl={`http://localhost:3005${organizer.photo}`}
+                        contentText={organizer.introduction}
+                      />
+                    ))
+                  }
                 </div>
               </div>
               <div className="d-flex flex-column align-items-center gap-xl">
                 <h3 className="t-primary03 text-center">南部區域</h3>
                 <div className={styles.organizerGrid}>
-                  <OrganizerCard
-                    name="小美"
-                    area="北部"
-                    // imageUrl="/img/defaultimg.png"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
-
+                  {organizers
+                    .filter(organizers => organizers.region === 3)
+                    .map((organizer) => (
+                      <OrganizerCard
+                      key={organizer.id}
+                        name={organizer.name}
+                        area="南部"
+                        imageUrl={`http://localhost:3005${organizer.photo}`}
+                        contentText={organizer.introduction}
+                      />
+                    ))
+                  }
                   <OrganizerCard
                     name="Apple"
                     area="北部"
@@ -178,8 +162,8 @@ export default function CouponPage() {
               從了解需求到完成整理，我們陪你每一步，讓改變更輕鬆
             </h5>
           </div>
-            <div className={styles.steps}>
-          <div className="container-xl">
+          <div className={styles.steps}>
+            <div className="container-xl">
               <div
                 className={`d-flex flex-wrap justify-content-center align-items-center justify-content-lg-between ${styles.stepsGap}`}
               >

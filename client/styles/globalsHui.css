@@ -68,14 +68,6 @@ p {
   letter-spacing: var(--letter-spacing-1);
 }
 
-form {
-  font-family: var(--font-noto-sans);
-  font-size: var(--font-p);
-  line-height: var(--line-height-p);
-  label {
-    font-weight: 700;
-  }
-}
 
 /* Typography Styles - English */
 h1.font-en,
@@ -322,27 +314,6 @@ p {
   }
 }
 
-/* 移除 Bootstrap 按鈕所有 focus/active 黑框和樣式 */
-.btn {
-  border-radius: 0 !important;
-}
-
-.btn,
-button {
-  &:not(.btn-green) {
-    &:focus,
-    &:focus-visible,
-    &:active,
-    &:active:focus,
-    &.active,
-    &.active:focus,
-    &.show,
-    &:not(:disabled):not(.disabled):active,
-    &:not(:disabled):not(.disabled):active:focus {
-      border-color: transparent !important;
-    }
-  }
-}
 
 .btn-green {
   display: inline-flex;
@@ -370,7 +341,23 @@ button {
   }
 }
 
+
+.container-xl{
+    @media (max-width: 1200px) {
+    padding: 0px;
+  }
+}
+
 /* 表單元素樣式 */
+form {
+  font-family: var(--font-noto-sans);
+  font-size: var(--font-p);
+  line-height: var(--line-height-p);
+  .label700 {
+    font-weight: 700;
+  }
+}
+
 .form-select,
 .form-control:not(textarea) {
   border: none;
@@ -400,11 +387,5 @@ textarea.form-control:focus {
   &:focus {
     border-color: var(--primary-03);
     box-shadow: none;
-  }
-}
-
-.container-xl{
-    @media (max-width: 1200px) {
-    padding: 0px;
   }
 }

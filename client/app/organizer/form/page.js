@@ -49,7 +49,7 @@ export default function FormPage() {
               {/* 第一個 row - 姓名 + 手機 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="name" className="form-label t-primary03">
+                  <label htmlFor="name" className="form-label t-primary03 label700">
                     姓名*
                   </label>
                   <input
@@ -64,7 +64,7 @@ export default function FormPage() {
                   />
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="phone" className="form-label t-primary03">
+                  <label htmlFor="phone" className="form-label t-primary03 label700">
                     手機號碼*
                   </label>
                   <input
@@ -82,7 +82,7 @@ export default function FormPage() {
               {/* 第二個 row - 信箱獨立一行 */}
               <div className="row">
                 <div className="col-12 mb-xl">
-                  <label htmlFor="email" className="form-label t-primary03">
+                  <label htmlFor="email" className="form-label t-primary03 label700">
                     信箱*
                   </label>
                   <input
@@ -100,7 +100,7 @@ export default function FormPage() {
               {/* 服務地址區塊 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03">服務地址*</label>
+                  <label className="form-label t-primary03 label700">服務地址*</label>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
@@ -112,7 +112,7 @@ export default function FormPage() {
                     className="form-select mb-sm"
                     name="city"
                     required>
-                    <option value="" disabled selected>請選擇縣市</option>
+                    <option value="" disabled>請選擇縣市</option>
                     {taiwanData.map(city => (
                       <option key={city.name} value={city.name}>{city.name}</option>
                     ))}
@@ -132,7 +132,7 @@ export default function FormPage() {
                     {taiwanData
                       .find(city => city.name === selectedCity)
                       ?.districts.map(district => (
-                        <option key={district.zip} value={district.name}>
+                        <option key={district.name} value={district.name}>
                           {district.name}
                         </option>
                       ))}
@@ -151,13 +151,13 @@ export default function FormPage() {
               {/* 選整理師+日期 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03">選擇整理師*</label>
+                  <label className="form-label t-primary03 label700">選擇整理師*</label>
                   <select className="form-select" name="city" required>
                     <option value="">請先選擇服務地址</option>
                   </select>
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03">
+                  <label className="form-label t-primary03 label700">
                     希望服務日期*
                   </label>
                   <input
@@ -173,7 +173,7 @@ export default function FormPage() {
               {/* 上傳照片 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03">
+                  <label className="form-label t-primary03 label700">
                     上傳整理環境照片*
                   </label>
                   <input
@@ -200,7 +200,7 @@ export default function FormPage() {
               {/* 備註 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03">備註</label>
+                  <label className="form-label t-primary03 label700">備註</label>
                   <textarea
                     name=""
                     id=""

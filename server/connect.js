@@ -5,7 +5,7 @@ const connection = mysql.createPool({
   port: 3306,
   user: "admin",
   password: "a12345",
-  database: "restful"
+  database: "okaly"
 });
 
 // const pool = mysql.createPool({

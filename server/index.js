@@ -6,6 +6,7 @@ import {v4 as uuidv4} from "uuid";
 import usersRouter from "./routes/users.js";
 import productsRouter from "./routes/products.js";
 import organizersRouter from "./routes/organizers.js";
+import couponRouter from "./routes/coupon.js";
 
 // 設定區
 const upload = multer();
@@ -26,6 +27,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(express.static('public')) //後端提供public的靜態檔案
 
 app.get("/", (req, res)=>{
   res.send("首頁");
@@ -34,7 +36,7 @@ app.get("/", (req, res)=>{
 app.use("/api/users", usersRouter);
 app.use("/api/pts", productsRouter);
 app.use("/api/organizers", organizersRouter);
-app.use("/api/coupon", coupon);
+app.use("/api/coupon", couponRouter);
 
 
 app.listen(3005, ()=>{
