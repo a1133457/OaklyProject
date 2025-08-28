@@ -1,5 +1,6 @@
 "use client";
 import ListCard from "./_components/ListCard";
+import Sidebar from '../_components/sidebar'
 //CSS
 import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 // 自訂組件(全域)

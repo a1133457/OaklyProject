@@ -141,12 +141,6 @@ export default function CouponPage() {
                       />
                     ))
                   }
-                  <OrganizerCard
-                    name="Apple"
-                    area="北部"
-                    // imageUrl="/img/organizer/organizer2.jpg"
-                    contentText="以陪伴式整理為主軸，專注理解每位屋主的生活習慣與情感需求，擅長斷捨離引導與動線優化。"
-                  />
                 </div>
               </div>
             </div>

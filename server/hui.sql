@@ -1,6 +1,11 @@
 use okaly;
 SELECT DATABASE();
 
+--關閉外建檢查
+SET FOREIGN_KEY_CHECKS = 0;
+--開啟外鍵檢查
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- 1.coupons 主表
 CREATE TABLE coupons (
   id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -17,7 +22,7 @@ CREATE TABLE coupons (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-
+DROP TABLE coupon_categories;
 -- 2.coupon_categories 商品優惠類別
 CREATE TABLE coupon_categories (
   id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -27,6 +32,7 @@ CREATE TABLE coupon_categories (
   FOREIGN KEY (category_id) REFERENCES products_category(id)
 );
 
+DROP TABLE coupon_level;
 -- 3.coupon_levels 會員優惠
 CREATE TABLE coupon_level (
   id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -36,6 +42,7 @@ CREATE TABLE coupon_level (
   FOREIGN KEY (member_levels_id) REFERENCES member_levels(id)
 );
 
+DROP TABLE user_coupons;
 -- 4.user_coupons 使用者的優惠券
 CREATE TABLE user_coupons (
   id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -49,15 +56,17 @@ CREATE TABLE user_coupons (
   FOREIGN KEY (coupon_id) REFERENCES coupons(id)
 );
 
+DROP TABLE products_category;
 --5. 產品類別
 CREATE TABLE `products_category` (
-  `category_id` int NOT NULL,
-  `category_name` varchar(30) DEFAULT NULL
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(30) DEFAULT NULL
 );
 
+DROP TABLE member_levels;
 -- 6.會員等級資料
 CREATE TABLE `member_levels` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name` varchar(20) DEFAULT NULL
 );
 
@@ -66,128 +75,30 @@ CREATE TABLE `member_levels` (
 
 -- 1.coupons 主表 假資料
 INSERT INTO `coupons` (`id`, `name`, `code`, `discount_type`, `discount`, `min_discount`, `max_amount`, `start_at`, `end_at`, `valid_days`, `is_valid`) VALUES
-(1, '新年家居折扣券', 'KSHUHPW8', 1, 120.00, 600, NULL, '2025-07-01', '2025-07-31', NULL, 1),
-(2, '期間限定優惠券', 'EPIXFGK7', 2, 0.80, 0, NULL, NULL, NULL, 20, 1),
-(3, '全館家電折扣', '9ZGRQX69', 1, 180.00, 700, NULL, '2025-08-01', '2025-08-15', NULL, 1),
-(4, '床墊新品促銷', 'SFRUX1UU', 2, 0.85, 300, 500, '2025-09-01', '2025-09-30', NULL, 1),
-(5, '會員專屬折價券', '2O0K6F6Q', 1, 250.00, 800, NULL, NULL, NULL, 25, 1),
-(6, '餐廳家電超值折扣', '6FU9TCQB', 1, 90.00, 400, NULL, '2025-07-15', '2025-08-15', NULL, 1),
-(7, '親子空間促銷券', '5SOUQVV7', 2, 0.75, 0, NULL, NULL, NULL, 30, 1),
-(8, '全館清倉折扣', 'A3NF5SXQ', 1, 400.00, 2000, NULL, '2025-08-10', '2025-09-10', NULL, 1),
-(9, '期間限定優惠券', 'RLMEGULB', 2, 0.90, 0, NULL, '2025-09-15', '2025-10-15', NULL, 1),
-(10, '家具滿額現折', 'P9GNXFPM', 1, 300.00, 1500, 400, '2025-07-20', '2025-08-20', NULL, 1),
-(11, '期間限定優惠券', '36W7BM33', 1, 200.00, 500, 80, '2025-09-01', '2025-10-10', NULL, 1),
-(12, '夏季家具8折券', '67S1N46E', 2, 0.80, 0, NULL, '2025-07-10', '2025-08-10', NULL, 1),
-(13, '辦公空間專屬券', 'VCSSK4M7', 1, 150.00, 600, 300, '2025-08-15', '2025-09-15', NULL, 1),
-(14, '家具新品體驗券', 'FA56SJSK', 1, 100.00, 300, NULL, NULL, NULL, 15, 1),
-(15, '臥室床架折扣券', '3G4Q3G1W', 1, 250.00, 1000, 400, '2025-09-25', '2025-10-25', NULL, 1),
-(16, '親子房限量優惠券', 'H31HS6MR', 2, 0.85, 200, 90, '2025-07-05', '2025-08-05', NULL, 1),
-(17, '餐廳廚房現金券', '3KJ9C4UY', 1, 120.00, 400, NULL, '2025-08-25', '2025-09-25', NULL, 1),
-(18, '原木家具會員專屬券', 'VAB79GO1', 2, 0.75, 500, 400, NULL, NULL, 20, 1),
-(19, '客廳沙發超值券', 'WTOAHZBE', 1, 300.00, 1200, 1200, '2025-10-01', '2025-10-31', NULL, 1);
+(1, '期間限定優惠券', 'GRAB001A', 2, 0.98, 0, NULL, NULL, NULL, 7, 1),
+(2, '期間限定優惠券', 'GRAB002B', 1, 120.00, 1400, NULL, NULL, NULL, 7, 1),
+(3, '期間限定優惠券', 'GRAB003C', 2, 0.85, 1600, NULL, NULL, NULL, 7, 1);
+
 
 
 -- 2.coupon_categories 商品優惠類別 假資料
 INSERT INTO `coupon_categories` (`id`, `coupon_id`, `category_id`) VALUES
-(1, 1, 1),
-(2, 1, 3),
-(3, 1, 5),
-(4, 2, 4),
-(5, 2, 6),
-(6, 3, 1),
-(7, 3, 2),
-(8, 3, 5),
-(9, 3, 6),
-(10, 4, 3),
-(11, 4, 4),
-(12, 5, 1),
-(13, 5, 2),
-(14, 5, 3),
-(15, 5, 4),
-(16, 5, 5),
-(17, 5, 6),
-(18, 6, 2),
-(19, 6, 6),
-(20, 7, 2),
-(21, 7, 3),
-(22, 7, 4),
-(23, 8, 1),
-(24, 8, 2),
-(25, 8, 3),
-(26, 8, 4),
-(27, 8, 5),
-(28, 8, 6),
-(29, 9, 1),
-(30, 9, 2),
-(31, 9, 3),
-(32, 9, 4),
-(33, 9, 5),
-(34, 9, 6),
-(35, 10, 2),
-(36, 10, 3),
-(37, 10, 4),
-(38, 11, 1),
-(39, 11, 2),
-(40, 12, 3),
-(41, 12, 6),
-(42, 13, 5),
-(43, 14, 1),
-(44, 14, 2),
-(45, 14, 3),
-(46, 14, 4),
-(47, 14, 5),
-(48, 14, 6),
-(49, 15, 3),
-(50, 16, 4),
-(51, 17, 2),
-(52, 17, 6),
-(53, 18, 1),
-(54, 18, 5),
-(55, 19, 1),
+-- 券1：所有產品適用
+(1, 1, 1), (2, 1, 2), (3, 1, 3), (4, 1, 4), (5, 1, 5), (6, 1, 6),
+-- 券2：收納用品
+(7, 2, 6),
+-- 券3：辦公空間
+(8, 3, 5);
 
 -- 3.coupon_levels 會員優惠 假資料
-INSERT INTO `coupon_levels` (`id`, `coupon_id`, `level_id`) VALUES
-(1, 1, 1),
-(2, 1, 2),
-(3, 1, 3),
-(4, 2, 2),
-(5, 3, 1),
-(6, 3, 2),
-(7, 3, 3),
-(8, 4, 2),
-(9, 4, 3),
-(10, 5, 2),
-(11, 5, 3),
-(12, 6, 3),
-(13, 7, 1),
-(14, 7, 2),
-(15, 8, 1),
-(16, 8, 2),
-(17, 8, 3),
-(18, 9, 1),
-(19, 9, 2),
-(20, 9, 3),
-(21, 10, 1),
-(22, 10, 2),
-(23, 11, 1),
-(24, 11, 2),
-(25, 11, 3),
-(26, 12, 2),
-(27, 12, 3),
-(28, 13, 3),
-(29, 14, 1),
-(30, 15, 2),
-(31, 15, 3),
-(32, 16, 2),
-(33, 17, 3),
-(34, 18, 2),
-(35, 19, 1),
-(36, 19, 2),
-(37, 19, 3),
-
+INSERT INTO `coupon_level` (`id`, `coupon_id`, `member_levels_id`) VALUES
+-- 三張券都適用所有會員等級
+(1, 1, 1), (2, 1, 2), (3, 1, 3),
+(4, 2, 1), (5, 2, 2), (6, 2, 3),
+(7, 3, 1), (8, 3, 2), (9, 3, 3);
 
 --5. 產品類別 假資料
-INSERT INTO `products_category` (`category_id`, `category_name`) VALUES
+INSERT INTO `products_category` (`id`, `name`) VALUES
 (1, '客廳'),
 (2, '餐廳/廚房'),
 (3, '臥室'),
