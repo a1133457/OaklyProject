@@ -218,6 +218,13 @@ letter-spacing: 1px;
 .dropdown-toggle{
   cursor: pointer;
 }
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+.dropdown-toggle i{
+    padding-left: 4px;
+}
 .hover-dropdown:hover .dropdown-menu {
   display: flex;
   margin-top: 0;
@@ -249,25 +256,26 @@ letter-spacing: 1px;
 
 /* 標題樣式 */
 .dropdown-header {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 10px;
+  font-weight: 500;
+  font-size: 16px;
   text-align: left;
   padding: 0;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #EDEDED;
   color: #6A6A6A;
   
 }
 
-/* 子項目樣式微調） */
+/* 子項目樣式微調 */
 .dropdown-item {
-  padding: 5px 0;
+  padding: 4px 0;
   white-space: nowrap;
   color: #6A6A6A;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: 1px;
+  
 }
 .dropdown-item:hover{
   background-color: #fff;
@@ -513,7 +521,7 @@ height: 11px;
 
 .sub-nav-links {
   display: flex;
-  gap: 30px;
+  gap: 36px;
 }
 
 .sub-nav-link {

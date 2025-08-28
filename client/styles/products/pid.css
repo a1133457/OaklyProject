@@ -150,8 +150,7 @@ body {
 
 .sub-nav-links {
     display: flex;
-    gap: 30px;
-}
+    gap: 36px;}
 
 .sub-nav-link {
     color: #6A6A6A;
@@ -169,6 +168,13 @@ body {
 .dropdown-toggle{
   cursor: pointer;
 }
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+.dropdown-toggle i{
+    padding-left: 4px;
+}
 .hover-dropdown:hover .dropdown-menu {
   display: flex;
   margin-top: 0;
@@ -177,9 +183,11 @@ body {
  
 }
 
+
 /* 多欄式下拉選單設定 */
 .dropdown-megamenu {
   display: none;
+  color: #494949;
   position: absolute;
   background-color: white;
   padding: 20px;
@@ -188,6 +196,7 @@ body {
   border: none;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   z-index: 1000;
+  
   
 }
 
@@ -200,12 +209,11 @@ body {
 
 /* 標題樣式 */
 .dropdown-header {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 10px;
+  font-weight: 500;
+  font-size: 16px;
   text-align: left;
   padding: 0;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #EDEDED;
   color: #6A6A6A;
   
@@ -213,12 +221,14 @@ body {
 
 /* 子項目樣式微調） */
 .dropdown-item {
-  padding: 5px 0;
+  padding: 4px 0;
   white-space: nowrap;
   color: #6A6A6A;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: 1px;
+  
 }
 .dropdown-item:hover{
   background-color: #fff;
@@ -595,7 +605,7 @@ body {
 .add-to-cart-btn,
 .buy-now-btn {
     flex: 1;
-    padding: 16px 24px;
+    padding: 12px 24px;
     border: none;
     border-radius: 6px;
     font-size: 16px;
@@ -765,6 +775,19 @@ body {
     font-weight: 500;
     word-wrap: break-word
 }
+.modal-header{
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+body.modal-open {
+  padding-right: 0 !important;
+}
+
+.modal-title{
+    color: #6A6A6A;
+    
+}
 
 .view-review {
     color: #8B8B8B;
@@ -773,11 +796,19 @@ body {
     font-weight: 400;
     line-height: 24px;
     letter-spacing: 1px;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
+
 
 .view-review:hover {
     text-decoration: underline;
+    color: #8B8B8B;
+    font-size: 12px;
+    font-family: Noto Sans TC;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 1px;
+    word-wrap: break-word;
 }
 
 .rating-icon {

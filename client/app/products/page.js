@@ -1,87 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 
 const MainProduct = () => {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [sortBy, setSortBy] = useState("default");
   const [viewMode, setViewMode] = useState("grid");
+  const [products, setProducts] = useState([]);
 
-  const products = [
-    {
-      id: 1,
-      name: "TJENA 邊桌",
-      price: 999,
-      category: "furniture",
-    },
-    {
-      id: 2,
-      name: "BAGGSDOA 沙發",
-      price: 1000,
-      category: "furniture",
-    },
-    {
-      id: 3,
-      name: "邊桌 71x50 公分",
-      price: 500,
-      category: "furniture",
-    },
-    {
-      id: 4,
-      name: "CLABOW 燈具",
-      price: 800,
-      category: "lighting",
-    },
-    {
-      id: 5,
-      name: "GOREN 椅子",
-      price: 600,
-      category: "furniture",
-    },
-    {
-      id: 6,
-      name: "SOMNULI 裝飾品",
-      price: 300,
-      category: "decoration",
-    },
-    {
-      id: 7,
-      name: "TJENA 書架",
-      price: 1200,
-      category: "furniture",
-    },
-    {
-      id: 8,
-      name: "CLABOW 地毯",
-      price: 400,
-      category: "textile",
-    },
-    {
-      id: 9,
-      name: "GOREN 茶几",
-      price: 1500,
-      category: "furniture",
-    },
-    {
-      id: 10,
-      name: "SOMNULI 抱枕",
-      price: 200,
-      category: "textile",
-    },
-    {
-      id: 11,
-      name: "TJENA 衣櫃",
-      price: 2500,
-      category: "furniture",
-    },
-    {
-      id: 12,
-      name: "CLABOW 花瓶",
-      price: 350,
-      category: "decoration",
-    },
-  ];
+  //產品api
+  useEffect(() => {
+    fetch("http://localhost:3005/api/products")
+      .then((res) => res.json())
+      .then((json) => {
+        console.log(json);
+        setProducts(Array.isArray(json) ? json : []);
+      })
+      .catch((err) => {
+        console.error("產品 API 請求錯誤：", err);
+      });
+  }, []);
 
   return (
     <div className="main-product-page">
@@ -112,7 +51,6 @@ const MainProduct = () => {
       </section>
       <div className="sub-nav">
         <div className="sub-nav-links">
-         
           <a href="#" className="sub-nav-link">
             最新商品
           </a>
@@ -120,11 +58,12 @@ const MainProduct = () => {
             熱賣
           </a>
           <div className="dropdown hover-dropdown">
-            <div className="sub-nav-link dropdown-toggle"
+            <div
+              className="sub-nav-link dropdown-toggle"
               // data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              空間
+              空間<i className="fas fa-chevron-down  fa-sm"></i>
             </div>
             <div className="dropdown-menu dropdown-megamenu">
               <div className="megamenu-column">
@@ -141,10 +80,10 @@ const MainProduct = () => {
                 <a className="dropdown-item" href="#">
                   書櫃 / 書架
                 </a>
-                  <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#">
                   書桌 / 書桌椅
                 </a>
-                  <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#">
                   邊櫃 / 收納櫃
                 </a>
               </div>
@@ -196,12 +135,11 @@ const MainProduct = () => {
                   收納櫃
                 </a>
               </div>
-               <div className="megamenu-column">
+              <div className="megamenu-column">
                 <h6 className="dropdown-header">收納空間</h6>
                 <a className="dropdown-item" href="#">
                   收納盒 / 收納箱
                 </a>
-               
               </div>
             </div>
           </div>
@@ -334,21 +272,16 @@ const MainProduct = () => {
                   </div>
                 </div>
 
-             
-
                 {/* 系列 */}
                 <div className="filter-section">
                   <h3 className="filter-title">系列</h3>
                   <div className="filter-options">
-                    {["SOMNULI", "TJENA", "CLABOW", "GOREN"].map(
-                      (brand) => (
-                        <div key={brand} className="option">
-                          <input type="checkbox" />
-                          <span>{brand}</span>
-                          
-                        </div>
-                      )
-                    )}
+                    {["SOMNULI", "TJENA", "CLABOW", "GOREN"].map((brand) => (
+                      <div key={brand} className="option">
+                        <input type="checkbox" />
+                        <span>{brand}</span>
+                      </div>
+                    ))}
                     <span>更多</span>
                   </div>
                 </div>
@@ -357,7 +290,8 @@ const MainProduct = () => {
               {/* 篩選按鈕 */}
               <div className="filter-buttons">
                 <button className="filter-btn">
-                <img src="img/lan/filter2.svg"></img>套用篩選</button>
+                  <img src="img/lan/filter2.svg"></img>套用篩選
+                </button>
                 <button className="reset-btn">清除</button>
               </div>
             </aside>
@@ -394,12 +328,20 @@ const MainProduct = () => {
                 </div>
               </div>
               {/* 商品網格 */}
+
               <div className={`products-grid ${viewMode}`}>
                 {products.map((product) => (
                   <div key={product.id} className="productcard">
-                    <span class="badge-new">新品</span>
+                    <span className="badge-new">新品</span>
                     <div className="image">
-                      <img src="/img/lan/1.webp" alt="product" />
+                      {product.images.map((imgUrl, index) => (
+                        <img
+                          key={index}
+                          src={`http://localhost:3005${imgUrl}`} // ← 加上正確主機位址
+                          alt={product.name}
+                          style={{ maxWidth: "200px" }}
+                        />
+                      ))}
                     </div>
                     <div className="info">
                       <h3 className="name">{product.name}</h3>
