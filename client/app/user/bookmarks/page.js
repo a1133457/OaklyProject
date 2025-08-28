@@ -19,12 +19,14 @@ export default function BookmarksPage() {
         <div>
             <HeaderImg title="FAVORITES" />
             <div className={`container ${styles.container}`}>
-                <div className="row">
-                    <div className="col-md-3"><Sidebar /></div>
+                <div className={styles.layout}>
+                    <div className={styles.sidebarWrapper}><Sidebar /></div>
                     <div className="col-md-9">
                         {items.map(a => (
                             <div key={a.id} className={styles.bookmarkRow}>
-                                <i className={`bi bi-bookmark-fill ${styles.bookmarkIcon}`} />
+                                {/* <i className={`bi bi-bookmark-fill ${styles.bookmarkIcon}`} /> */}
+                                <img src="/img/ting/icon-bookmarkA.svg" alt="bookmarkicon" className={styles.bookmark} />
+
                                 <img src={a.img} alt="" width={140} height={120} style={{ objectFit: 'cover' }} />
                                 <div style={{ flex: 1 }}>
                                     <div className={styles.bookmarkTitle}>{a.title}</div>

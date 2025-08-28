@@ -143,6 +143,10 @@
     font-size: 1.2rem;
 }
 
+.bookmark:hover img {
+  content: url('/img/ting/icon-bookmarkH.svg');
+}
+
 /* 手機版：側欄改到上面、去掉分隔線與間距，表單全寬 */
 @media (max-width: 768px) {
   .layout {
