@@ -51,13 +51,13 @@ export default function UserEditForm() {
     return (
         <div>
             <HeaderImg title="MY ACCOUNT" />
-            <div className={`container ${styles.container}`}>
+            <div className={`container-fluid ${styles.userContainer}`}>
                 <div className={styles.layout}>
                     <div className={styles.sidebarWrapper}>
                     <Sidebar />
                     </div>
 
-                    <div className={styles.formContainer}>
+                    <div className={styles.content}>
                         {/* 大頭貼上傳 */}
                         <div className={`${styles.avatarUpload} ${styles.uploader}`}>
                             <label htmlFor="avatarInput">

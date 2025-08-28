@@ -12,12 +12,13 @@ export default function FavoritesPage() {
     return (
         <div>
             <HeaderImg title="FAVORITES" />
-            <div className={`container ${styles.container}`}>
+            <div className={`container-fluid ${styles.userContainer}`}>
                 <div className={styles.layout}>
                     <div className={styles.sidebarWrapper}>
                     <Sidebar />
                     </div>
-                    <div className="col-md-9">
+                    {/* 右右右 */}
+                    <div className={styles.content}>
                         {data.map(p => (
                             <div key={p.id} className={styles.itemRow}>
                                 <img src={p.img} alt="" width={100} height={100} />

@@ -40,10 +40,13 @@ export default function BookmarksPage() {
     return (
         <div>
             <HeaderImg title="FAVORITES" />
-            <div className={`container ${styles.container}`}>
+            <div className={`container-fluid ${styles.userContainer}`}>
                 <div className={styles.layout}>
-                    <div className={styles.sidebarWrapper}><Sidebar /></div>
-                    <div className="col-md-9">
+                    <div className={styles.sidebarWrapper}>
+                    <Sidebar />
+                    </div>
+                    {/* 右右右 */}
+                    <div className={styles.content}>
                         {list.map(a => (
                             <div key={a.id} className={styles.bookmarkRow}>
                                 {/* <i className={`bi bi-bookmark-fill ${styles.bookmarkIcon}`} /> */}

@@ -1,6 +1,17 @@
-.container {
+/* .container {
     color: #919191;
     padding: 20px 0;
+} */
+
+.userContainer {
+    color: #919191;
+    /* 內容最大寬，但不超出視窗 */
+    max-width: min(1440px, 100%);
+    margin-inline: auto; /* 置中 */
+    /* 上方距離 */
+    padding-block: 40px; 
+    /* RWD 左右留白：16px ~ 40px，會隨螢幕寬度平滑變化 */
+    padding-inline: clamp(16px, 4vw, 40px);
 }
 
 /* 整體左右佈局：用 flex 取代 row/col */
@@ -35,24 +46,33 @@
 
 /* Sidebar：固定寬度 + 與表單間距（依設計稿調整數值） */
 .sidebarWrapper {
+    /* 左邊空白處 */
     padding: 60px;
-    flex: 0 0 365px;
     /* 側欄固定 220px；想更寬就改 */
-    margin-right: 0px;
+    flex: 0 0 365px;
     /* 中間白邊距，設計稿看起來約 48~60px */
+    /* margin-right: 0px; */
 }
 
-/* 表單容器：吃掉剩餘空間，但限制最大寬度避免太寬 */
+/* 表單容器：吃掉剩餘空間，但限制最大寬度避免太寬
 .formContainer {
     flex: 0 1 600px;
-    /* 不增生(0)，可縮(1)，上限 600px */
+    不增生(0)，可縮(1)，上限 600px
     padding: 50px 0;
     max-width: 600px;
-    /* 限制最大寬度，避免太大 */
+    限制最大寬度，避免太大
     margin-left: 0px;
-    /* 置左 */
+    置左
     width: 100%;
+} */
 
+.content {
+    /* 在 flex 版型下吃掉剩餘空間 */
+    flex: 1;
+    /* 允許內容在需要時縮，避免水平溢出 */
+    min-width: 0;
+    /* 右邊空白處 */
+    padding-right: 60px ;
 }
 
 .formButtons {
@@ -155,13 +175,14 @@
     font-size: 0.875rem;
     color: #919191;
     margin-bottom: 0.5rem;
-    display: 
-    -webkit-box;
+    display:
+        -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     /* 顯示最多 3 行，超出就省略 */
     overflow: hidden;
-    line-clamp: 3;    /* 標準屬性（實驗中，Firefox 將支援） */
+    line-clamp: 3;
+    /* 標準屬性（實驗中，Firefox 將支援） */
 }
 
 .bookmarkFooter {
@@ -177,9 +198,12 @@
     color: #d4a373;
     font-weight: 500;
 
-    display: inline-flex;  /* 讓文字與 icon 排成一列 */
-    align-items: center;   /* 垂直置中 */
-    gap: 4px;              /* 文字與 icon 間距 */
+    display: inline-flex;
+    /* 讓文字與 icon 排成一列 */
+    align-items: center;
+    /* 垂直置中 */
+    gap: 4px;
+    /* 文字與 icon 間距 */
 }
 
 .bookmarkLink:hover {
