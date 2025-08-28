@@ -1,15 +1,6 @@
 .container-fluid.no-padding {
   margin: auto;
 }
-
-
-
-
-
-
-
-
-
 .cart {
   display: flex;
   flex-direction: row;

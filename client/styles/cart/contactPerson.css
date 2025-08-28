@@ -62,3 +62,48 @@
 .same-person p{
     padding-left: 10px;
 }
+.phone{
+    display: none;
+}
+
+@media (max-width: 430px) {
+    .pc{
+        display: none;
+    }
+    .phone{
+        display: flex;
+    }
+
+    .toggleBtn{
+        position: absolute;
+        left: 0;
+        width: 100%;
+        border: 1px solid var(--primary-05);
+        background-color: var(--white);
+        height: 84px;
+    }
+    .contact{
+        padding-top: 95px;
+    }
+    .contact-detail.phone{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .details.phone{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .contact-line.phone{
+        width: 100%;
+        height: 1px;
+        background-color: var(--color-gray-600);
+        margin: 20px 0;
+    }
+
+    .same-person.phone{
+        display: flex;
+        flex-direction: row;
+    }
+}
