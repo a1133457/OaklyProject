@@ -9,7 +9,7 @@ import styles from '../user.module.css'
 import UserTextInput from '@/app/_components/UserTextInput'
 import UserSelect from '@/app/_components/UserSelect'
 import UserFormRow from '@/app/_components/UserFormRow'
-import Button from '@/app/auth/_components/Button'
+import Button from '@/app/_components/Button'
 import ButtonGroup from '@/app/_components/ButtonGroup'
 
 export default function UserEditForm() {
@@ -51,22 +51,24 @@ export default function UserEditForm() {
     return (
         <div>
             <HeaderImg title="MY ACCOUNT" />
-            <div className="container">
-                <div className="row">
-                    <div className="col-md-3"><Sidebar /></div>
+            <div className={`container ${styles.container}`}>
+                <div className={styles.layout}>
+                    <div className={styles.sidebarWrapper}>
+                    <Sidebar />
+                    </div>
 
-                    <div className="col-md-9">
+                    <div className={styles.formContainer}>
                         {/* 大頭貼上傳 */}
                         <div className={`${styles.avatarUpload} ${styles.uploader}`}>
                             <label htmlFor="avatarInput">
-                                <img src={avatar ? URL.createObjectURL(avatar) : '/img/pexels-anntarazevich-8152002.jpg'}
+                                <img src={avatar ? URL.createObjectURL(avatar) : '/img/ting/pexels-anntarazevich-8152002.jpg'}
                                     alt="頭像預覽" className={styles.avatarImg} />
                             </label>
                             <input id="avatarInput" type="file" accept="image/*"
                                 onChange={(e) => setAvatar(e.target.files?.[0] ?? null)} />
                         </div>
 
-                        <form onSubmit={handleSubmit} onReset={handleReset}>
+                        <form onSubmit={handleSubmit} onReset={handleReset} className="g-5">
                             <UserTextInput id="name" label="姓名" required
                                 value={name} onChange={e => setName(e.target.value)} />
 
