@@ -2,10 +2,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from '../auth.module.css'
-
+// 共用元件
 import UserTextInput from '@/app/_components/UserTextInput'
-import styles from '@/styles/_components/button.module.css'
-
+import Button from '@/app/_components/Button'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -19,7 +18,7 @@ export default function LoginPage() {
 
     return (
         <div className={styles.full}>
-            <div className={styles.left} style={{ backgroundImage: `url('/img/註冊登入圖.png')` }} />
+            <div className={styles.left} style={{ backgroundImage: `url('/img/ting/註冊登入圖.png')` }} />
             <div className={styles.right}>
                 <form className={styles.form} onSubmit={onSubmit}>
                     <div className={styles.title}>LOGIN</div>

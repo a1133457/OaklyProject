@@ -2,8 +2,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from '../auth.module.css'
+// 共用元件
 import UserTextInput from '@/app/_components/UserTextInput'
-import styles from '@/styles/_components/button.module.css'
+import Button from '@/app/_components/Button'
+
+
 
 export default function RegisterPage() {
     const [name, setName] = useState('')
@@ -25,7 +28,7 @@ export default function RegisterPage() {
 
     return (
         <div className={styles.full}>
-            <div className={styles.left} style={{ backgroundImage: `url('/img/註冊登入圖.png')` }} />
+            <div className={styles.left} style={{ backgroundImage: `url('/img/ting/註冊登入圖.png')` }} />
             <div className={styles.right}>
                 <form className={styles.form} onSubmit={onSubmit}>
                     <div className={styles.title}>REGISTER</div>
@@ -44,7 +47,7 @@ export default function RegisterPage() {
                         error={error} required />
 
                     {/* <button className={styles.btnPrimary} type="submit">註冊</button> */}
-                    <Button type="submit" variant="primary01" size="lg">註冊</Button>
+                    <Button type="submit" variant="primary01" size="userlg">註冊</Button>
 
                     <div className="mt-3" style={{ color: '#919191' }}>
                         已經有帳號了？<Link href="/auth/login" style={{ color: '#5b887b' }}>登入會員</Link>
