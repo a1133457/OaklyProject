@@ -39,7 +39,7 @@ export default function BookmarksPage() {
     }
     return (
         <div>
-            <HeaderImg title="FAVORITES" />
+            <HeaderImg title="BOOKMARKS" />
             <div className={`container-fluid ${styles.userContainer}`}>
                 <div className={styles.layout}>
                     <div className={styles.sidebarWrapper}>

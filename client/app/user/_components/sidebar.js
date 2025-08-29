@@ -18,7 +18,7 @@ export default function UserSidebarPage() {
         訂單查詢
       </Link>
 
-      <Link href="#" className={styles.coupon}>
+      <Link href="/user/coupon" className={styles.coupon}>
         <img src="/img/ting/sb/icon-sb-coupon.svg" alt="couponicon" />
         我的優惠券
       </Link>
@@ -32,7 +32,7 @@ export default function UserSidebarPage() {
         <img src="/img/ting/sb/icon-sb-bookmark.svg" alt="bookmarkicon" />
         收藏文章
       </Link>
-      <Link href="#" className={styles.reservation}>
+      <Link href="/user/organizer" className={styles.reservation}>
         <img src="/img/ting/sb/icon-sb-reservation.svg" alt="reservationicon" />
         預約紀錄
       </Link>

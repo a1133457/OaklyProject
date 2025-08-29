@@ -54,18 +54,6 @@
     /* margin-right: 0px; */
 }
 
-/* 表單容器：吃掉剩餘空間，但限制最大寬度避免太寬
-.formContainer {
-    flex: 0 1 600px;
-    不增生(0)，可縮(1)，上限 600px
-    padding: 50px 0;
-    max-width: 600px;
-    限制最大寬度，避免太大
-    margin-left: 0px;
-    置左
-    width: 100%;
-} */
-
 .content {
     /* 在 flex 版型下吃掉剩餘空間 */
     flex: 1;
@@ -102,12 +90,12 @@
     background-color: #f0f0f0;
 }
 
-.itemRow {
+.favoritesRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 0;
-    border-bottom: 1px solid #ddd;
+    padding: 20px;
+    border-bottom: 1px solid #9db8af;
 }
 
 .productName,
@@ -138,6 +126,15 @@
     border-bottom: 1px solid #9db8af;
 }
 
+/* 右側文字容器：直向 flex，讓 footer 吸底 */
+.bookmarkBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+    /* 確保有足夠高度把 footer 推到底（對齊縮圖高） */
+}
+
 .bookmarkIcon {
     width: 19px;
     height: 25px;
@@ -151,14 +148,6 @@
     transform: scale(0.92);
 }
 
-/* 右側文字容器：直向 flex，讓 footer 吸底 */
-.bookmarkBody {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 120px;
-    /* 確保有足夠高度把 footer 推到底（對齊縮圖高） */
-}
 
 .bookmarkTitle {
     color: #88a29a;
