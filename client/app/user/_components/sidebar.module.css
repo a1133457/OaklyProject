@@ -1,17 +1,38 @@
 .sidebar a {
-    /* display: block; */
-    display: flex;
-    align-items: center;
-    gap: 8px; /* icon 和文字間距 */
-    padding: 18px 0; /* 上下距離調大 */
-    border-bottom: 1px solid #ccc;
-    color: #919191;
-    /* 移除 <a> 預設的底線樣式 */
-    text-decoration: none;
+  /* display: block; */
+  display: flex;
+  align-items: center;
+  /* icon 和文字間距 */
+  gap: 15px;
+  /* 上下距離調大 */
+  padding: 18px 16px 18px 20px;
+  /* border-bottom: 1px solid #ccc; */
+  color: #919191;
+  /* 移除 <a> 預設的底線樣式 */
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+   /* 預留左側線條的位置 */
+  /* font-size: 14px;
+  font-weight: 500; */
 }
 
 .sidebar a:hover {
-    color: #C89571;
+  /* color: #719a8b; */
+  /* 淡色背景 */
+  background-color: rgb(113, 154, 139, 0.1);
+  /* 左側色塊 */
+  border-left: 3px solid #719a8b;
+  
+}
+
+.sidebar a:active {
+  color: #719a8b;
+  /* 淡色背景 */
+  background-color: rgb(113, 154, 139, 0.1);
+  /* 左側色塊 */
+  border-left: 3px solid #719a8b;
+  
 }
 
 
