@@ -1,4 +1,4 @@
-use okaly;
+use oakly;
 SELECT DATABASE();
 
 --關閉外建檢查

@@ -1,6 +1,6 @@
 "use client";
 //react
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // 針對單一頁面使用css modules技術
 import styles from "@/styles/organizer/organizer.module.css";
@@ -24,7 +24,7 @@ export default function FormPage() {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
 
-const cityRegionMap = {
+  const cityRegionMap = {
     // 北部 - 1
     "臺北市": 1, "新北市": 1, "桃園市": 1, "基隆市": 1, "新竹市": 1, "新竹縣": 1,
     // 中部 - 2  
@@ -33,7 +33,14 @@ const cityRegionMap = {
     "嘉義市": 3, "嘉義縣": 3, "臺南市": 3, "高雄市": 3, "屏東縣": 3
   };
 
-  
+  // 創建 ref 來控制 input
+  const fileInputRef = useRef(null);
+  const handleDivClick = () => {
+    fileInputRef.current.click(); 
+  };
+
+
+
   useEffect(() => {
     const fetchTaiwanData = async () => {
       try {
@@ -47,7 +54,7 @@ const cityRegionMap = {
     fetchTaiwanData();
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchOrganizers = async () => {
       try {
         const res = await fetch("http://localhost:3005/api/organizers")
@@ -60,8 +67,7 @@ const cityRegionMap = {
     }
     fetchOrganizers()
   }, []);
-
-
+  
   return (
     <>
       <Hero />
@@ -198,26 +204,26 @@ const cityRegionMap = {
                   <label className="form-label t-primary03 label700">
                     選擇整理師*
                   </label>
-                  <select 
-                  value={SelectedOrganizers} 
+                  <select
+                    value={SelectedOrganizers}
                     onChange={(e) => {
                       setSelectedOrganizers(e.target.value);
                     }}
-                  className="form-select" 
-                  name="organizer" 
-                  required 
-                  disabled={!selectedCity}>
+                    className="form-select"
+                    name="organizer"
+                    required
+                    disabled={!selectedCity}>
                     <option value="" disabled>
                       {!selectedCity ? "請先選擇縣市地址" : "選擇整理師"}
                     </option>
-                    {selectedCity && 
-                    organizers
-                    .filter( (organizer) => organizer.region === cityRegionMap[selectedCity])
-                    .map((organizer) => (
-                        <option key={organizer.id} value={organizer.id}>
-                          {organizer.name}
-                        </option>
-                      ))}
+                    {selectedCity &&
+                      organizers
+                        .filter((organizer) => organizer.region === cityRegionMap[selectedCity])
+                        .map((organizer) => (
+                          <option key={organizer.id} value={organizer.id}>
+                            {organizer.name}
+                          </option>
+                        ))}
                   </select>
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
@@ -237,7 +243,7 @@ const cityRegionMap = {
               {/* 上傳照片 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t -primary03 label700">
+                  <label className="form-label t-primary03 label700">
                     上傳整理環境照片*
                   </label>
                   <input
@@ -248,9 +254,10 @@ const cityRegionMap = {
                     multiple
                     required
                     className="d-none"
+                    ref={fileInputRef}
                   />
                   <div
-                  onClick={(e)=> }
+                    onClick={handleDivClick}
                     className={`d-flex justify-content-center align-items-center ${styles.imgAdd}`}
                   >
                     <div className={styles.imgAddImg}></div>
