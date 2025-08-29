@@ -6,6 +6,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 --開啟外鍵檢查
 SET FOREIGN_KEY_CHECKS = 1;
 
+DROP TABLE `coupons`;
 -- 1.coupons 主表
 CREATE TABLE coupons (
   id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -37,9 +38,9 @@ DROP TABLE coupon_level;
 CREATE TABLE coupon_level (
   id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
   coupon_id INT NOT NULL,
-  member_levels_id INT NOT NULL,
+  user_levels_id INT NOT NULL,
   FOREIGN KEY (coupon_id) REFERENCES coupons(id),
-  FOREIGN KEY (member_levels_id) REFERENCES member_levels(id)
+  FOREIGN KEY (user_levels_id) REFERENCES  user_levels(id)
 );
 
 DROP TABLE user_coupons;
@@ -52,23 +53,12 @@ CREATE TABLE user_coupons (
   used_at DATETIME,
   expire_at DATETIME,
   status TINYINT(1) DEFAULT 0,
-  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (user_id) REFERENCES user(id),
   FOREIGN KEY (coupon_id) REFERENCES coupons(id)
 );
 
-DROP TABLE products_category;
---5. 產品類別
-CREATE TABLE `products_category` (
-  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name` varchar(30) DEFAULT NULL
-);
 
-DROP TABLE member_levels;
--- 6.會員等級資料
-CREATE TABLE `member_levels` (
-  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name` varchar(20) DEFAULT NULL
-);
+
 
 
 -----------------------------優惠券假資料---------------------------------
@@ -91,33 +81,18 @@ INSERT INTO `coupon_categories` (`id`, `coupon_id`, `category_id`) VALUES
 (8, 3, 5);
 
 -- 3.coupon_levels 會員優惠 假資料
-INSERT INTO `coupon_level` (`id`, `coupon_id`, `member_levels_id`) VALUES
+INSERT INTO `coupon_level` (`id`, `coupon_id`, `user_levels_id`) VALUES
 -- 三張券都適用所有會員等級
 (1, 1, 1), (2, 1, 2), (3, 1, 3),
 (4, 2, 1), (5, 2, 2), (6, 2, 3),
 (7, 3, 1), (8, 3, 2), (9, 3, 3);
 
---5. 產品類別 假資料
-INSERT INTO `products_category` (`id`, `name`) VALUES
-(1, '客廳'),
-(2, '餐廳/廚房'),
-(3, '臥室'),
-(4, '兒童房'),
-(5, '辦公空間'),
-(6, '收納用品');
-
-
--- 6.會員等級資料 假資料
-INSERT INTO `member_levels` (`id`, `name`) VALUES
-(1, '木芽會員'),
-(2, '原木會員'),
-(3, '森林會員');
 
 
 
 ------------------------------------------------------------------------
 
-
+DROP TABLE `bookings`;
 -- 1.用戶預約記錄主表
 CREATE TABLE bookings (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -133,7 +108,7 @@ CREATE TABLE bookings (
     is_valid TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=有效，0=刪除',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES user(id),
     FOREIGN KEY (organizer_id) REFERENCES organizers(id)
 );
 
@@ -148,6 +123,7 @@ CREATE TABLE booking_images (
 );
 
 -- 3.整理師表
+DROP TABLE `organizers`;
 CREATE TABLE organizers (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(20) NOT NULL,
@@ -201,3 +177,70 @@ INSERT INTO organizers (name, photo, introduction, region, is_valid) VALUES
 DROP TABLE `organizers`;
 
 ------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+----=========================================
+--======================user類 不是我的不是我的不是我的不是我的不是我的==========----------------
+DROP TABLE user_levels;
+-- 1.會員等級資料
+CREATE TABLE user_levels (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name varchar(20) DEFAULT NULL
+);
+
+-- 2.會員資料
+CREATE TABLE user (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  birthday DATE DEFAULT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) DEFAULT NULL,
+  postcode VARCHAR(10) DEFAULT NULL,
+  city VARCHAR(50) DEFAULT NULL,
+  area VARCHAR(50) DEFAULT NULL,
+  address VARCHAR(255) DEFAULT NULL,
+  img VARCHAR(255) DEFAULT NULL,
+  level_id INT(11) DEFAULT 1,  
+  is_valid TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT fk_users_level FOREIGN KEY (`level_id`) REFERENCES `user_levels`(`id`)
+    ON UPDATE CASCADE
+);
+
+-----------------會員假資料------------
+-- 1.會員等級資料 假資料
+INSERT INTO `user_levels` (`id`, `name`) VALUES
+(1, '木芽會員'),
+(2, '原木會員'),
+(3, '森林會員');
+
+
+
+--======================產品類 不是我的不是我的不是我的不是我的不是我的==========----------------
+
+DROP TABLE products_category;
+--1. 產品類別
+CREATE TABLE `products_category` (
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(30) DEFAULT NULL
+);
+
+--1. 產品類別 假資料
+INSERT INTO `products_category` (`id`, `name`) VALUES
+(1, '客廳'),
+(2, '餐廳/廚房'),
+(3, '臥室'),
+(4, '兒童房'),
+(5, '辦公空間'),
+(6, '收納用品');
+
+

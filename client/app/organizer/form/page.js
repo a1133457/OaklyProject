@@ -1,40 +1,39 @@
-'use client'
+"use client";
 //react
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 // 針對單一頁面使用css modules技術
-import styles from '@/styles/organizer/organizer.module.css'
+import styles from "@/styles/organizer/organizer.module.css";
 
 // 自訂組件(全域)
-import GreenBorderButton from '@/app/_components/GreenBorderButton'
+import GreenBorderButton from "@/app/_components/GreenBorderButton";
 //自訂組件 整理師專用
-import Hero from '../_components/Hero'
+import Hero from "../_components/Hero";
 
 // 以後要串會員資料 先假資料假裝一下
 const memberData = {
-  name: '王小明',
-  email: 'wang@example.com',
-  phone: '0912345678',
-}
+  name: "王小明",
+  email: "wang@example.com",
+  phone: "0912345678",
+};
 
 export default function FormPage() {
   const [taiwanData, setTaiwanData] = useState([]);
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
 
   useEffect(() => {
     const fetchTaiwanData = async () => {
       try {
-        const res = await fetch('/TwCities.json') //請求檔案
-        const data = await res.json() //得到json內容
-        setTaiwanData(data)
+        const res = await fetch("/TwCities.json"); //請求檔案
+        const data = await res.json(); //得到json內容
+        setTaiwanData(data);
       } catch (error) {
-        console.error('載入地區失敗:', error);
+        console.error("載入地區失敗:", error);
       }
-    }
-    fetchTaiwanData()
-  }, [])
-
+    };
+    fetchTaiwanData();
+  }, []);
 
   return (
     <>
@@ -49,7 +48,10 @@ export default function FormPage() {
               {/* 第一個 row - 姓名 + 手機 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="name" className="form-label t-primary03 label700">
+                  <label
+                    htmlFor="name"
+                    className="form-label t-primary03 label700"
+                  >
                     姓名*
                   </label>
                   <input
@@ -64,7 +66,10 @@ export default function FormPage() {
                   />
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="phone" className="form-label t-primary03 label700">
+                  <label
+                    htmlFor="phone"
+                    className="form-label t-primary03 label700"
+                  >
                     手機號碼*
                   </label>
                   <input
@@ -82,7 +87,10 @@ export default function FormPage() {
               {/* 第二個 row - 信箱獨立一行 */}
               <div className="row">
                 <div className="col-12 mb-xl">
-                  <label htmlFor="email" className="form-label t-primary03 label700">
+                  <label
+                    htmlFor="email"
+                    className="form-label t-primary03 label700"
+                  >
                     信箱*
                   </label>
                   <input
@@ -100,38 +108,47 @@ export default function FormPage() {
               {/* 服務地址區塊 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03 label700">服務地址*</label>
+                  <label className="form-label t-primary03 label700">
+                    服務地址*
+                  </label>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
                     value={selectedCity}
-                    onChange={e => {
-                      setSelectedCity(e.target.value)
-                      setSelectedDistrict('')
+                    onChange={(e) => {
+                      setSelectedCity(e.target.value);
+                      setSelectedDistrict("");
                     }}
                     className="form-select mb-sm"
                     name="city"
-                    required>
-                    <option value="" disabled>請選擇縣市</option>
-                    {taiwanData.map(city => (
-                      <option key={city.name} value={city.name}>{city.name}</option>
+                    required
+                  >
+                    <option value="" disabled>
+                      請選擇縣市
+                    </option>
+                    {taiwanData.map((city) => (
+                      <option key={city.name} value={city.name}>
+                        {city.name}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
                     value={selectedDistrict}
-                    onChange={e => {
-                      setSelectedDistrict(e.target.value)
+                    onChange={(e) => {
+                      setSelectedDistrict(e.target.value);
                     }}
                     className="form-select mb-sm"
                     name="district"
                     required
                   >
-                    <option value="" disabled>請選擇區域</option>
+                    <option value="" disabled>
+                      請選擇區域
+                    </option>
                     {taiwanData
-                      .find(city => city.name === selectedCity)
-                      ?.districts.map(district => (
+                      .find((city) => city.name === selectedCity)
+                      ?.districts.map((district) => (
                         <option key={district.name} value={district.name}>
                           {district.name}
                         </option>
@@ -151,9 +168,17 @@ export default function FormPage() {
               {/* 選整理師+日期 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03 label700">選擇整理師*</label>
-                  <select className="form-select" name="city" required>
-                    <option value="">請先選擇服務地址</option>
+                  <label className="form-label t-primary03 label700">
+                    選擇整理師*
+                  </label>
+                  <select className="form-select" name="city" required disabled={!selectedCity}>
+                    <option value="" disabled>
+                      {!selectedCity ? "請先選擇縣市地址" : "選擇整理師"}
+                    </option>
+                    {selectedCity && }
+                    <option>
+                      {organizer.name}
+                    </option>
                   </select>
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
@@ -200,7 +225,9 @@ export default function FormPage() {
               {/* 備註 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03 label700">備註</label>
+                  <label className="form-label t-primary03 label700">
+                    備註
+                  </label>
                   <textarea
                     name=""
                     id=""
@@ -227,5 +254,5 @@ export default function FormPage() {
         </div>
       </section>
     </>
-  )
+  );
 }

@@ -13,7 +13,7 @@ export default function UserOrganizerPage() {
       <section>
         <div className="container-xl">
           <div className="d-flex flex-column gap-lg section">
-            <h2 className="t-primary01 text-center">預約記錄</h2>
+            <h2 className="t-primary01 text-center">預約紀錄</h2>
             <ItemTab/>
             <ListCard />
           </div>
