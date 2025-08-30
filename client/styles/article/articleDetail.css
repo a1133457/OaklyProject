@@ -568,4 +568,7 @@
   .aCard-detail h6 {
     display: block;
   }
+  .cart-main-first{
+    height: 100%;
+  }
 }

@@ -1,5 +1,4 @@
 // import {Geist, Geist_Mono} from "next/font/google"
-import "bootstrap/dist/css/bootstrap.min.css";
 import Script from "next/script";
 import { ArticleProvider } from "@/hooks/use-article";
 import "bootstrap/dist/css/bootstrap.min.css";
