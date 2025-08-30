@@ -26,7 +26,7 @@
   
 }
 
-.sidebar a:active {
+.sidebar a.active {
   color: #719a8b;
   /* 淡色背景 */
   background-color: rgb(113, 154, 139, 0.1);
@@ -41,7 +41,7 @@
 } */
 
 /*   Hover 換圖設定區     */
-.user:hover img {
+/* .user:hover img {
   content: url('/img/ting/sb/icon-sb-userH.svg');
 }
 
@@ -63,4 +63,4 @@
 
 .reservation:hover img {
   content: url('/img/ting/sb/icon-sb-reservationH.svg');
-}
+} */
