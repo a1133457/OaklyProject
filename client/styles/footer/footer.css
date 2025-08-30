@@ -3,10 +3,9 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    
     background: #719A8B;
     color: #fff;
-    padding: 24px 93px;
+    padding: 12px 60px;
     margin-top: auto; /* 讓 footer 推到頁面底部 */
     position: relative; /* 改為相對定位 */
     z-index: 1; /* 降低 z-index */

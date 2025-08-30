@@ -7,7 +7,6 @@ id INT PRIMARY KEY AUTO_INCREMENT,
 color_name VARCHAR(50)
 );
 
-DROP TABLE colors 
 
 INSERT INTO colors (color_name) VALUES
 ('白色'),
@@ -30,8 +29,6 @@ FOREIGN KEY (product_id) REFERENCES products(id),
 FOREIGN KEY (color_id) REFERENCES colors(id)
 );
 SHOW TABLES LIKE 'product_img';
-DESCRIBE product_img;
-SELECT HEX(SUBSTRING(img, 1, 10)) FROM product_img WHERE product_id = 5;
 
 SELECT img FROM product_img WHERE product_id = 5 LIMIT 1;
  
@@ -76,6 +73,14 @@ CREATE TABLE designers (
 id INT PRIMARY KEY AUTO_INCREMENT,
 name VARCHAR(100)
 );
+ALTER TABLE products
+ADD COLUMN designer_id INT UNSIGNED,
+ADD CONSTRAINT fk_designer
+FOREIGN KEY (designer_id) REFERENCES designers(id)
+
+UPDATE products 
+SET designer_id = FLOOR(RAND() * 10) + 1
+WHERE designer_id IS NULL;
 
 INSERT INTO designers (name) VALUES
 ('Charles and Ray Eames'),
@@ -97,8 +102,9 @@ INSERT INTO designers (name) VALUES
 -- - **材質(要改)**
 CREATE TABLE materials (
 id INT PRIMARY KEY AUTO_INCREMENT,
-material_name VARCHAR(100),
-- 
+material_name VARCHAR(100)
+)
+
 
 INSERT INTO materials (material_name) VALUES
 ('木質 / Wood'),
@@ -111,20 +117,16 @@ INSERT INTO materials (material_name) VALUES
 ('藤 / Rattan'),
 ('亞克力 / Acrylic'),
 ('竹 / Bamboo');
-
+SELECT * FROM product_img WHERE product_id = 1;
 -- - **商品與材質關聯表（多對多）
 CREATE TABLE materials_list (
-product_id INT**
+product_id INT,
+materials_id INT,
+PRIMARY KEY (product_id, materials_id),
+FOREIGN KEY (product_id) REFERENCES products(id),
+FOREIGN KEY (materials_id) REFERENCES products(id));
     
-    **materials_id INT** 
-    
-     **PRIMARY KEY (product_id, material_id),
-    FOREIGN KEY (product_id) REFERENCES products(id)**
-    
-    **FOREIGN KEY (materials_id) REFERENCES products(id)
-    );**
-    
-    INSERT INTO materials_list (product_id, material_id) VALUES
+INSERT INTO materials_list (product_id, materials_id) VALUES
     (1, 1),
     (1, 3),
     (1, 5),
@@ -298,3 +300,56 @@ INSERT INTO stocks (id, color_id, size_id, amount) VALUES
 (10, 1, 1, 20),
 (10, 2, 2, 23),
 (10, 3, 3, 21);
+
+ALTER TABLE products 
+ADD COLUMN colors INT NOT NULL DEFAULT 1,
+ADD COLUMN designers_id INT NOT NULL DEFAULT 1,
+ADD COLUMN materials_id INT NOT NULL DEFAULT 1;
+
+UPDATE products 
+SET colors = FLOOR(RAND() * 10) + 1;
+
+UPDATE products 
+SET designers_id = FLOOR(RAND() * 10) + 1;
+
+UPDATE products 
+SET materials_id = FLOOR(RAND() * 10) + 1;
+
+INSERT INTO product_colors (product_id, color_id)
+SELECT id, colors FROM products
+ON DUPLICATE KEY UPDATE color_id = color_id;
+
+INSERT INTO product_sizes (product_id, size_id)
+SELECT 
+    p.id as product_id,
+    FLOOR(RAND() * 10) + 1 as size_id
+FROM products p
+ON DUPLICATE KEY UPDATE size_id = size_id;
+
+INSERT IGNORE INTO product_colors (product_id, color_id)
+SELECT 
+    p.id as product_id,
+    FLOOR(RAND() * 10) + 1 as color_id
+FROM products p
+WHERE RAND() > 0.7;
+
+INSERT IGNORE INTO product_sizes (product_id, size_id)
+SELECT 
+    p.id as product_id,
+    FLOOR(RAND() * 10) + 1 as size_id
+FROM products p
+WHERE RAND() > 0.8;
+
+-- 驗證結果
+SELECT 
+    p.id,
+    p.name,
+    c.color_name,
+    s.size_label
+FROM products p
+LEFT JOIN product_colors pc ON p.id = pc.product_id
+LEFT JOIN colors c ON pc.color_id = c.id
+LEFT JOIN product_sizes ps ON p.id = ps.product_id
+LEFT JOIN sizes s ON ps.size_id = s.id
+WHERE p.id <= 10
+ORDER BY p.id;
