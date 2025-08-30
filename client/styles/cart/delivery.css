@@ -23,21 +23,36 @@
   .pc {
     display: none;
   }
+
   .phone {
     display: block;
   }
-  .toggleBtn {
-    position: absolute;
-    left: 0;
-    width: 100%;
+  .delivery.phone{
+     overflow: hidden;
+  }
+
+  /* .toggleBtn.phone {
+    position: relative;
+    width: calc(100% + 40px);
+    margin-left: -40px;
     border: 1px solid var(--primary-05);
     background-color: var(--white);
     height: 84px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
-  .d-lists.phone{
+
+  .toggleBtn.active.phone {
+    border: 1px solid var(--primary-05);
+    background-color: var(--primary-04);
+  } */
+
+  .d-lists.phone {
     display: flex;
     flex-direction: column;
-    margin-top: 95px;
+    padding: 20px 20px;
     gap: 20px;
   }
 }

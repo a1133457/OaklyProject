@@ -46,7 +46,7 @@ export default function Delivery() {
       {/* 手機------------------------------------- */}
       <div className="delivery phone">
         <button
-          className="toggleBtn phone"
+          className={`toggleBtn ${ showForm ? "active" : ""} phone`}
           onClick={() => {
             setShowForm(!showForm);
           }}

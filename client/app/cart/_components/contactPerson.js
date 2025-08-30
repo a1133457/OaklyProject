@@ -5,6 +5,7 @@ import { useState } from "react";
 
 export default function ContactPerson({ name, phone, email, address }) {
   const [showForm, setShowForm] = useState(false);
+ 
 
   return (
     <>
@@ -38,7 +39,7 @@ export default function ContactPerson({ name, phone, email, address }) {
           <div className="contact-detail2 pc">
             <div className="details pc">
               <div className="same-person pc">
-                <input type="checkbox pc" />
+                <input type="checkbox" />
                 <p>同訂購人</p>
               </div>
               <div className="detail-one pc">
@@ -62,10 +63,8 @@ export default function ContactPerson({ name, phone, email, address }) {
       </div>
       {/* 手機------------------------------- */}
       <div className="contact-person phone">
-        <button className="toggleBtn"
-          onClick={() => {
-            setShowForm(!showForm);
-          }}
+        <button className={`toggleBtn ${ showForm ? "active" : ""} phone`}
+          onClick={() => {setShowForm(!showForm)}}
           id="toggleBtn"
         >
           <h4>聯絡人資訊</h4>

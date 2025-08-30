@@ -5,6 +5,14 @@ import { useState } from "react";
 
 export default function Payment() {
   const [showForm, setShowForm] = useState(false);
+  const [showI, setShowI] = useState(false);
+  const [showP, setShowP] = useState(false);
+  const [selectI, setSelectI] = useState("發票類型");
+  const [selectP, setSelectP] = useState("付款方式");
+  const [open, setOpen] = useState(false);
+
+  const options = ["手機條碼載具", "紙本發票"];
+  const payments = ["信用卡", "現金"];
 
   return (
     <>
@@ -65,7 +73,7 @@ export default function Payment() {
       {/* 手機------------------------------ */}
       <div className="payment phone">
         <button
-          className="toggleBtn phone"
+          className={`toggleBtn ${showForm ? "active" : ""} phone`}
           onClick={() => {
             setShowForm(!showForm);
           }}
@@ -79,57 +87,71 @@ export default function Payment() {
             <div className="invoice-pay phone">
               <div className="dropdown invoice phone">
                 <button
-                  className="dropdown-toggle phone"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
+                  className={`toggleBtn2 ${showI ? "active" : ""} phone`}
+                  onClick={() => {
+                    setShowI(!showI);
+                  }}
+                  id="toggleBtn"
                 >
-                  <h4>發票類型</h4>
+                  <h6>{selectI}</h6>
                 </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      <h6>手機條碼載具</h6>
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      <h6>紙本發票</h6>
-                    </a>
-                  </li>
-                </ul>
+                {showI && (
+                  <ul className="dropdown-menu">
+                    {options.map((option) => (
+                      <li key={option}>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => {
+                            setSelectI(option);
+                            setShowI(false);
+                          }}
+                        >
+                          {option}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {/* 額外輸入框 (只有某些選項會出現) */}
+                {selectI === "手機條碼載具" && (
+                  <div className="extra-input">
+                    <input type="text" placeholder="請輸入手機條碼" />
+                  </div>
+                )}
               </div>
               <div className="dropdown pay phone">
                 <button
-                  className="dropdown-toggle phone"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
+                  className={`toggleBtn2 ${showI ? "active" : ""} phone`}
+                  onClick={() => {
+                    setShowI(!showI);
+                  }}
+                  id="toggleBtn"
                 >
-                  <h4>付款方式</h4>
+                  <h6>{selectP}</h6>
                 </button>
-                <ul className="dropdown-menu phone">
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      <h6>信用卡</h6>
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      <h6>超商付款</h6>
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      <h6>ATM付款</h6>
-                    </a>
-                  </li>
-                </ul>
+                {showI && (
+                  <ul className="dropdown-menu">
+                    {payments.map((payment) => (
+                      <li key={payment}>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => {
+                            setSelectP(payment);
+                            setShowI(false);
+                          }}
+                        >
+                          {payment}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
               </div>
             </div>
           </>
         )}
-      </div>
+      </div >
     </>
   );
 }

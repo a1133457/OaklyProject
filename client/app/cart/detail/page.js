@@ -8,17 +8,16 @@ import Gradation from "../_components/gradation";
 import "@/styles/cart/cartOrder.css";
 import "@/styles/cart/cartDetail.css";
 import CartCard from "../_components/cartCard";
-import GreenButton from "../_components/greenButton";
 
 export default function CartDetailPage() {
   return (
     <div className="container-fluid">
       <Gradation step="detail" />
-      <div className="cart-main phone">
+      <div className="cart-main detail phone">
         <h4>訂單資訊</h4>
         <CartCard />
       </div>
-      <GreenButton step="展開清單" />
+      
       <div className="cart">
         <div className="left-side">
           <div className="cart-main-first">

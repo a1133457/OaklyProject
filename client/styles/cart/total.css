@@ -3,7 +3,10 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 20px;
-  align-self: stretch;
+  width: 100%;
+}
+.amount-list.fin{
+  width: 330px;
 }
 
 .pAmount {
@@ -60,9 +63,6 @@
   align-self: stretch;
 }
 
-.total h3 {
-  display: none;
-}
 
 .nextOrBack {
   width: 100%;
@@ -82,18 +82,26 @@
   background-color: var(--color-gray-700);
 }
 
-@media (max-width: 430px) {
-  .total {
-    justify-content: flex-end;
-  }
+.phone {
+  display: none;
+}
 
-  .total h6 {
+@media (max-width: 430px) {
+  .h5{
     display: none;
   }
 
-  .total h3 {
-    display: block;
+  .total {
+    display: none;
   }
+
+  .total.phone {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+
+  }
+  
 
   .nextOrBack {
     display: none;
@@ -108,6 +116,9 @@
   }
 
   .t-line {
-    width: 390px;
+    width: 100%S;
+  }
+  .nextOrBack-phone .green-button{
+    border-radius: 5px;
   }
 }
