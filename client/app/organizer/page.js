@@ -5,6 +5,7 @@ import styles from '@/styles/organizer/organizer.module.css'
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { useFetch } from '@/hooks/use-fetch'
 
 // 靜態圖片
 import spaceImage from '@/public/img/hui/space/2148857489.jpg'
@@ -21,21 +22,9 @@ import Step from './_components/Step'
 
 export default function CouponPage() {
 
-  //organizers (讀取資料)  setOrganizers (寫入資料)
-  const [organizers, setOrganizers] = useState([]);
-  useEffect(() => {
-    const fetchOrganizers = async () => {
-      try {
-        const res = await fetch("http://localhost:3005/api/organizers")
-        const data = await res.json();
-        console.log('解析後JSON', data);
-        setOrganizers(data.data)
-      } catch (err) {
-        console.log('錯誤', err);
-      }
-    }
-    fetchOrganizers()
-  }, []);
+  const { data, loading, error } = useFetch("http://localhost:3005/api/organizers")
+  const organizers = data?.data || []  // 取得 data.data，沒資料就用空陣列
+  if (error) return <div>發生錯誤: {error.message}</div>
 
 
   return (
@@ -99,7 +88,7 @@ export default function CouponPage() {
                     .filter(organizers => organizers.region === 1)
                     .map((organizer) => (
                       <OrganizerCard
-                      key={organizer.id}
+                        key={organizer.id}
                         name={organizer.name}
                         area="北部"
                         imageUrl={`http://localhost:3005${organizer.photo}`}
@@ -116,7 +105,7 @@ export default function CouponPage() {
                     .filter(organizers => organizers.region === 2)
                     .map((organizer) => (
                       <OrganizerCard
-                      key={organizer.id}
+                        key={organizer.id}
                         name={organizer.name}
                         area="中部"
                         imageUrl={`http://localhost:3005${organizer.photo}`}
@@ -133,7 +122,7 @@ export default function CouponPage() {
                     .filter(organizers => organizers.region === 3)
                     .map((organizer) => (
                       <OrganizerCard
-                      key={organizer.id}
+                        key={organizer.id}
                         name={organizer.name}
                         area="南部"
                         imageUrl={`http://localhost:3005${organizer.photo}`}

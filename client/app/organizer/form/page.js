@@ -1,6 +1,7 @@
 "use client";
 //react
 import { useState, useEffect, useRef } from "react";
+import { useFetch } from '@/hooks/use-fetch'
 
 // 針對單一頁面使用css modules技術
 import styles from "@/styles/organizer/organizer.module.css";
@@ -18,11 +19,23 @@ const memberData = {
 };
 
 export default function FormPage() {
-  const [taiwanData, setTaiwanData] = useState([]);
-  const [organizers, setOrganizers] = useState([]);
   const [SelectedOrganizers, setSelectedOrganizers] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+
+  // 整理師fetch
+  const organizerResult = useFetch("http://localhost:3005/api/organizers")
+  const organizers = organizerResult.data ? organizerResult.data.data : []
+  if (organizerResult.error) {
+    console.error("載入主辦方失敗:", organizerResult.error)
+  }
+
+  // 地區JSON fetch
+  const taiwanResult = useFetch("/TwCities.json")
+  const taiwanData = taiwanResult.data || []
+  if (taiwanResult.error) {
+    console.error("載入地區失敗:", taiwanResult.error)
+  }
 
   const cityRegionMap = {
     // 北部 - 1
@@ -36,38 +49,10 @@ export default function FormPage() {
   // 創建 ref 來控制 input
   const fileInputRef = useRef(null);
   const handleDivClick = () => {
-    fileInputRef.current.click(); 
+    fileInputRef.current.click();
   };
 
 
-
-  useEffect(() => {
-    const fetchTaiwanData = async () => {
-      try {
-        const res = await fetch("/TwCities.json"); //請求檔案
-        const data = await res.json(); //得到json內容
-        setTaiwanData(data);
-      } catch (error) {
-        console.err("載入地區失敗:", err);
-      }
-    };
-    fetchTaiwanData();
-  }, []);
-
-  useEffect(() => {
-    const fetchOrganizers = async () => {
-      try {
-        const res = await fetch("http://localhost:3005/api/organizers")
-        const data = await res.json();
-        console.log('解析後整理師JSON', data);
-        setOrganizers(data.data)
-      } catch (err) {
-        console.log('錯誤', err);
-      }
-    }
-    fetchOrganizers()
-  }, []);
-  
   return (
     <>
       <Hero />
