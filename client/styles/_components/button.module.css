@@ -1,7 +1,7 @@
 /* 共用基底 */
 .btn {
   display: inline-block;
-  margin: 0 auto;
+  /* margin: 0 auto; */
   padding: 10px 16px;   /* 調整按鈕厚度（上下/左右） */
   font-size: 16px;      /* 文字大小 */
   line-height: 1;       /* 避免文字加高 */
@@ -27,10 +27,13 @@
 /* 按鈕群組 */
 .btnGroup {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap; /* RWD 遇到小螢幕自動換行 */
+  justify-content: center; /* ← 靠右 */
+  align-items: center;       /* ← 垂直置中 */
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
+
 
 /* RWD: 小螢幕時每顆佔滿一行 */
 @media (max-width: 576px) {

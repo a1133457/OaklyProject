@@ -9,8 +9,8 @@ import styles from '../user.module.css'
 import UserTextInput from '@/app/_components/UserTextInput'
 import UserSelect from '@/app/_components/UserSelect'
 import UserFormRow from '@/app/_components/UserFormRow'
-// import Button from '@/app/_components/Button'
-// import ButtonGroup from '@/app/_components/ButtonGroup'
+import Button from '@/app/_components/Button'
+import ButtonGroup from '@/app/_components/ButtonGroup'
 
 export default function UserEditForm() {
     const [name, setName] = useState('')
@@ -50,11 +50,12 @@ export default function UserEditForm() {
 
     return (
         <div>
+            {/* layout 區 */}
             <HeaderImg title="MY ACCOUNT" />
             <div className={`container-fluid ${styles.userContainer}`}>
                 <div className={styles.layout}>
                     <div className={styles.sidebarWrapper}>
-                    <Sidebar />
+                        <Sidebar />
                     </div>
 
                     <div className={styles.content}>
@@ -105,14 +106,14 @@ export default function UserEditForm() {
                             <UserTextInput id="pw2" label="確認新密碼" type="password"
                                 value={pw2} onChange={e => setPw2(e.target.value)} error={errors.pw2} />
 
-                            <div className="d-flex justify-content-center gap-2 mt-3 formButtons">
+                            {/* <div className="d-flex justify-content-center gap-2 mt-3 formButtons">
                                 <button type="submit" className="btn btn-success">確認修改</button> 
                                 <button type="reset" className="btn btn-outline-success">取消</button>
-                            </div>
-                            {/* <ButtonGroup>
-                                <Button type="submit" variant="primary01" size="sm">確認修改</Button> 
-                                <Button type="reset" variant="white" size="sm">取消</Button> 
-                            </ButtonGroup> */}
+                            </div> */}
+                            <ButtonGroup align="Center">
+                                <Button type="submit" variant="primary01" size="sm">確認修改</Button>
+                                <Button type="reset" variant="white" size="sm">取消</Button>
+                            </ButtonGroup>
                         </form>
 
                     </div>
