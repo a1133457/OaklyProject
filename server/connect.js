@@ -6,8 +6,9 @@ import mysql from "mysql2/promise";
 //   port: 3306,
 //   user: "admin",
 //   password: "a12345",
-//   database: "restful"
+//   database: "oakly"
 // });
+
 
 // 雅嵐
 // const pool = mysql.createPool({
@@ -19,7 +20,6 @@ import mysql from "mysql2/promise";
 //   waitForConnections: true,
 //   connectionLimit: 10,
 //   queueLimit: 0,})
-
 // export default pool;
 
 // 欣錞

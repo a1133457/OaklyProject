@@ -296,6 +296,7 @@
   height: 150px;
   background-color: var(--color-gray-100, #ededed);
   border: 1px solid var(--primary-03, #919191);
+  cursor: pointer;
 }
 
 .imgAddImg {

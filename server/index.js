@@ -6,6 +6,7 @@ import {v4 as uuidv4} from "uuid";
 import usersRouter from "./routes/users.js";
 import productsRouter from "./routes/productss.js";
 import organizersRouter from "./routes/organizers.js";
+import couponRouter from "./routes/coupons.js";
 import articleRouter from "./routes/article.js";
 import cartRouter from "./routes/cart.js";
 
@@ -28,6 +29,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(express.static('public')) //後端提供public的靜態檔案
 
 app.get("/", (req, res)=>{
   res.send("首頁");
@@ -38,7 +40,7 @@ app.use("/api/pts", productsRouter);
 app.use("/api/organizers", organizersRouter);
 app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
-// app.use("/api/coupon", coupon);
+app.use("/api/coupons", couponRouter);
 app.use("/api/article", articleRouter);
 app.use("/api/cart", cartRouter);
 
