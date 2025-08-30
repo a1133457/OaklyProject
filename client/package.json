@@ -17,6 +17,7 @@
     "sass": "^1.90.0"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "rimraf": "^6.0.1"
   }
 }

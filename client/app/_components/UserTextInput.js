@@ -6,7 +6,7 @@ export default function UserTextInput({
     hint, error,
 }) {
     return (
-        <div className="mb-3">
+        <div className="mb-4">
             <label className="form-label" htmlFor={id}>
                 {label}{required && ' *'}
             </label>
