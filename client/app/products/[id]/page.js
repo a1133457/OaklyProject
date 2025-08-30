@@ -5,11 +5,44 @@ import "@/styles/products/pid.css";
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
+import { useCart } from '@/app/contexts/CartContext.js';
+
 
 
 
 export default function PidPage({ params }) {
+  const getColorCode = (colorName) => {
+    const colorMap = {
+      '白色': '#ffffff',
+      '黑色': '#000000',
+      '原木色': '#deb887',
+      '淺灰': '#d3d3d3',
+      '深灰': '#555555',
+      '淺藍': '#add8e6',
+      '深藍': '#000080',
+      '淺綠': '#90ee90',
+      '深綠': '#006400',
+      '米黃色': '#f5f5dc',
+      // 英文顏色名稱
+      'white': '#ffffff',
+      'black': '#000000',
+      'red': '#ff0000',
+      'blue': '#0000ff',
+      'green': '#008000',
+      'yellow': '#ffff00',
+      'orange': '#ffa500',
+      'purple': '#800080',
+      'pink': '#ffc0cb',
+      'brown': '#a52a2a',
+      'gray': '#808080',
+      'grey': '#808080'
+    };
+    
+    if (!colorName) return '#cccccc';
+    return colorMap[colorName] || '#cccccc';
+  };
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -303,7 +336,7 @@ export default function PidPage({ params }) {
                 type="button"
                 className="btn view-review"
                 onClick={() => setShowModal(true)}
-                
+
 
               >
                 查看評論
@@ -315,9 +348,10 @@ export default function PidPage({ params }) {
                 tabIndex="-1"
                 aria-labelledby="exampleModalLabel"
                 aria-hidden={!showModal}
-                style={{ display: showModal ? 'block' : 'none',
+                style={{
+                  display: showModal ? 'block' : 'none',
                 }}
-                
+
               >
                 <div className="modal-dialog modal-lg modal-dialog-scrollable">
                   <div className="modal-content">
@@ -352,8 +386,8 @@ export default function PidPage({ params }) {
                 <div
                   className="modal-backdrop fade show"
                   onClick={() => setShowModal(false)}
-                  
-                  
+
+
                 ></div>
               )}
             </div>
@@ -404,7 +438,13 @@ export default function PidPage({ params }) {
 
             <div className="action-buttons">
               <button className="buy-now-btn">立即購買</button>
-              <button className="add-to-cart-btn">加入購物車</button>
+              <button
+                className="add-to-cart-btn"
+                onClick={() => {
+                  console.log('商品資料：', productData);
+                  addToCart(productData, quantity);
+                }}
+              >加入購物車</button>
             </div>
 
             {/* 更新的資訊展開區塊 */}
@@ -571,20 +611,4 @@ export default function PidPage({ params }) {
     </div>
   );
 
-  // 輔助函數：根據顏色名稱返回對應的顏色代碼
-  function getColorCode(colorName) {
-    const colorMap = {
-      '白色': '#ffffff',
-      '黑色': '#000000',
-      '原木色': '#deb887',
-      '淺灰': '#d3d3d3',
-      '深灰': '#555555',
-      '淺藍': '#add8e6',
-      '深藍': '#000080',
-      '淺綠': '#90ee90',
-      '深綠': '#006400',
-      '米黃色': '#f5f5dc'
-    };
-    return colorMap[colorName] || '#ccc';
-  }
 }

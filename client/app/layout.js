@@ -7,6 +7,8 @@ import { ArticleProvider } from "@/hooks/use-article";
 import "@/styles/globalsHui.css"
 import Header from "./_components/header";
 import Footer from "./_components/footer"
+import { CartProvider } from './contexts/CartContext.js';
+
 
 export const metadata = {
   title: "Create Next App",
@@ -30,9 +32,11 @@ export default function RootLayout({ children }) {
       </head>
       <ArticleProvider>
         <body>
+        <CartProvider>
           <Header />
           {children}
            <Footer />
+           </CartProvider>
         </body>
       </ArticleProvider>
      

@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
+import { useCart } from '@/app/contexts/CartContext';
+
 
 const MainProduct = () => {
+  
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [sortBy, setSortBy] = useState("default");
   const [viewMode, setViewMode] = useState("grid");
@@ -12,6 +15,9 @@ const MainProduct = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [filterPriceRange, setFilterPriceRange] = useState({ min: 0, max: 50000 });
+
+  
+  
 
   const sortProducts = (products, sortBy) => {
     const sortedProducts = [...products];
