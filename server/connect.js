@@ -12,8 +12,8 @@ import mysql from "mysql2/promise";
 // 雅嵐
 // const pool = mysql.createPool({
 //   host: 'localhost',
-//   user: 'yalan',
-//   password: '860212',
+//   user: 'root',
+//   password: '',
 //   database: 'product',
 //   port: 3306,
 //   waitForConnections: true,
