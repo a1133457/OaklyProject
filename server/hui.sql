@@ -223,6 +223,11 @@ INSERT INTO `user_levels` (`id`, `name`) VALUES
 (2, '原木會員'),
 (3, '森林會員');
 
+-- 2.會員假資料
+INSERT INTO user (name, birthday, email, password, phone, postcode, city, area, address, img, level_id, is_valid) VALUES
+('王小明', '1990-05-15', 'xiaoming@gmail.com', 'a12345', '0912345678', '10001', '台北市', '中正區', '忠孝東路一段123號', NULL, 1, 1),
+('李美華', '1985-12-20', 'meihua@yahoo.com.tw', 'a12345', '0923456789', '40001', '台中市', '西區', '台灣大道二段456號', NULL, 1, 1),
+('張志強', '1992-08-03', 'zhiqiang@hotmail.com', 'a12345', '0934567890', '80001', '高雄市', '前金區', '中山一路789號', NULL, 2, 1);
 
 
 --======================產品類 不是我的不是我的不是我的不是我的不是我的==========----------------
