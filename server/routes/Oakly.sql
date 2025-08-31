@@ -129,6 +129,7 @@ CREATE TABLE articles (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100),
     content VARCHAR(500),
+    author VARCHAR(20),
     article_category_id INT NOT NULL,
     published_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`article_category_id`) REFERENCES article_category (`id`)
@@ -153,7 +154,6 @@ CREATE TABLE article_tracking (
     user_id INT UNSIGNED NULL,
     event_type ENUM('view', 'like', 'share') NOT NULL,
     event_data JSON,
-    ip_address VARCHAR(50),
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (article_id) REFERENCES articles (id),
     FOREIGN KEY (user_id) REFERENCES users(id)
@@ -300,6 +300,17 @@ CREATE TABLE orders(
     user_id INT UNSIGNED NOT NULL,
     total_amount INT NOT NULL,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    -- 訂購人資訊
+	buyer_name VARCHAR(100) NOT NULL,
+    buyer_email VARCHAR(100),
+    buyer_phone VARCHAR(20),
+    
+    -- 收件人資訊
+    recipient_name VARCHAR(100) NOT NULL,
+    recipient_phone VARCHAR(20) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    address VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
