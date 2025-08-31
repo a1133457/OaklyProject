@@ -38,9 +38,9 @@ DROP TABLE coupon_level;
 CREATE TABLE coupon_level (
   id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
   coupon_id INT NOT NULL,
-  user_levels_id INT NOT NULL,
+  levels_id INT NOT NULL,
   FOREIGN KEY (coupon_id) REFERENCES coupons(id),
-  FOREIGN KEY (user_levels_id) REFERENCES  user_levels(id)
+  FOREIGN KEY (levels_id) REFERENCES  user_levels(id)
 );
 
 DROP TABLE user_coupons;
@@ -53,7 +53,7 @@ CREATE TABLE user_coupons (
   used_at DATETIME,
   expire_at DATETIME,
   status TINYINT(1) DEFAULT 0,
-  FOREIGN KEY (user_id) REFERENCES user(id),
+  FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (coupon_id) REFERENCES coupons(id)
 );
 
@@ -81,7 +81,7 @@ INSERT INTO `coupon_categories` (`id`, `coupon_id`, `category_id`) VALUES
 (8, 3, 5);
 
 -- 3.coupon_levels 會員優惠 假資料
-INSERT INTO `coupon_level` (`id`, `coupon_id`, `user_levels_id`) VALUES
+INSERT INTO `coupon_level` (`id`, `coupon_id`, `levels_id`) VALUES
 -- 三張券都適用所有會員等級
 (1, 1, 1), (2, 1, 2), (3, 1, 3),
 (4, 2, 1), (5, 2, 2), (6, 2, 3),
@@ -108,7 +108,7 @@ CREATE TABLE bookings (
     is_valid TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=有效，0=刪除',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (user_id) REFERENCES user(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (organizer_id) REFERENCES organizers(id)
 );
 
@@ -195,8 +195,9 @@ CREATE TABLE user_levels (
   name varchar(20) DEFAULT NULL
 );
 
+DROP TABLE users;
 -- 2.會員資料
-CREATE TABLE user (
+CREATE TABLE users (
   id INT(11) NOT NULL AUTO_INCREMENT,
   name VARCHAR(50) NOT NULL,
   birthday DATE DEFAULT NULL,
@@ -224,7 +225,7 @@ INSERT INTO `user_levels` (`id`, `name`) VALUES
 (3, '森林會員');
 
 -- 2.會員假資料
-INSERT INTO user (name, birthday, email, password, phone, postcode, city, area, address, img, level_id, is_valid) VALUES
+INSERT INTO users (name, birthday, email, password, phone, postcode, city, area, address, img, level_id, is_valid) VALUES
 ('王小明', '1990-05-15', 'xiaoming@gmail.com', 'a12345', '0912345678', '10001', '台北市', '中正區', '忠孝東路一段123號', NULL, 1, 1),
 ('李美華', '1985-12-20', 'meihua@yahoo.com.tw', 'a12345', '0923456789', '40001', '台中市', '西區', '台灣大道二段456號', NULL, 1, 1),
 ('張志強', '1992-08-03', 'zhiqiang@hotmail.com', 'a12345', '0934567890', '80001', '高雄市', '前金區', '中山一路789號', NULL, 2, 1);
