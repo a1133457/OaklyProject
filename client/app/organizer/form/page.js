@@ -2,6 +2,7 @@
 //react
 import { useState, useEffect, useRef } from "react";
 import { useFetch } from '@/hooks/use-fetch'
+import { useRouter } from 'next/navigation';
 
 // 針對單一頁面使用css modules技術
 import styles from "@/styles/organizer/organizer.module.css";
@@ -27,6 +28,7 @@ export default function FormPage() {
   const [note, setNote] = useState("");                 // 備註
   const [isConfirmed, setIsConfirmed] = useState(false); // 確認checkbox
   const [selectedFiles, setSelectedFiles] = useState([]); // 上傳的檔案
+  const router = useRouter();
 
   // 整理師fetch
   const organizerResult = useFetch("http://localhost:3005/api/organizers")
@@ -117,7 +119,7 @@ export default function FormPage() {
     }); //圖片檔案
 
     console.log('檔案數量:', selectedFiles.length);
-    
+
     // 送出資料
     try {
       const response = await fetch('http://localhost:3005/api/organizers/form', {
@@ -127,8 +129,8 @@ export default function FormPage() {
 
       if (response.ok) {
         const result = await response.json();
-        alert('表單提交成功！');
         console.log('提交成功:', result);
+        router.push('/organizer/form/success'); // 導向成功頁面
       } else {
         alert('提交失敗，請稍後再試');
       }
