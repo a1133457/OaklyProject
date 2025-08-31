@@ -1,6 +1,44 @@
-.container {
+/* .container {
     color: #919191;
     padding: 20px 0;
+} */
+
+.userContainer {
+    color: #919191;
+    /* 內容最大寬，但不超出視窗 */
+    max-width: min(1440px, 100%);
+    margin-inline: auto; /* 置中 */
+    /* 上方距離 */
+    padding-block: 40px; 
+    /* RWD 左右留白：16px ~ 40px，會隨螢幕寬度平滑變化 */
+    padding-inline: clamp(16px, 4vw, 60px);
+}
+
+/* 整體左右佈局：用 flex 取代 row/col */
+.layout {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 60px;
+}
+
+/* Sidebar：固定寬度 + 與表單間距（依設計稿調整數值） */
+.sidebarWrapper {
+    
+    /* padding: 60px; */
+    /* 側欄固定 220px；想更寬就改 */
+    flex: 0 0 256px;
+    /* 中間白邊距，設計稿看起來約 48~60px */
+    /* margin-right: 0px; */
+}
+
+.content {
+    /* 在 flex 版型下吃掉剩餘空間 */
+    flex: 1;
+    /* 允許內容在需要時縮，避免水平溢出 */
+    min-width: 0;
+    /* 右邊空白處 */
+    /* padding-right: 60px ; */
 }
 
 .avatarUpload {
@@ -13,11 +51,11 @@
 }
 
 .avatarImg {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid #ccc;
+    border: 1px solid #ccc;
 }
 
 /* 避免 CSS Modules 的「pure selector」錯誤：加上本地類名當前綴 */
@@ -25,10 +63,12 @@
     display: none;
 }
 
+
+
 .formButtons {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 12px;
     margin-top: 30px;
 }
 
@@ -52,12 +92,12 @@
     background-color: #f0f0f0;
 }
 
-.itemRow {
+.favoritesRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 0;
-    border-bottom: 1px solid #ddd;
+    padding: 20px;
+    border-bottom: 1px solid #9db8af;
 }
 
 .productName,
@@ -76,43 +116,110 @@
     color: #d4a373;
 }
 
+
+/* 收藏文章專區 */
+
 .bookmarkRow {
     display: flex;
     gap: 15px;
-    align-items: flex-start;
+    align-items: stretch;
+    /* 讓右側 .bookmarkBody 拉伸到整列高度 */
     padding: 20px 0;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #9db8af;
 }
 
+/* 右側文字容器：直向 flex，讓 footer 吸底 */
+.bookmarkBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+    /* 確保有足夠高度把 footer 推到底（對齊縮圖高） */
+}
+
+.bookmarkIcon {
+    width: 19px;
+    height: 25px;
+    cursor: pointer;
+    align-self: center;
+    /* 單獨置中 */
+    transition: transform .1s ease;
+}
+
+.bookmarkIcon:active {
+    transform: scale(0.92);
+}
+
+
 .bookmarkTitle {
+    color: #88a29a;
     font-weight: 700;
     font-size: 1rem;
-    margin-bottom: .25rem;
+    margin-bottom: 0.25rem;
+}
+
+.bookmark:hover {
+    color: #d4a373;
 }
 
 .bookmarkText {
-    font-size: .875rem;
-    color: #555;
-    margin-bottom: .5rem;
+    font-size: 0.875rem;
+    color: #919191;
+    margin-bottom: 0.5rem;
+    display:
+        -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    /* 顯示最多 3 行，超出就省略 */
+    overflow: hidden;
+    line-clamp: 3;
+    /* 標準屬性（實驗中，Firefox 將支援） */
 }
 
 .bookmarkFooter {
     display: flex;
     justify-content: space-between;
     font-size: .8rem;
+    margin-top: auto;
+    /* 把 footer 推到底 */
 }
 
 .bookmarkLink {
     text-decoration: none;
     color: #d4a373;
+    font-weight: 500;
+
+    display: inline-flex;
+    /* 讓文字與 icon 排成一列 */
+    align-items: center;
+    /* 垂直置中 */
+    gap: 4px;
+    /* 文字與 icon 間距 */
 }
 
 .bookmarkLink:hover {
     text-decoration: underline;
 }
 
-.bookmarkIcon {
-    color: #d4a373;
-    align-self: center;
-    font-size: 1.2rem;
+
+
+/* 手機版：側欄改到上面、去掉分隔線與間距，表單全寬 */
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;
+    }
+
+    .sidebarWrapper {
+        margin-right: 0;
+        margin-bottom: 20px;
+        flex-basis: auto;
+        border-right: none;
+        padding-right: 0;
+    }
+
+    .formContainer {
+        max-width: 100%;
+        padding: 0 15px;
+        /* 手機左右留白 */
+    }
 }

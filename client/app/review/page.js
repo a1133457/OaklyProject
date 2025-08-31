@@ -73,7 +73,6 @@ const Review = () => {
       <section className="review-list">
         <div className="review-item">
           <div className="user-info">
-            <img src="https://via.placeholder.com/40x40" alt="用戶頭像" className="user-avatar" />
             <div className="user-details">
               <div className="user-name">安妮</div>
               <div className="review-time">一個月前</div>
@@ -104,7 +103,6 @@ const Review = () => {
 
         <div className="review-item">
           <div className="user-info">
-            <img src="https://via.placeholder.com/40x40" alt="用戶頭像" className="user-avatar" />
             <div className="user-details">
               <div className="user-name">張大名</div>
               <div className="review-time">二個月前</div>
@@ -132,7 +130,6 @@ const Review = () => {
 
         <div className="review-item">
           <div className="user-info">
-            <img src="https://via.placeholder.com/40x40" alt="用戶頭像" className="user-avatar" />
             <div className="user-details">
               <div className="user-name">琪琪</div>
               <div className="review-time">三個月前</div>

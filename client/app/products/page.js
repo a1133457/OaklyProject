@@ -1,87 +1,190 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
+import { Link } from "react-router-dom";
 
 const MainProduct = () => {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [sortBy, setSortBy] = useState("default");
   const [viewMode, setViewMode] = useState("grid");
+  const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [filterPriceRange, setFilterPriceRange] = useState({ min: 0, max: 50000 });
 
-  const products = [
-    {
-      id: 1,
-      name: "TJENA 邊桌",
-      price: 999,
-      category: "furniture",
-    },
-    {
-      id: 2,
-      name: "BAGGSDOA 沙發",
-      price: 1000,
-      category: "furniture",
-    },
-    {
-      id: 3,
-      name: "邊桌 71x50 公分",
-      price: 500,
-      category: "furniture",
-    },
-    {
-      id: 4,
-      name: "CLABOW 燈具",
-      price: 800,
-      category: "lighting",
-    },
-    {
-      id: 5,
-      name: "GOREN 椅子",
-      price: 600,
-      category: "furniture",
-    },
-    {
-      id: 6,
-      name: "SOMNULI 裝飾品",
-      price: 300,
-      category: "decoration",
-    },
-    {
-      id: 7,
-      name: "TJENA 書架",
-      price: 1200,
-      category: "furniture",
-    },
-    {
-      id: 8,
-      name: "CLABOW 地毯",
-      price: 400,
-      category: "textile",
-    },
-    {
-      id: 9,
-      name: "GOREN 茶几",
-      price: 1500,
-      category: "furniture",
-    },
-    {
-      id: 10,
-      name: "SOMNULI 抱枕",
-      price: 200,
-      category: "textile",
-    },
-    {
-      id: 11,
-      name: "TJENA 衣櫃",
-      price: 2500,
-      category: "furniture",
-    },
-    {
-      id: 12,
-      name: "CLABOW 花瓶",
-      price: 350,
-      category: "decoration",
-    },
-  ];
+  const sortProducts = (products, sortBy) => {
+    const sortedProducts = [...products];
+
+    switch (sortBy) {
+      case 'price_asc':
+        return sortedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+      case 'price_desc':
+        return sortedProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
+      case 'created_asc':
+        return sortedProducts.sort((a, b) => new Date(a.create_at || 0) - new Date(b.create_at || 0));
+      case 'created_desc':
+        return sortedProducts.sort((a, b) => new Date(b.create_at || 0) - new Date(a.create_at || 0));
+      default:
+        return sortedProducts;
+    }
+  };
+
+  // 修改篩選選項點擊處理
+  const handleSortChange = (newSortBy) => {
+    setSortBy(newSortBy);
+    setCurrentPage(1); // 重置到第一頁
+  };
+
+  const handleProductClick = (productId) => {
+    window.location.href = `/products/${productId}`;
+  };
+  // 處理每頁顯示數量變更
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(parseInt(e.target.value));
+    setCurrentPage(1); // 重置到第一頁
+  };
+
+
+
+  // 計算當前頁面要顯示的商品
+  const getCurrentPageProducts = () => {
+    const priceFilteredProducts = products.filter(product => {
+      const price = product.price || 0;
+      return price >= filterPriceRange.min && price <= filterPriceRange.max;
+    });
+    const sortedProducts = sortProducts(products, sortBy);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedProducts.slice(startIndex, endIndex);
+  };
+  const getFilteredProducts = () => {
+    return products.filter(product => {
+      const price = product.price || 0;
+      return price >= filterPriceRange.min && price <= filterPriceRange.max;
+    });
+  };
+
+  const filteredProducts = getFilteredProducts();
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+
+
+  // 處理頁面切換
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      // 滾動到商品區域頂部
+      document.querySelector('.products-grid')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
+  // 生成分頁按鈕
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+
+    // 計算顯示範圍
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // 調整起始頁
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // 前一頁按鈕
+    buttons.push(
+      <button
+        key="prev"
+        className={`page-btn prev ${currentPage === 1 ? 'disabled' : ''}`}
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <i className="fas fa-chevron-left"></i>
+      </button>
+    );
+
+    // 第一頁
+    if (startPage > 1) {
+      buttons.push(
+        <button
+          key={1}
+          className="page-btn"
+          onClick={() => handlePageChange(1)}
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        buttons.push(<span key="ellipsis1" className="pagination-ellipsis">...</span>);
+      }
+    }
+
+    // 中間頁面
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          className={`page-btn ${currentPage === i ? 'active' : ''}`}
+          onClick={() => handlePageChange(i)}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // 最後一頁
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        buttons.push(<span key="ellipsis2" className="pagination-ellipsis">...</span>);
+      }
+      buttons.push(
+        <button
+          key={totalPages}
+          className="page-btn"
+          onClick={() => handlePageChange(totalPages)}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    // 下一頁按鈕
+    buttons.push(
+      <button
+        key="next"
+        className={`page-btn next ${currentPage === totalPages ? 'disabled' : ''}`}
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <i className="fas fa-chevron-right"></i>
+      </button>
+    );
+
+    return buttons;
+  };
+
+  //產品api
+  useEffect(() => {
+    fetch("http://localhost:3005/api/products")
+      .then((res) => res.json())
+      .then((json) => {
+        console.log(json);
+        setProducts(Array.isArray(json) ? json : []);
+      })
+      .catch((err) => {
+        console.error("產品 API 請求錯誤：", err);
+      });
+  }, []);
+
+  const currentProducts = getCurrentPageProducts();
+
+
+
 
   return (
     <div className="main-product-page">
@@ -113,41 +216,93 @@ const MainProduct = () => {
       <div className="sub-nav">
         <div className="sub-nav-links">
           <a href="#" className="sub-nav-link">
-            專屬整理師諮詢
-          </a>
-
-          <a href="#" className="sub-nav-link">
             最新商品
           </a>
           <a href="#" className="sub-nav-link">
             熱賣
           </a>
           <div className="dropdown hover-dropdown">
-            <a
-              href="#"
+            <div
               className="sub-nav-link dropdown-toggle"
-              data-bs-toggle="dropdown"
+              // data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              家具
-            </a>
+              空間<i className="fas fa-chevron-down  fa-sm"></i>
+            </div>
             <div className="dropdown-menu dropdown-megamenu">
               <div className="megamenu-column">
                 <h6 className="dropdown-header">客廳</h6>
                 <a className="dropdown-item" href="#">
-                  桌子
+                  邊桌
                 </a>
                 <a className="dropdown-item" href="#">
-                  椅子
+                  單椅/單人沙發
+                </a>
+                <a className="dropdown-item" href="#">
+                  茶几
+                </a>
+                <a className="dropdown-item" href="#">
+                  書櫃 / 書架
+                </a>
+                <a className="dropdown-item" href="#">
+                  書桌 / 書桌椅
+                </a>
+                <a className="dropdown-item" href="#">
+                  邊櫃 / 收納櫃
                 </a>
               </div>
               <div className="megamenu-column">
                 <h6 className="dropdown-header">廚房</h6>
                 <a className="dropdown-item" href="#">
-                  椅子
+                  實木餐桌
                 </a>
                 <a className="dropdown-item" href="#">
-                  桌子
+                  餐椅 / 椅子
+                </a>
+                <a className="dropdown-item" href="#">
+                  吧台桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  吧台椅
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">臥室</h6>
+                <a className="dropdown-item" href="#">
+                  床架
+                </a>
+                <a className="dropdown-item" href="#">
+                  床邊桌
+                </a>
+                <a className="dropdown-item" href="#">
+                  化妝台
+                </a>
+                <a className="dropdown-item" href="#">
+                  全身鏡 / 鏡子
+                </a>
+                <a className="dropdown-item" href="#">
+                  衣櫃 / 衣架
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">兒童房</h6>
+                <a className="dropdown-item" href="#">
+                  桌椅組
+                </a>
+                <a className="dropdown-item" href="#">
+                  衣櫃
+                </a>
+                <a className="dropdown-item" href="#">
+                  床架
+                </a>
+                <a className="dropdown-item" href="#">
+                  收納櫃
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <h6 className="dropdown-header">收納空間</h6>
+                <a className="dropdown-item" href="#">
+                  收納盒 / 收納箱
                 </a>
               </div>
             </div>
@@ -204,10 +359,13 @@ const MainProduct = () => {
             </svg>
           </div>
           <div className="per-page-select">
-            <select className="per-page">
-              <option>每頁顯示 12 個</option>
-              <option>每頁顯示 24 個</option>
-              <option>每頁顯示 48 個</option>
+            <select
+              className="per-page-selection"
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+            >   <option value={12}>每頁顯示 12 個</option>
+              <option value={24}>每頁顯示 24 個</option>
+              <option value={48}>每頁顯示 48 個</option>
             </select>
           </div>
         </div>
@@ -220,22 +378,45 @@ const MainProduct = () => {
                 <div className="filter-section">
                   <h3 className="filter-title">篩選</h3>
                   <div className="filter-options">
-                    <div className="filter-option">商品類別</div>
-                    <div className="filter-option">售價 (由低到高)</div>
-                    <div className="filter-option">售價 (由高到低)</div>
-                    <div className="filter-option">上架時間 (由低到高)</div>
-                    <div className="filter-option">上架時間 (由高到低)</div>
+                    <div
+                      className={`filter-option ${sortBy === 'price_asc' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('price_asc')}
+                    >售價 (由低到高)</div>
+                    <div
+                      className={`filter-option ${sortBy === 'price_desc' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('price_desc')}
+                    >售價 (由高到低)</div>
+                    <div
+                      className={`filter-option ${sortBy === 'created_asc' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('created_asc')}
+                    >上架時間 (由低到高)</div>
+                    <div
+                      className={`filter-option ${sortBy === 'created_desc' ? 'active' : ''}`}
+                      onClick={() => handleSortChange('created_desc')}
+                    >上架時間 (由高到低)</div>
                   </div>
                 </div>
+
 
                 {/* 價格 */}
                 <div className="filter-section">
                   <h3 className="filter-title">價格</h3>
                   <div className="price-range">
                     <div className="price-slider">
-                      <input type="range" min="0" max="9999" />
+                      <input
+                        type="range"
+                        min="0"
+                        max="50000"
+                        step="1000"
+                        value={filterPriceRange.max}
+                        onChange={(e) => {
+                          const newMax = parseInt(e.target.value);
+                          setFilterPriceRange({ min: 0, max: newMax });
+                          setCurrentPage(1);
+                        }}
+                      />
                     </div>
-                    <span>NT$ 9999</span>
+                    <span>NT$ 0 - NT$ {filterPriceRange.max.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -270,7 +451,7 @@ const MainProduct = () => {
                 <div className="filter-section">
                   <h3 className="filter-title">材質</h3>
                   <div className="filter-options">
-                    {["棉", "麻", "絲", "羊毛", "聚酯纖維", "其他"].map(
+                    {["金屬", "木頭", "塑膠", "皮革", "布料", "其他"].map(
                       (material) => (
                         <div key={material} className="option">
                           <input type="checkbox" />
@@ -281,40 +462,26 @@ const MainProduct = () => {
                   </div>
                 </div>
 
-                {/* 優惠 */}
+                {/* 系列 */}
                 <div className="filter-section">
-                  <h3 className="filter-title">優惠</h3>
+                  <h3 className="filter-title">系列</h3>
                   <div className="filter-options">
-                    <div className="option">
-                      <input type="checkbox" />
-                      <span>折扣商品</span>
-                    </div>
-                    <div className="option">
-                      <input type="checkbox" />
-                      <span>免運商品</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 品牌 */}
-                <div className="filter-section">
-                  <h3 className="filter-title">品牌</h3>
-                  <div className="filter-options">
-                    {["SOMNULI", "TJENA", "CLABOW", "GOREN", "其他"].map(
-                      (brand) => (
-                        <div key={brand} className="option">
-                          <input type="checkbox" />
-                          <span>{brand}</span>
-                        </div>
-                      )
-                    )}
+                    {["SOMNULI", "TJENA", "CLABOW", "GOREN"].map((brand) => (
+                      <div key={brand} className="option">
+                        <input type="checkbox" />
+                        <span>{brand}</span>
+                      </div>
+                    ))}
+                    <span>更多</span>
                   </div>
                 </div>
               </div>
 
               {/* 篩選按鈕 */}
               <div className="filter-buttons">
-                <button className="filter-btn">套用篩選</button>
+                <button className="filter-btn">
+                  <img src="img/lan/filter2.svg"></img>套用篩選
+                </button>
                 <button className="reset-btn">清除</button>
               </div>
             </aside>
@@ -323,27 +490,28 @@ const MainProduct = () => {
 
             <main className="products-section">
               <div className="per-page-select">
-                <select className="per-page-selection">
-                  <option>每頁顯示 12 個</option>
-                  <option>每頁顯示 24 個</option>
-                  <option>每頁顯示 48 個</option>
+                <select
+                  className="per-page-selection"
+                  value={itemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                >      <option value={12}>每頁顯示 12 個</option>
+                  <option value={24}>每頁顯示 24 個</option>
+                  <option value={48}>每頁顯示 48 個</option>
                 </select>
               </div>
               <div className="view-toggle-container">
                 <div className="view-toggle-title">家具</div>
                 <div className="view-toggle">
                   <button
-                    className={`view-btn ${
-                      viewMode === "grid" ? "active" : ""
-                    }`}
+                    className={`view-btn ${viewMode === "grid" ? "active" : ""
+                      }`}
                     onClick={() => setViewMode("grid")}
                   >
                     <img src="img/lan/menu.png" alt="list" />
                   </button>
                   <button
-                    className={`view-btn ${
-                      viewMode === "list" ? "active" : ""
-                    }`}
+                    className={`view-btn ${viewMode === "list" ? "active" : ""
+                      }`}
                     onClick={() => setViewMode("list")}
                   >
                     <img src="img/lan/lines.png" alt="list" />
@@ -351,12 +519,22 @@ const MainProduct = () => {
                 </div>
               </div>
               {/* 商品網格 */}
+
               <div className={`products-grid ${viewMode}`}>
-                {products.map((product) => (
-                  <div key={product.id} className="productcard">
-                    <span class="badge-new">新品</span>
+                {currentProducts.map((product) => (
+                  <div key={product.id}
+                    className="productcard"
+                    onClick={() => handleProductClick(product.id)}
+                    style={{ cursor: 'pointer' }}>
+                    <span className="badge-new">新品</span>
                     <div className="image">
-                      <img src="/img/lan/1.webp" alt="product" />
+                      {product.images.length > 0 && (
+                        <img
+                          src={`http://localhost:3005${product.images[0]}`}
+                          alt={product.name}
+                          style={{ maxWidth: "200px" }}
+                        />
+                      )}
                     </div>
                     <div className="info">
                       <h3 className="name">{product.name}</h3>
@@ -365,20 +543,17 @@ const MainProduct = () => {
                   </div>
                 ))}
               </div>
+              <div className="page-info">
+              顯示 {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)} - {Math.min(currentPage * itemsPerPage, filteredProducts.length)} 項，共 {filteredProducts.length} 項
+              </div>
 
               {/* 分頁 */}
-              <div className="pagination">
-                <button className="page-btn prev">
-                  <i className="fas fa-chevron-left"></i>
-                </button>
-                <button className="page-btn active">1</button>
-                <button className="page-btn">2</button>
-                <button className="page-btn">3</button>
-                <button className="page-btn">4</button>
-                <button className="page-btn next">
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-              </div>
+              {totalPages > 1 && (
+                <div className="pagination">
+                  {renderPaginationButtons()}
+
+                </div>
+              )}
             </main>
           </div>
         </div>

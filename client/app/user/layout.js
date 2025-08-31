@@ -1,5 +1,7 @@
 // 導入組裝的元件
 // import Sidebar from './_components/layout/sidebar'
+import Sidebar from './_components/sidebar'
+import styles from './user.module.css'
 
 export const metadata = {
   title: '會員中心',
@@ -9,8 +11,19 @@ export const metadata = {
 export default function AdminLayout({ children }) {
   return (
     <>
-      {/* <Sidebar /> */}
-      {children}
+      {/* <div className={`container-fluid ${styles.userContainer}`}>
+        <div className={styles.layout}>
+          <div className={styles.sidebarWrapper}>
+            <Sidebar />
+          </div>
+          <div className={styles.content}>
+            {children}
+          </div>
+        </div>
+      </div> */}
+
+
+      <div>{children}</div>
     </>
   )
 }
