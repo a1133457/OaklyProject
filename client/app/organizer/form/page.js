@@ -47,8 +47,22 @@ export default function FormPage() {
   // 圖片上傳
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
+    //限制4張
+    if(files.length > 4){
+      alert('最多只能上傳4張圖片!');
+      e.target.value ="";
+      return;
+    }
     setSelectedFiles(files);
   };
+
+  //日期選擇
+  const getMinDate = () => {
+    const today = new Date();
+    const minDate = new Date(today)
+    minDate.setDate(today.getDate() + 14)
+    return minDate.toISOString().split('T')[0]
+  }
 
   // ===(測試insert預約表單)之後要改獲取當前使用者的登入資料status!!!!!!!!!
   // 使用者 fetch
@@ -132,7 +146,7 @@ export default function FormPage() {
         console.log('提交成功:', result);
         router.push('/organizer/form/success'); // 導向成功頁面
       } else {
-        alert('提交失敗，請稍後再試');
+        alert('表單請填寫完整');
       }
     } catch (error) {
       console.error('提交錯誤:', error);
@@ -301,14 +315,15 @@ export default function FormPage() {
                   </select>
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03 label700">
-                    希望服務日期*
+                  <label className="form-label t-primary03">
+                    <span className="label700">希望服務日期*</span>（為確保最佳服務品質，請選擇2週後的日期）
                   </label>
                   <input
                     type="date"
                     id="date"
                     name="date"
                     className="form-control"
+                    min={getMinDate()}
                     value={serviceDate}
                     onChange={(e) => setServiceDate(e.target.value)}
                     required
@@ -332,11 +347,24 @@ export default function FormPage() {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                   />
-                  <div
-                    onClick={handleDivClick}
-                    className={`d-flex justify-content-center align-items-center ${styles.imgAdd}`}
-                  >
-                    <div className={styles.imgAddImg}></div>
+                  <div className="d-flex gap-3 flex-wrap">
+                    <div
+                      onClick={handleDivClick}
+                      className={`d-flex justify-content-center align-items-center ${styles.imgAdd}`}
+                    >
+                      <div className={styles.imgAddImg}></div>
+                    </div>
+
+                    {/* 預覽圖片們 */}
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className="position-relative">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`預覽圖片 ${index + 1}`}
+                          className={styles.previewImg}
+                        />
+                      </div>
+                    ))}
                   </div>
                   <p className="t-primary03 mb-xl mt-sm">
                     可上傳 1～4 張圖片，協助我們了解您的空間狀況
