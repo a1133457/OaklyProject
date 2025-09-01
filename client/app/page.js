@@ -1,47 +1,47 @@
-'use client'
+"use client";
 
 // 針對單一頁面使用css modules技術
-import "@/styles/globalsHui.css"
-import styles from '@/styles/index/index.module.css'
-import "@/styles/btnReset/btnReset.css"
+import "@/styles/globalsHui.css";
+import styles from "@/styles/index/index.module.css";
+import "@/styles/btnReset/btnReset.css";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 // 靜態圖片
-import spaceImage from '@/public/img/hui/space/high-angle-desk-arrangement.jpg'
-import organizerImage from '@/public/img/hui/space/ai-generated-modern-styled-entryway-crop.jpg'
-import organizerImageLg from '@/public/img/hui/space/ai-generated-modern-styled-entryway.jpg'
+import spaceImage from "@/public/img/hui/space/high-angle-desk-arrangement.jpg";
+import organizerImage from "@/public/img/hui/space/ai-generated-modern-styled-entryway-crop.jpg";
+import organizerImageLg from "@/public/img/hui/space/ai-generated-modern-styled-entryway.jpg";
 // 自訂組件(全域)
-import GreenBorderButton from '@/app/_components/GreenBorderButton'
-import TabItem from '@/app/_components/TabItem'
+import GreenBorderButton from "@/app/_components/GreenBorderButton";
+import TabItem from "@/app/_components/TabItem";
 // 自訂組件(首頁)
-import ProductCard from './_components/index/ProductCard'
-import ArticleCard from './_components/index/ArticleCard'
-import CarouselHead from './_components/index/CarouselHead'
+import ProductCard from "./_components/index/ProductCard";
+import ArticleCard from "./_components/index/ArticleCard";
+import CarouselHead from "./_components/index/CarouselHead";
 
 export default function IndexPage(props) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [scrollLeft, setScrollLeft] = useState(0)
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const handleMouseDown = (e) => {
-    setIsDragging(true)
-    setStartX(e.pageX - e.currentTarget.offsetLeft)
-    setScrollLeft(e.currentTarget.scrollLeft)
-  }
+    setIsDragging(true);
+    setStartX(e.pageX - e.currentTarget.offsetLeft);
+    setScrollLeft(e.currentTarget.scrollLeft);
+  };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return
-    e.preventDefault()
-    const x = e.pageX - e.currentTarget.offsetLeft
-    const walk = (x - startX) * 1 // 滑動速度倍數
-    e.currentTarget.scrollLeft = scrollLeft - walk
-  }
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - e.currentTarget.offsetLeft;
+    const walk = (x - startX) * 1; // 滑動速度倍數
+    e.currentTarget.scrollLeft = scrollLeft - walk;
+  };
 
   const handleMouseUp = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   return (
     <>
@@ -231,7 +231,9 @@ export default function IndexPage(props) {
                   </p>
                 </div>
                 <div className="d-flex justify-content-center justify-content-lg-start">
-                  <GreenBorderButton>前往優惠專區</GreenBorderButton>
+                  <Link href="/coupon">
+                    <GreenBorderButton>前往優惠專區</GreenBorderButton>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -281,7 +283,9 @@ export default function IndexPage(props) {
                     </div>
                   </div>
                 </div>
-                <GreenBorderButton>認識空間整理師</GreenBorderButton>
+                <Link href="/organizer">
+                  <GreenBorderButton>認識空間整理師</GreenBorderButton>
+                </Link>
               </div>
 
               <Image
@@ -319,42 +323,42 @@ export default function IndexPage(props) {
               title="餐桌就是生活緩衝區"
               content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
               date="2025 / 7 / 2"
-            />{' '}
+            />{" "}
             <ArticleCard
               tag="#餐廳空間 #生活節奏"
               img="/img/hui/space/pexels-pixabay-358572.jpg"
               title="餐桌就是生活緩衝區"
               content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
               date="2025 / 7 / 2"
-            />{' '}
+            />{" "}
             <ArticleCard
               tag="#餐廳空間 #生活節奏"
               img="/img/hui/space/pexels-pixabay-358572.jpg"
               title="餐桌就是生活緩衝區"
               content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
               date="2025 / 7 / 2"
-            />{' '}
+            />{" "}
             <ArticleCard
               tag="#餐廳空間 #生活節奏"
               img="/img/hui/space/pexels-pixabay-358572.jpg"
               title="餐桌就是生活緩衝區"
               content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
               date="2025 / 7 / 2"
-            />{' '}
+            />{" "}
             <ArticleCard
               tag="#餐廳空間 #生活節奏"
               img="/img/hui/space/pexels-pixabay-358572.jpg"
               title="餐桌就是生活緩衝區"
               content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
               date="2025 / 7 / 2"
-            />{' '}
+            />{" "}
             <ArticleCard
               tag="#餐廳空間 #生活節奏"
               img="/img/hui/space/pexels-pixabay-358572.jpg"
               title="餐桌就是生活緩衝區"
               content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
               date="2025 / 7 / 2"
-            />{' '}
+            />{" "}
             <ArticleCard
               tag="#餐廳空間 #生活節奏"
               img="/img/hui/space/pexels-pixabay-358572.jpg"
@@ -363,9 +367,11 @@ export default function IndexPage(props) {
               date="2025 / 7 / 2"
             />
           </div>
-          <GreenBorderButton>想看更多文章</GreenBorderButton>
+          <Link href="/article">
+            <GreenBorderButton>想看更多文章</GreenBorderButton>
+          </Link>
         </div>
       </section>
     </>
-  )
+  );
 }

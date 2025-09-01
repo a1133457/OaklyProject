@@ -1,4 +1,7 @@
 'use client'
+import { useState, useEffect, useRef } from "react";
+import { useFetch } from '@/hooks/use-fetch'
+import { useRouter } from 'next/navigation';
 //CSS
 import styles from '@/styles/userCoupon/userCoupon.module.css'
 // 自訂組件(全域)
@@ -6,6 +9,10 @@ import TabItem from '@/app/_components/TabItem'
 // 自訂組件 (專用)
 import CanUseCoupon from './_components/CanUseCoupon'
 import UsedCoupon from './_components/UsedCoupon'
+
+
+
+
 
 export default function UserCouponPage() {
   return (
@@ -21,7 +28,7 @@ export default function UserCouponPage() {
             <div className={`btn ${styles.brownBtn}`}>查看期間限定優惠券</div>
           </div>
 
-          <div className="d-flex flex-column gap-lg align-items-center">
+          <div className="d-flex flex-wrap gap-lg align-items-xl-start align-items-center">
             <CanUseCoupon
               tag="收納用品適用"
               name="期間限定優惠券"

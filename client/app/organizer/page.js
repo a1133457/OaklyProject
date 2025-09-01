@@ -6,6 +6,7 @@ import styles from '@/styles/organizer/organizer.module.css'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useFetch } from '@/hooks/use-fetch'
+import { useRouter } from 'next/navigation'
 
 // 靜態圖片
 import spaceImage from '@/public/img/hui/space/2148857489.jpg'
@@ -26,6 +27,8 @@ export default function CouponPage() {
   const organizers = data?.data || []  // 取得 data.data，沒資料就用空陣列
   if (error) return <div>發生錯誤: {error.message}</div>
 
+
+const router = useRouter()
 
   return (
     <>
@@ -199,7 +202,9 @@ export default function CouponPage() {
                     只要留下你的需求，我們將由專業空間整理師親自與你聯繫，了解你的空間困擾，並安排一場專屬於你的整理諮詢
                   </p>
                 </div>
-                <GreenBorderButton>立即預約諮詢</GreenBorderButton>
+                <GreenBorderButton
+                onClick={()=> router.push("organizer/form")}
+                >立即預約諮詢</GreenBorderButton>
               </div>
             </div>
           </div>
