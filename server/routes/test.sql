@@ -94,3 +94,21 @@ GROUP BY
     a.author,
     DATE(a.published_date),
     ac.name
+
+    -- order
+    SELECT 
+            o.id AS order_id,
+            o.order_number,
+            o.total_amount,
+            o.create_at,
+            oi.product_id,
+            oi.quantity,
+            oi.price,
+            oi.size,
+            oi.color,
+            oi.material
+        FROM orders o
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+        WHERE o.user_id = 1
+        ORDER BY o.create_at DESC, oi.id ASC;
+

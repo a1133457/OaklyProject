@@ -1,6 +1,10 @@
--- SET FOREIGN_KEY_CHECKS = 0;
+use oakly;
+
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- SET FOREIGN_KEY_CHECKS = 1;
+
+drop table users;
 
 -- 會員
 CREATE TABLE IF NOT EXISTS users (
@@ -300,13 +304,11 @@ CREATE TABLE orders(
     user_id INT UNSIGNED NOT NULL,
     total_amount INT NOT NULL,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    
-    -- 訂購人資訊
+        -- 訂購人資訊
 	buyer_name VARCHAR(100) NOT NULL,
     buyer_email VARCHAR(100),
     buyer_phone VARCHAR(20),
-    
-    -- 收件人資訊
+        -- 收件人資訊
     recipient_name VARCHAR(100) NOT NULL,
     recipient_phone VARCHAR(20) NOT NULL,
     postal_code VARCHAR(20) NOT NULL,

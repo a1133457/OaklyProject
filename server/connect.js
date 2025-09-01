@@ -1,13 +1,13 @@
 import mysql from "mysql2/promise";
 
 // 學校電腦
-// const connection = mysql.createPool({
-//   host: "localhost",
-//   port: 3306,
-//   user: "admin",
-//   password: "a12345",
-//   database: "oakly"
-// });
+const connection = mysql.createPool({
+  host: "localhost",
+  port: 3306,
+  user: "admin",
+  password: "a12345",
+  database: "oakly"
+});
 
 
 // 雅嵐
@@ -23,12 +23,12 @@ import mysql from "mysql2/promise";
 // export default pool;
 
 // 欣錞
-const connection = mysql.createPool({
-  host: "localhost",
-  port: 3306,
-  user: "root",
-  password: "1234",
-  database: "oakly"
-});
+// const connection = mysql.createPool({
+//   host: "localhost",
+//   port: 3306,
+//   user: "root",
+//   password: "1234",
+//   database: "oakly"
+// });
 
 export default connection;

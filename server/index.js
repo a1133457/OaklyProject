@@ -8,7 +8,7 @@ import productsRouter from "./routes/productss.js";
 import organizersRouter from "./routes/organizers.js";
 import couponRouter from "./routes/coupons.js";
 import articleRouter from "./routes/article.js";
-import cartRouter from "./routes/cart.js";
+import orderRouter from "./routes/order.js";
 
 // 設定區
 const upload = multer();
@@ -42,7 +42,7 @@ app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
 app.use("/api/coupons", couponRouter);
 app.use("/api/article", articleRouter);
-app.use("/api/cart", cartRouter);
+app.use("/api/order", orderRouter);
 
 
 app.listen(3005, ()=>{

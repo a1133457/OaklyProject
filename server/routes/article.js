@@ -400,3 +400,5 @@ router.get("/stats/shared", async (req, res) => {
         });
     }
 })
+
+export default router;
