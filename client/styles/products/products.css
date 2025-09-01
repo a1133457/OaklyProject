@@ -437,7 +437,7 @@ span {
   cursor: pointer;
   border: 2px solid transparent;
   transition: border-color 0.3s ease;
-  border: 1px solid #ededed;
+  border: 2px solid #ddd;
 
 }
 

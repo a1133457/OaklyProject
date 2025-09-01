@@ -165,7 +165,7 @@ const MainProduct = () => {
 
     console.log("selectedFilters:", selectedFilters);
     console.log("filterPriceRange:", filterPriceRange);
-    return products.filter(product => {
+    const filtered = products.filter(product => {
       const price = product.price || 0;
       const priceMatch = price >= filterPriceRange.min && price <= filterPriceRange.max;
       console.log(`\n检查商品: ${product.name} (ID: ${product.id})`);
@@ -194,12 +194,13 @@ const MainProduct = () => {
       console.log(`  系列: ${product.style}, 篩選条件: [${selectedFilters.series}], 匹配: ${seriesMatch}`);
 
 
-      const  finalMatch = priceMatch && colorMatch && materialMatch && seriesMatch;
-      console.log(`  最终结果: ${finalMatch}`);
-      return finalMatch;
-
-
+      return priceMatch && colorMatch && materialMatch && seriesMatch;
+     
     });
+    console.log("筛选结果:", filtered.length, "个商品");
+    console.log("商品列表:", filtered.map(p => p.name));
+    
+    return filtered;
   };
 
   const filteredProducts = getFilteredProducts();
