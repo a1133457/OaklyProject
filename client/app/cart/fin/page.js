@@ -39,13 +39,11 @@ export default function CartFinPage() {
                                         <h6>成立時間</h6>
                                         <h6>付款狀態</h6>
                                         <h6>付款方式</h6>
-                                        <h6>配送方式</h6>
                                     </div>
                                     <div className="info-2 pc">
                                         <p>2025-08-10 15:23</p>
                                         <p>已付款</p>
                                         <p>信用卡</p>
-                                        <p>7-ELEVEN 取貨</p>
                                     </div>
                                 </div>
                             </div>

@@ -9,7 +9,7 @@ import organizersRouter from "./routes/organizers.js";
 import couponRouter from "./routes/coupons.js";
 import userCouponRouter from "./routes/userCoupons.js";
 import articleRouter from "./routes/article.js";
-import cartRouter from "./routes/cart.js";
+import orderRouter from "./routes/order.js";
 
 // 設定區
 const upload = multer();
@@ -45,6 +45,7 @@ app.use("/api/coupons", couponRouter);
 app.use("/api/article", articleRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/user/coupons", userCouponRouter);
+app.use("/api/order", orderRouter);
 
 
 app.listen(3005, ()=>{

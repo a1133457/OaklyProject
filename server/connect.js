@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 
-// 學校電腦 還有美女怡卉
+// 學校電腦
 const connection = mysql.createPool({
   host: "localhost",
   port: 3306,
