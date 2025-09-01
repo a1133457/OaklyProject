@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import connection from "../connect.js";
+import pool from "../connect.js";
 
 const upload = multer();
 
@@ -9,6 +9,7 @@ const router = express.Router();
 // 查詢使用者單一訂單
 router.get("/", async (req, res) => {
   try {
+    const connection = await pool.getConnection();
     const { userId, orderId } = req.query;
     if (!userId || !orderId) {
       const err = new Error("缺少 user_id 或是 order_id");
@@ -62,6 +63,7 @@ router.get("/", async (req, res) => {
 // 查詢使用者全部訂單
 router.get("/", async (req, res) => {
   try {
+    const connection = await pool.getConnection();
     const userId = req.query.userId;
     if (!userId) {
       const err = new Error("缺少 user_id");
@@ -113,7 +115,10 @@ router.get("/", async (req, res) => {
 
 // 新增 order
 router.post("/add", async (req, res) => {
+  const connection = await pool.getConnection();
   try {
+    // 開始 transaction
+    await connection.beginTransaction();
     const {
       user_id,
       total_amount,
@@ -124,6 +129,7 @@ router.post("/add", async (req, res) => {
       recipient_phone,
       postal_code,
       address,
+      items,
     } = req.body;
     if (
       !user_id ||
@@ -142,9 +148,6 @@ router.post("/add", async (req, res) => {
       throw err;
     }
 
-    const connection = await pool.getConnection();
-    // 開始 transaction
-    await connection.beginTransaction();
 
     // 訂單亂碼
     function randomOrderNumber(length = 10) {
@@ -180,6 +183,7 @@ router.post("/add", async (req, res) => {
       recipient_phone,
       postal_code,
       address,
+
     ]);
 
     const orderId = orderResult.insertId;
@@ -210,14 +214,18 @@ router.post("/add", async (req, res) => {
       message: "訂單建立成功",
     });
   } catch (error) {
-    const statusCode = error.code ?? 500;
+    await connection.rollback();
+    const statusCode = typeof error.code === "number" ? error.code : 500;
     const statusText = error.status ?? "error";
     const message = error.message ?? "建立訂單失敗";
     res.status(statusCode).json({
       status: statusText,
       message,
     });
+  } finally {
+    connection.release();
   }
+
 });
 
 export default router;
