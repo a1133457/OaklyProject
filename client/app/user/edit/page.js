@@ -4,12 +4,13 @@ import { useState } from 'react'
 import Sidebar from '../_components/sidebar'
 import HeaderImg from '../_components/HeaderImg'
 import styles from '../user.module.css'
-import Button from '@/app/auth/_components/Button'
 
 // 共用元件
 import UserTextInput from '@/app/_components/UserTextInput'
 import UserSelect from '@/app/_components/UserSelect'
 import UserFormRow from '@/app/_components/UserFormRow'
+import Button from '@/app/_components/Button'
+import ButtonGroup from '@/app/_components/ButtonGroup'
 
 export default function UserEditForm() {
     const [name, setName] = useState('')
@@ -49,23 +50,26 @@ export default function UserEditForm() {
 
     return (
         <div>
+            {/* layout 區 */}
             <HeaderImg title="MY ACCOUNT" />
-            <div className={`container ${styles.container}`}>
-                <div className="row">
-                    <div className="col-md-3"><Sidebar /></div>
+            <div className={`container-fluid ${styles.userContainer}`}>
+                <div className={styles.layout}>
+                    <div className={styles.sidebarWrapper}>
+                        <Sidebar />
+                    </div>
 
-                    <div className="col-md-9">
+                    <div className={styles.content}>
                         {/* 大頭貼上傳 */}
                         <div className={`${styles.avatarUpload} ${styles.uploader}`}>
                             <label htmlFor="avatarInput">
-                                <img src={avatar ? URL.createObjectURL(avatar) : '/img/pexels-anntarazevich-8152002.jpg'}
+                                <img src={avatar ? URL.createObjectURL(avatar) : '/img/ting/pexels-anntarazevich-8152002.jpg'}
                                     alt="頭像預覽" className={styles.avatarImg} />
                             </label>
                             <input id="avatarInput" type="file" accept="image/*"
                                 onChange={(e) => setAvatar(e.target.files?.[0] ?? null)} />
                         </div>
 
-                        <form onSubmit={handleSubmit} onReset={handleReset}>
+                        <form onSubmit={handleSubmit} onReset={handleReset} className="g-5">
                             <UserTextInput id="name" label="姓名" required
                                 value={name} onChange={e => setName(e.target.value)} />
 
@@ -102,12 +106,14 @@ export default function UserEditForm() {
                             <UserTextInput id="pw2" label="確認新密碼" type="password"
                                 value={pw2} onChange={e => setPw2(e.target.value)} error={errors.pw2} />
 
-                            <div className="d-flex justify-content-center gap-3 mt-3">
-                                <Button type="submit" variant="primary01" size="lg">確認修改</Button>
-                                <Button type="reset" variant="white" size="lg">取消</Button>
-                                {/* <button type="submit" className="btn btn-success">確認修改</button>
-                                <button type="reset" className="btn btn-outline-success">取消</button> */}
-                            </div>
+                            {/* <div className="d-flex justify-content-center gap-2 mt-3 formButtons">
+                                <button type="submit" className="btn btn-success">確認修改</button> 
+                                <button type="reset" className="btn btn-outline-success">取消</button>
+                            </div> */}
+                            <ButtonGroup align="Center">
+                                <Button type="submit" variant="primary01" size="sm">確認修改</Button>
+                                <Button type="reset" variant="white" size="sm">取消</Button>
+                            </ButtonGroup>
                         </form>
 
                     </div>

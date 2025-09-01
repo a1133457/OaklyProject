@@ -3,6 +3,7 @@
 // 針對單一頁面使用css modules技術
 import "@/styles/globalsHui.css"
 import styles from '@/styles/index/index.module.css'
+import "@/styles/btnReset/btnReset.css"
 
 import { useState } from 'react'
 import Image from 'next/image'

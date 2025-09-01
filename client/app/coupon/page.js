@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 // 針對單一頁面使用css modules技術
 import styles from '@/styles/coupon/coupon.module.css'
 
@@ -10,7 +11,23 @@ import QuizBox from './_components/QuizBox'
 import CouponCard from './_components/CouponCard'
 import MemberCard from './_components/MemberCard'
 
-export default function CouponPage(props) {
+export default function CouponPage() {
+  const [coupons, setCoupons] = useState([]);
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        const res = await fetch("http://localhost:3005/api/coupons");
+        const data = await res.json();
+        console.log('解析的JSON', data);
+        setCoupons(data.data);
+
+      } catch (err) {
+        console.log('優惠券顯示錯誤:', err);
+      }
+    }
+    fetchCoupons();
+  }, [])
+
   return (
     <>
       <section
@@ -34,24 +51,23 @@ export default function CouponPage(props) {
             <div
               className={`d-flex justify-content-center align-items-center ${styles.couponContent}`}
             >
-              <CouponCard
-                tag="適用全站商品"
-                date="領取後 7 天有效"
-                discountNumber="98"
-                smallSpend="不限金額"
-              />
-              <CouponCard
-                tag="適用指定類別"
-                date="8/8 – 8/20"
-                discountNumber="78"
-                smallSpend="最低消費$2000"
-              />
-              <CouponCard
-                tag="適用指定類別"
-                date="9/5 – 9/12"
-                discountNumber="85"
-                smallSpend="最低消費$1000"
-              />
+              {
+                coupons
+                  .map((coupon) => (
+                    <CouponCard
+                      key={coupon.id}
+                      tag={`適用${coupon.category_ids.split(',').length === 6 ? "全站商品" : `${coupon.category_names}類`}`}
+                      date={`領取後 ${coupon.valid_days} 天有效`}
+discountNumber={
+  coupon.discount_type === 2 
+    ? Math.round((coupon.discount) * 100)
+    : Math.round(coupon.discount)
+}
+discountType={coupon.discount_type}
+                      smallSpend={coupon.min_discount === 0 ? "不限金額" : `最低消費$${coupon.min_discount}`}
+                    />
+                  ))
+              }
             </div>
           </div>
         </div>

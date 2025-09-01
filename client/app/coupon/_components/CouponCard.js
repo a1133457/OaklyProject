@@ -2,7 +2,7 @@
 
 import styles from '@/styles/coupon/coupon.module.css'
 
-export default function CouponCard({ tag, date, discountNumber, smallSpend }) {
+export default function CouponCard({ tag, date, discountNumber, discountType, smallSpend }) {
   return (
     <>
       <div
@@ -16,7 +16,9 @@ export default function CouponCard({ tag, date, discountNumber, smallSpend }) {
           <div className="gap-xs d-flex flex-column align-items-center">
             <h4 className={`t-secondary01 ${styles.discountNumber}`}>
               {discountNumber}
-              <span className={styles.discountText}> 折</span>
+              <span className={styles.discountText}>
+                {discountType === 2 ? ' 折' : ' 元'}
+              </span>
             </h4>
             <h6 className="t-primary03">{smallSpend}</h6>
           </div>

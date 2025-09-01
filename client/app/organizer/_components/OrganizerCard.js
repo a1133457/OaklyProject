@@ -12,7 +12,7 @@ export default function OrganizerCard({ name, area, imageUrl, contentText }) {
           {/* 圓形圖片區域 */}
           <div className={`align-self-center ${styles.circleImage}`}>
             {/* 之後從資料庫來的圖片 */}
-            <Image
+            <img
               src={imageUrl || '/img/hui/defaultimg.png'}
               alt={name}
               width={120}

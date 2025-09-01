@@ -90,6 +90,7 @@ body {
   display: none;
 }
 
+/*麵包屑*/
 .breadcrumb a {
   color: white;
   font-size: 12px;
@@ -106,6 +107,15 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
+  margin: 0;
+  color: white;
+  font-size: 12px;
+  font-family: Noto Sans TC;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  text-decoration: none;
 }
 
 .sub-nav-content {
@@ -131,20 +141,21 @@ body {
 .per-page-selection {
   outline: none;
   border: none;
-  color:  #8B8B8B;
+  color: #8B8B8B;
   font-family: Noto Sans TC;
-font-size: 12px;
-font-style: normal;
-font-weight: 600;
-line-height: 24px; 
-letter-spacing: 1px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 1px;
+  cursor: pointer;
 }
 
 .per-page-select {
   padding: 8px 0px;
   font-size: 14px;
   background: white;
-  
+
   display: flex;
   justify-content: flex-end;
   border: none;
@@ -205,9 +216,31 @@ letter-spacing: 1px;
 /* 主要內容區域 */
 
 /* 基本 hover 行為 */
+.dropdown-toggle {
+  cursor: pointer;
+}
+
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+.dropdown-toggle i {
+  padding-left: 4px;
+}
+
 .hover-dropdown:hover .dropdown-menu {
   display: flex;
   margin-top: 0;
+  cursor: pointer;
+
+
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 120%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* 多欄式下拉選單設定 */
@@ -219,8 +252,9 @@ letter-spacing: 1px;
   flex-direction: row;
   gap: 40px;
   border: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+
 }
 
 /* 每一欄 */
@@ -232,23 +266,44 @@ letter-spacing: 1px;
 
 /* 標題樣式 */
 .dropdown-header {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 10px;
+  font-weight: 500;
+  font-size: 16px;
   text-align: left;
   padding: 0;
-  
+  padding-bottom: 12px;
+  border-bottom: 1px solid #EDEDED;
+  color: #6A6A6A;
+
+}
+.filter-option.active {
+  color: #121714;
 }
 
-/* 子項目樣式微調） */
+.filter-option {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-option:hover {
+  color: #8B8B8B;
+}
+/* 子項目樣式微調 */
 .dropdown-item {
-  padding: 5px 0;
+  padding: 4px 0;
   white-space: nowrap;
   color: #6A6A6A;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: 1px;
+
 }
+
+.dropdown-item:hover {
+  background-color: #fff;
+}
+
+
 
 .wrapper {
   display: grid;
@@ -362,7 +417,7 @@ span {
   border-radius: 2px;
 }
 
-.sort{
+.sort {
   display: none;
 }
 
@@ -397,11 +452,16 @@ span {
 .filter-buttons {
   display: flex;
   gap: 16px;
-  margin: 24px 0;
+  margin-bottom: 24px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 16px;
+  padding: 24px 16px 12px 16px;
+}
+
+.filter-buttons img {
+  width: 11px;
+  height: 11px;
 }
 
 .filter-btn,
@@ -413,13 +473,22 @@ span {
   border-radius: 5px;
   font-size: 14px;
   font-weight: 500;
-  cursor: poNoto Sans TC;
+  cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
+
+
 .filter-btn {
+  gap: 8px;
+
   background: #719A8B;
   color: white;
+
 }
 
 .filter-btn:hover {
@@ -475,7 +544,7 @@ span {
 
 .sub-nav-links {
   display: flex;
-  gap: 30px;
+  gap: 36px;
 }
 
 .sub-nav-link {
@@ -517,11 +586,8 @@ span {
 
 .image img {
   display: block;
-  width: 239px;
-  height: 253px;
   overflow: hidden;
-  margin-bottom: 16px;
-  /* background-image: url('/images/1.webp'); */
+  margin-bottom: 32px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -532,6 +598,17 @@ span {
   transform: scale(1.1);
 }
 
+.page-info {
+  color: #6a6a6a;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: flex-end;
+  align-content: center;
+}
 
 
 .info {
@@ -675,22 +752,25 @@ span {
     gap: 12px;
 
   }
-  .filter{
+
+  .filter {
     display: flex;
-    gap:10px;
+    gap: 10px;
     justify-content: center;
     align-items: center;
   }
-.sort{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap:10px
 
-}
-.per-page-selection{
-  display: none;
-}
+  .sort {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px
+  }
+
+  .per-page-selection {
+    display: none;
+  }
+
   .alls {
     width: 100%;
     height: 100%;
@@ -753,7 +833,7 @@ span {
     letter-spacing: 1px;
     word-wrap: break-word;
   }
-  
+
 
   .per-page {
     border: none;
@@ -795,13 +875,14 @@ span {
     background-image: url(/img/lan/sofa.jpg);
   }
 
-  .sidebar{
+  .sidebar {
     display: none;
   }
+
   .products-section {
     width: 100%;
   }
-  
+
 
   .filter-buttons {
     flex-direction: column;
@@ -862,23 +943,8 @@ span {
   padding-bottom: 60px;
 }
 
-.products-grid.list .image {
-  width: 239px;
-  height: 229px;
-  flex: 0 0 239px;
-  /* 固定圖片寬 */
-  margin: 0;
-  /* 取消下方間距 */
-  overflow: hidden;
-  border-radius: 8px;
-}
 
-.products-grid.list .image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  margin: 0;
-}
+
 
 .products-grid.list .info {
   align-items: flex-start;
@@ -899,7 +965,7 @@ span {
 
 .image {
   position: relative;
-  overflow: hidden;
+  overflow: none;
 }
 
 .productcard .badge-new {

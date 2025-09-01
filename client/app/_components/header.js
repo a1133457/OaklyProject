@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import "@/styles/header.css";
 
 export default function Header() {
@@ -46,7 +45,13 @@ export default function Header() {
         <button className="menu-toggle">
           <i className="fa-solid fa-circle-user"></i>
         </button>
-        <button className="menu-toggle"  type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
+        <button
+          className="menu-toggle"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasScrolling"
+          aria-controls="offcanvasScrolling"
+        >
           <i className="fa-solid fa-bars"></i>
         </button>
 

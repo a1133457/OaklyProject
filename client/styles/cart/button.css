@@ -46,3 +46,8 @@
     background-color: var(--primary-04, #9DB8AF);
     
 }
+
+
+@media (max-width: 430px) {
+
+}
