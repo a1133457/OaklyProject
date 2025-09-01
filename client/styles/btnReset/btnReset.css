@@ -5,7 +5,7 @@
 
 .btn,
 button {
-  &:not(.btn-green) {
+  &:not(.btn-green , .brownBtn) {
     &:focus,
     &:focus-visible,
     &:active,

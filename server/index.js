@@ -43,7 +43,7 @@ app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
 app.use("/api/coupons", couponRouter);
 app.use("/api/article", articleRouter);
-app.use("/api/cart", cartRouter);
+// app.use("/api/cart", cartRouter);
 app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/order", orderRouter);
 

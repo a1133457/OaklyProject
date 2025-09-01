@@ -217,8 +217,6 @@ router.get("/:keyword", async (req, res) => {
     }
 })
 
-<<<<<<< HEAD
-=======
 // 搜尋 日期範圍的文章
 router.get("/searchByDate", async (req, res) => {
     try {
@@ -403,5 +401,4 @@ router.get("/stats/shared", async (req, res) => {
     }
 })
 
->>>>>>> 1fe46cfa72c7dedb0bc21792d311097b51672376
 export default router;

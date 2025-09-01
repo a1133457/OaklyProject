@@ -64,6 +64,7 @@ CREATE TABLE user_coupons (
 -----------------------------優惠券假資料---------------------------------
 
 -- 1.coupons 主表 假資料
+-- 1 價格  2 折數
 INSERT INTO `coupons` (`id`, `name`, `code`, `discount_type`, `discount`, `min_discount`, `max_amount`, `start_at`, `end_at`, `valid_days`, `is_valid`) VALUES
 (1, '期間限定優惠券', 'GRAB001A', 2, 0.98, 0, NULL, NULL, NULL, 7, 1),
 (2, '期間限定優惠券', 'GRAB002B', 1, 120.00, 1400, NULL, NULL, NULL, 7, 1),
@@ -118,7 +119,7 @@ DROP TABLE user_coupons;
 -- 0	get（已領但未用）-- 1	used（已使用）-- 2	expired（已過期）
 INSERT INTO `user_coupons` (`id`, `user_id`, `coupon_id`, `get_at`, `used_at`, `expire_at`, `status`) VALUES
 -- 王小明的優惠券
-(1, 1, 1, '2025-08-25 10:30:00', NULL, '2025-09-01 23:59:59', 2),  -- 已過期
+(1, 1, 1, '2025-08-25 10:30:00', '2025-08-28 15:30:00', '2025-09-01 23:59:59', 1),  -- 已使用
 (2, 1, 4, '2025-08-30 14:20:00', NULL, '2025-10-01 23:59:59', 0),  -- 已領未用
 (3, 1, 8, '2025-08-31 16:45:00', NULL, '2025-09-03 23:59:59', 2),  -- 已過期
 (9, 1, 5, '2025-08-28 09:00:00', NULL, '2025-09-15 23:59:59', 0),  -- 已領未用
