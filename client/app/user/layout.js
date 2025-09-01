@@ -11,7 +11,7 @@ export const metadata = {
 export default function AdminLayout({ children }) {
   return (
     <>
-      {/* <div className={`container-fluid ${styles.userContainer}`}>
+      <div className={`container-fluid ${styles.userContainer}`}>
         <div className={styles.layout}>
           <div className={styles.sidebarWrapper}>
             <Sidebar />
@@ -20,10 +20,10 @@ export default function AdminLayout({ children }) {
             {children}
           </div>
         </div>
-      </div> */}
+      </div>
 
 
-      <div>{children}</div>
+      {/* <div>{children}</div> */}
     </>
   )
 }
