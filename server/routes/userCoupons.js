@@ -37,4 +37,7 @@ ORDER BY uc.status ASC`;
   }
 });
 
+// POST /api/user/coupons/add - 領取優惠券
+
+
 export default router;
