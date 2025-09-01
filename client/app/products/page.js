@@ -7,21 +7,74 @@ import { useCart } from '@/app/contexts/CartContext';
 
 
 const MainProduct = () => {
-  
-  const [selectedFilters, setSelectedFilters] = useState([]);
-  const [sortBy, setSortBy] = useState("default");
+
+  const [selectedFilters, setSelectedFilters] = useState({
+    colors: [],
+    materials: [],
+    series: []
+  }); const [sortBy, setSortBy] = useState("default");
   const [viewMode, setViewMode] = useState("grid");
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [filterPriceRange, setFilterPriceRange] = useState({ min: 0, max: 50000 });
+  const [tempFilters, setTempFilters] = useState({
+    colors: [],
+    materials: [],
+    series: []
+  });
+  const [tempPriceRange, setTempPriceRange] = useState({ min: 0, max: 50000 });
 
-  
-  
+
+  const colorMapping = {
+    1: "白色",
+    2: "黑色",
+    3: "原木色",
+    4: "淺灰",
+    5: "深灰",
+    6: "淺藍",
+    7: "深藍",
+    8: "淺綠",
+    9: "深綠",
+    10: "米黃色"
+  };
+  const colorOptions = [
+    { name: '白色', value: '白色', color: '#FFFFFF' },
+    { name: '黑色', value: '黑色', color: '#000000' },
+    { name: '原木色', value: '原木色', color: '#DEB887' },
+    { name: '淺灰', value: '淺灰', color: '#D3D3D3' },
+    { name: '深灰', value: '深灰', color: '#555555' },
+    { name: '淺藍', value: '淺藍', color: '#ADD8E6' },
+    { name: '深藍', value: '深藍', color: '#62869D' },
+    { name: '淺綠', value: '淺綠', color: '#DBE5DE' },
+    { name: '深綠', value: '深綠', color: '#6B826B' },
+    { name: '米黃色', value: '米黃色', color: '#F5F5DC' }
+  ];
+  const materialMapping = {
+    1: "木質",
+    2: "金屬",
+    3: "塑膠",
+    4: "皮革",
+    5: "布料",
+    6: "玻璃",
+    7: "大理石",
+    8: "藤",
+    9: "亞克力",
+    10: "竹"
+  };
+
+  // 材质选项
+  const materialOptions = [
+    "木質", "金屬", "塑膠", "皮革", "布料", "玻璃", "大理石", "藤", "亞克力", "竹"
+  ];
+
+  // 系列选项
+  const seriesOptions = [
+    "北歐簡約風", "現代極簡風", "工業復古風", "美式鄉村風", "輕奢設計風", "無印自然風"
+  ];
 
   const sortProducts = (products, sortBy) => {
     const sortedProducts = [...products];
-
     switch (sortBy) {
       case 'price_asc':
         return sortedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -36,11 +89,56 @@ const MainProduct = () => {
     }
   };
 
+  // 篩選条件
+  const handleFilterChange = (filterType, value, isChecked) => {
+    setTempFilters(prev => {
+      const newFilters = { ...prev };
+
+      if (isChecked) {
+        if (!newFilters[filterType].includes(value)) {
+          newFilters[filterType] = [...newFilters[filterType], value];
+        }
+      } else {
+        newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
+      }
+
+      return newFilters;
+    });
+  };
+  const handleColorFilter = (colorValue) => {
+    const isSelected = tempFilters.colors.includes(colorValue);
+    handleFilterChange('colors', colorValue, !isSelected);
+  };
+
+  const applyFilters = () => {
+    setSelectedFilters(tempFilters);        // 將臨時篩選設定為實際篩選
+    setFilterPriceRange(tempPriceRange);    // 將臨時價格設定為實際價格
+    setCurrentPage(1);
+  };
+  // 清除篩選
+  const clearFilters = () => {
+    const defaultFilters = {
+      colors: [],
+      materials: [],
+      series: []
+    };
+    const defaultPriceRange = { min: 0, max: 50000 };
+
+    setTempFilters(defaultFilters);        // 清除臨時篩選
+    setTempPriceRange(defaultPriceRange);  // 清除臨時價格
+    setSelectedFilters(defaultFilters);    // 清除實際篩選
+    setFilterPriceRange(defaultPriceRange); // 清除實際價格
+    setSortBy("default");
+    setCurrentPage(1);
+  };
+
+
   // 修改篩選選項點擊處理
   const handleSortChange = (newSortBy) => {
     setSortBy(newSortBy);
     setCurrentPage(1); // 重置到第一頁
   };
+
 
   const handleProductClick = (productId) => {
     window.location.href = `/products/${productId}`;
@@ -55,19 +153,52 @@ const MainProduct = () => {
 
   // 計算當前頁面要顯示的商品
   const getCurrentPageProducts = () => {
-    const priceFilteredProducts = products.filter(product => {
-      const price = product.price || 0;
-      return price >= filterPriceRange.min && price <= filterPriceRange.max;
-    });
-    const sortedProducts = sortProducts(products, sortBy);
+    const filteredProducts = getFilteredProducts();
+    const sortedProducts = sortProducts(filteredProducts, sortBy);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return sortedProducts.slice(startIndex, endIndex);
   };
+
+
   const getFilteredProducts = () => {
+
+    console.log("selectedFilters:", selectedFilters);
+    console.log("filterPriceRange:", filterPriceRange);
     return products.filter(product => {
       const price = product.price || 0;
-      return price >= filterPriceRange.min && price <= filterPriceRange.max;
+      const priceMatch = price >= filterPriceRange.min && price <= filterPriceRange.max;
+      console.log(`\n检查商品: ${product.name} (ID: ${product.id})`);
+      console.log(`  价格: ${price}, 范围: ${filterPriceRange.min}-${filterPriceRange.max}, 匹配: ${priceMatch}`);
+
+
+
+      // 颜色篩選
+      const productColor = colorMapping[product.colors];
+      const colorMatch = !selectedFilters.colors?.length ||
+        selectedFilters.colors.includes(productColor);
+      console.log(`  颜色ID: ${product.colors}, 颜色名稱: ${productColor}, 篩選条件: [${selectedFilters.colors}], 匹配: ${colorMatch}`);
+
+
+      // 材质篩選 - 通过 materials_id 映射到材质名稱
+      const productMaterial = materialMapping[product.materials_id];
+      const materialMatch = !selectedFilters.materials?.length ||
+        selectedFilters.materials.includes(productMaterial);
+      console.log(`  材質ID: ${product.materials_id}, 材質名稱: ${productMaterial}, 篩選条件: [${selectedFilters.materials}], 匹配: ${materialMatch}`);
+
+
+      // 系列篩選 - 使用 style 字段
+      const seriesMatch = !selectedFilters.series?.length ||
+        selectedFilters.series.includes(product.style);
+
+      console.log(`  系列: ${product.style}, 篩選条件: [${selectedFilters.series}], 匹配: ${seriesMatch}`);
+
+
+      const  finalMatch = priceMatch && colorMatch && materialMatch && seriesMatch;
+      console.log(`  最终结果: ${finalMatch}`);
+      return finalMatch;
+
+
     });
   };
 
@@ -414,15 +545,14 @@ const MainProduct = () => {
                         min="0"
                         max="50000"
                         step="1000"
-                        value={filterPriceRange.max}
+                        value={tempPriceRange.max}
                         onChange={(e) => {
                           const newMax = parseInt(e.target.value);
-                          setFilterPriceRange({ min: 0, max: newMax });
-                          setCurrentPage(1);
+                          setTempPriceRange({ min: 0, max: newMax });
                         }}
                       />
                     </div>
-                    <span>NT$ 0 - NT$ {filterPriceRange.max.toLocaleString()}</span>
+                    <span>NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -430,26 +560,17 @@ const MainProduct = () => {
                 <div className="filter-section">
                   <h3 className="filter-title">顏色</h3>
                   <div className="color-options">
-                    <div
-                      className="color-option"
-                      style={{ backgroundColor: "#000" }}
-                    ></div>
-                    <div
-                      className="color-option"
-                      style={{ backgroundColor: "#666" }}
-                    ></div>
-                    <div
-                      className="color-option"
-                      style={{ backgroundColor: "#2d5016" }}
-                    ></div>
-                    <div
-                      className="color-option"
-                      style={{ backgroundColor: "#87ceeb" }}
-                    ></div>
-                    <div
-                      className="color-option"
-                      style={{ backgroundColor: "#8b4513" }}
-                    ></div>
+                    {colorOptions.map((color) => (
+                      <div
+                        key={color.value}
+                        className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
+                        style={{
+                          backgroundColor: color.color,
+                        }}
+                        onClick={() => handleColorFilter(color.value)}
+                        title={color.name}
+                      ></div>
+                    ))}
                   </div>
                 </div>
 
@@ -457,14 +578,16 @@ const MainProduct = () => {
                 <div className="filter-section">
                   <h3 className="filter-title">材質</h3>
                   <div className="filter-options">
-                    {["金屬", "木頭", "塑膠", "皮革", "布料", "其他"].map(
-                      (material) => (
-                        <div key={material} className="option">
-                          <input type="checkbox" />
-                          <span>{material}</span>
-                        </div>
-                      )
-                    )}
+                    {materialOptions.map((material) => (
+                      <div key={material} className="option">
+                        <input
+                          type="checkbox"
+                          checked={tempFilters?.materials?.includes(material) || false}
+                          onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
+                        />
+                        <span>{material}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -472,23 +595,26 @@ const MainProduct = () => {
                 <div className="filter-section">
                   <h3 className="filter-title">系列</h3>
                   <div className="filter-options">
-                    {["SOMNULI", "TJENA", "CLABOW", "GOREN"].map((brand) => (
-                      <div key={brand} className="option">
-                        <input type="checkbox" />
-                        <span>{brand}</span>
+                    {seriesOptions.map((series) => (
+                      <div key={series} className="option">
+                        <input
+                          type="checkbox"
+                          checked={tempFilters?.series?.includes(series) || false}
+                          onChange={(e) => handleFilterChange('series', series, e.target.checked)}
+                        />
+                        <span>{series}</span>
                       </div>
                     ))}
-                    <span>更多</span>
                   </div>
                 </div>
               </div>
 
               {/* 篩選按鈕 */}
               <div className="filter-buttons">
-                <button className="filter-btn">
+                <button className="filter-btn" onClick={applyFilters}>
                   <img src="img/lan/filter2.svg"></img>套用篩選
                 </button>
-                <button className="reset-btn">清除</button>
+                <button className="reset-btn" onClick={clearFilters}>清除</button>
               </div>
             </aside>
 
@@ -550,7 +676,7 @@ const MainProduct = () => {
                 ))}
               </div>
               <div className="page-info">
-              顯示 {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)} - {Math.min(currentPage * itemsPerPage, filteredProducts.length)} 項，共 {filteredProducts.length} 項
+                顯示 {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)} - {Math.min(currentPage * itemsPerPage, filteredProducts.length)} 項，共 {filteredProducts.length} 項
               </div>
 
               {/* 分頁 */}
