@@ -30,6 +30,8 @@ export default function ListCard({
     },
   };
 
+
+  
   // 格式化價格顯示
   const displayPrice = price
     ? `NT$ ${price.toLocaleString()}`
@@ -50,13 +52,13 @@ export default function ListCard({
           <div className={`d-flex flex-column flex-md-row ${styles.gap}`}>
             <div className="d-flex flex-column gap-sm flex-md-fill">
               <p className="t-primary03">服務整理師：{organizerName}</p>
-              <p className="t-primary03">希望服務日期：{serviceDate}</p>
+              <p className="t-primary03">{status === 1||4 ? "希望" : ""}服務日期：{serviceDate}</p>
               <p className="t-primary03">服務地址：{serviceAddress}</p>
             </div>
             <div
               className={`d-flex flex-column gap-sm ${styles.minWidth} flex-md-fill`}
             >
-              <p className="t-primary03">預約編號：#{bookingId}</p>
+              <p className="t-primary03">預約編號：{bookingId}</p>
               <p className="t-primary03">建立時間：{createdDate}</p>
             </div>
           </div>
@@ -66,7 +68,7 @@ export default function ListCard({
           <LinkArrow>查看詳情</LinkArrow>
         </div>
       </div>
-      <h6 className="t-gray600 text-center">{currentStatus.description}</h6>
+      
     </>
   );
 }

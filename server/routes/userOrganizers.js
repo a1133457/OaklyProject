@@ -26,30 +26,31 @@ const router = express.Router();
 
 //-------------------------------------------------------------------------------------
 
-
 // 取得user的預約諮詢頁列表
 router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params; // 取得路由參數
-    
+
     const sql = `SELECT 
-      b.id as booking_id,
-      b.service_datetime,
-      b.city,
-      b.district, 
-      b.address,
-      b.created_at,
-      b.price,
-      o.name as organizer_name
+    CONCAT('#', LPAD(b.id, 7, '0')) as booking_id, 
+    CASE 
+        WHEN b.status IN (1, 4) THEN DATE_FORMAT(b.service_datetime, '%Y/%m/%d')
+        ELSE DATE_FORMAT(b.service_datetime, '%Y/%m/%d %H:%i')
+    END as service_datetime,
+    CONCAT(b.city, b.district, b.address) as full_address,
+    DATE_FORMAT(b.created_at, '%Y/%m/%d %H:%i') as created_at,
+    b.price,
+    b.status,
+    o.name as organizer_name
     FROM bookings b
     JOIN organizers o ON b.organizer_id = o.id  
     WHERE b.user_id = ? AND b.is_valid = 1
     ORDER BY b.created_at DESC`;
-    
+
     const [bookings] = await connection.execute(sql, [userId]);
-    
+
     res.status(200).json({
-      status: "success", 
+      status: "success",
       data: bookings,
       message: "取得使用者的預約資訊列表",
     });
@@ -63,8 +64,6 @@ router.get("/:userId", async (req, res) => {
 });
 
 // GET /api/user/organizers - 取得使用者的預約資訊詳細頁
-
-
 
 // POST /api/user/organizers/add - (新增) 預約諮詢表單
 router.post("/add", upload.array("photos", 4), async (req, res) => {
