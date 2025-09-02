@@ -22,7 +22,6 @@ body {
 }
 
 
-/* 評論頁面樣式 */
 .review-page {
     display: flex;
     flex-direction: column;
@@ -35,7 +34,7 @@ body {
 
 /* 評論總覽區塊 */
 .review-summary {
-    padding: 16px 180px;
+    padding: 16px 160px;
     margin-bottom: 12px;
     text-align: center;
 }
@@ -152,7 +151,7 @@ justify-content: center;
 
 .review-item {
     width: 100%;
-    padding: 46px 120px;
+    padding: 46px 60px;
     background: white;
     flex-direction: column;
     justify-content: flex-start;
@@ -250,7 +249,7 @@ justify-content: center;
 /* 撰寫評論區塊 */
 .write-review {
     margin-bottom: 40px;
-    padding: 36px 120px;
+    padding: 36px 60px;
     flex-direction: column;
     justify-content: center;
     align-content: center;

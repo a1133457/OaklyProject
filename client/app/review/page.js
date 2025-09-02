@@ -77,9 +77,10 @@ const Review = ({ productId = 1 }) => {
         // ===== 真實環境需要的 Authorization header (目前註解掉) =====
           // 'Authorization': `Bearer ${token}`
         body: JSON.stringify({
-          // user_id: userId,
+          user_id: 1,
           product_id: productId,
           rating,
+          email,
           comment,
           user_name: name,
           avatar: `https://i.pravatar.cc/150?u=${name}`
