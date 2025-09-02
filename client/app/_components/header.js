@@ -1,13 +1,101 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import "@/styles/header.css";
 import { useCart } from '@/app/contexts/CartContext';
 
-
 export default function Header() {
   const { cartCount } = useCart();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef(null);
+  const searchDropdownRef = useRef(null);
+
+  // 搜尋功能
+  const handleSearch = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    
+    try {
+      const response = await fetch(`http://localhost:3005/api/products/search?q=${encodeURIComponent(query)}`);
+
+      const data = await response.json();
+      console.log("🔍 API 回傳:", data); 
+
+      
+      if (data.status === 'success') {
+        const productResults = data.data.map(product => ({
+          id: product.id,
+          title: product.name,
+          type: 'product',
+          url: `/products/${product.id}`,
+          price: product.price,
+          image: product.image
+        }));
+        setSearchResults(productResults);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('搜尋失敗:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 防抖搜尋
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      handleSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  // 點擊外部關閉搜尋
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchDropdownRef.current &&
+        !searchDropdownRef.current.contains(event.target) &&
+        !searchInputRef.current?.contains(event.target)
+      ) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 處理搜尋按鈕點擊
+  const handleSearchToggle = () => {
+    setIsSearchOpen(!isSearchOpen);
+    if (!isSearchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  };
+
+  // 處理 Enter 鍵搜尋
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+    }
+  };
+
+  // 獲取搜尋結果類型圖示
+  const getSearchIcon = (type) => {
+    return '🛋️';
+  };
 
   return (
     <div className="container-fluid header">
@@ -30,29 +118,84 @@ export default function Header() {
           </Link>
         </div>
       </div>
+
       <div className="icon-group">
-        {/* <Link>
-          <i className="fa-solid fa-magnifying-glass"></i>
-        </Link> */}
-         <Link href="/cart" alt="" style={{ position: 'relative', display: 'inline-block' }}>
+        {/* 搜尋功能 */}
+        <div className="search-container">
+          <button 
+            onClick={handleSearchToggle}
+            className="search-btn"
+          >
+            <i className="fa-solid fa-magnifying-glass"></i>
+          </button>
+          
+          {isSearchOpen && (
+            <div className="search-input-container">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="搜尋產品..."
+                className="search-input"
+              />
+              
+              {/* 搜尋結果下拉選單 */}
+              {(searchResults.length > 0 || isSearching) && (
+                <div 
+                  ref={searchDropdownRef}
+                  className="search-results"
+                >
+                  {isSearching ? (
+                    <div className="search-loading">
+                      <i className="fa-solid fa-spinner fa-spin"></i>
+                      <span>搜尋中...</span>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <>
+                      {searchResults.map((item) => (
+                        <Link
+                          key={item.id}
+                          href={item.url}
+                          onClick={() => setIsSearchOpen(false)}
+                          className="search-result-item"
+                        >
+                          <span className="search-result-icon">
+                            {getSearchIcon(item.type)}
+                          </span>
+                          <div className="search-result-content">
+                            <div className="search-result-title">{item.title}</div>
+                            <div className="search-result-price">
+                              NT$ {item.price ? item.price.toLocaleString() : '價格洽詢'}
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                      <div className="search-footer">
+                        <Link 
+                          href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                          onClick={() => setIsSearchOpen(false)}
+                        >
+                          查看全部 "{searchQuery}" 的產品搜尋結果
+                        </Link>
+                      </div>
+                    </>
+                  ) : searchQuery.trim() && (
+                    <div className="search-no-results">
+                      沒有找到相關結果
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <Link href="/cart" className="cart-link">
           <i className="fa-solid fa-cart-shopping"></i>
           {cartCount > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: '-8px',
-              right: '-8px',
-              backgroundColor: '#DBA783',
-              color: 'white',
-              borderRadius: '50%',
-              width: '20px',
-              height: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              lineHeight: '1'
-            }}>
+            <span className="cart-badge">
               {cartCount > 99 ? '99+' : cartCount}
             </span>
           )}
@@ -70,7 +213,7 @@ export default function Header() {
         <button className="menu-toggle">
           <i className="fa-solid fa-circle-user"></i>
         </button>
-        <button className="menu-toggle"  type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
+        <button className="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
           <i className="fa-solid fa-bars"></i>
         </button>
 

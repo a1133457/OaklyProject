@@ -184,8 +184,17 @@ const openWishlistModal = async (product, clickEvent = null) => {
     }
   }
 
-
+ 
 };
+
+useEffect(() => {
+  if (showWishlistModal) {
+    document.body.classList.add('body-no-scroll');
+  } else {
+    document.body.classList.remove('body-no-scroll');
+  }
+  return () => document.body.classList.remove('body-no-scroll');
+}, [showWishlistModal]);
 
 
 

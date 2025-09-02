@@ -387,18 +387,19 @@ body {
     position: sticky;
     top: 20px;
     align-self: flex-start;
-    color: #9FA79A;
+    color: #6a6a6a;
     font-size: 20px;
     font-weight: 700;
     word-wrap: break-word;
 
     & .product-price {
-        color: #9FA79A
+        color: #9FA79A;
+        font-weight: bold;
     }
 }
 
 .express {
-    color: #8B8B8B;
+    color: #6a6a6a;
     font-size: 14px;
     font-family: Noto Sans TC;
     font-weight: 400;
@@ -420,13 +421,6 @@ body {
     margin-bottom: 30px;
 }
 
-.product-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 15px;
-    line-height: 1.2;
-}
 
 .product-rating {
     display: flex;
@@ -446,11 +440,11 @@ body {
 
 .rating-text {
     font-size: 14px;
-    color: #666;
+    color: #6a6a6a;
 }
 
 .product-description {
-    color: #8B8B8B;
+    color: #6a6a6a;
     font-size: 14px;
     font-family: Noto Sans TC;
     font-weight: 400;
@@ -462,7 +456,7 @@ body {
 .product-description p {
     font-size: 16px;
     line-height: 1.6;
-    color: #666;
+    color: #6a6a6a;
     margin: 24px 0px;
 }
 
@@ -1525,7 +1519,7 @@ body.modal-open {
 
 /* 內容展示區塊樣式 */
 .content-showcase-section {
-    padding: 120px 0;
+    padding: 40px 0;
     width: 100%;
     background-color: #ffffff;
 }
@@ -1660,7 +1654,9 @@ body.modal-open {
     border-radius: 2px;
 
 }
-
+.body-no-scroll {
+    overflow: hidden !important;
+  }
 
 
 /* 收藏彈窗樣式 */
@@ -2227,6 +2223,3 @@ body.modal-open {
 
 }
 
-body.no-scroll {
-    overflow: hidden !important;
-}

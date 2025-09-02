@@ -349,6 +349,7 @@ const MainProduct = () => {
         <img src="/img/lan/header.png" alt="hero" />
         <div className="hero-content">
           <h1 className="hero-title">全部商品</h1>
+
         </div>
       </section>
       <div className="sub-nav">
