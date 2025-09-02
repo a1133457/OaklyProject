@@ -100,7 +100,7 @@ onClick={onClose}>
       <div className="cart-success-modal" onClick={(e) => e.stopPropagation()} 
           style={{
           backgroundColor: 'white',
-          borderRadius: '8px',
+          borderRadius: '2px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
           margin: '20px',
           maxWidth: '400px',

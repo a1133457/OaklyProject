@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/app/contexts/CartContext';
 
 
-const SimilarProducts = ({ currentProductId }) => {
+const SimilarProducts = ({ currentProductId,
+    handleWishlistToggle,
+    isProductInWishlist }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [failedImages, setFailedImages] = useState(new Set());
     const carouselRef = useRef(null);
     const { addToCart } = useCart();
-    const [wishlist, setWishlist] = useState([]);
 
 
     // 未來的願望清單 API 調用函數
@@ -44,33 +45,11 @@ const SimilarProducts = ({ currentProductId }) => {
     */
 
 
-    const addToWishlist = (product) => {
-        setWishlist(prev => {
-            const isAlreadyInWishlist = prev.some(item => item.id === product.id);
-
-            if (isAlreadyInWishlist) {
-                return prev.filter(item => item.id !== product.id);
-            } else {
-                return [...prev, product];
-            }
-        });
-    };
-
-    // 檢查商品是否在願望清單中
-    const isInWishlist = (productId) => {
-        return wishlist.some(item => item.id === productId);
-    };
 
     // 處理加入購物車
     const handleAddToCart = (product, event) => {
         event.stopPropagation();
         addToCart(product, 1);
-    };
-
-    // 處理願望清單點擊
-    const handleWishlistClick = (product, event) => {
-        event.stopPropagation();
-        addToWishlist(product);
     };
 
     const handleImageError = (e, productId) => {
@@ -215,11 +194,11 @@ const SimilarProducts = ({ currentProductId }) => {
                             style={{ width: `${100 / products.length}%` }}
                         >
                             <button
-                                className={`wishlist-heart-btn ${isInWishlist(product.id) ? 'active' : ''}`} 
+                                className={`wishlist-heart-btn ${isProductInWishlist(product.id) ? 'active' : ''}`}
                                 onClick={(e) => handleWishlistToggle(product, e)}
-                                title={isInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
+                                title={isProductInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
                             >
-                                <i className={isInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+                                <i className={isProductInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
                             </button>
 
                             <div className="product-image">
