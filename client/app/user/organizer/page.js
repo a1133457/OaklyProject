@@ -25,11 +25,11 @@ export default function UserOrganizerPage() {
   // );
   console.log("當前選中的 tab:", currentTab);
 
-  //tab切換資料
+  // tab切換資料
   const filteredOrganizers = userOrganizers.filter((organizer) => {
     return organizer.status === currentTab;
   });
-  console.log(filteredOrganizers);
+  // console.log(filteredOrganizers);
 
   return (
     <>
@@ -39,7 +39,7 @@ export default function UserOrganizerPage() {
             <h2 className="t-primary01 text-center">預約紀錄</h2>
             <ItemTab currentTab={currentTab} onTabChange={setCurrentTab} />
 
-            {userOrganizers.map((organizer) => (
+            {filteredOrganizers.map((organizer) => (
               <ListCard
                 key={organizer.booking_id}
                 status={organizer.status}

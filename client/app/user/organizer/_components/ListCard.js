@@ -65,7 +65,7 @@ export default function ListCard({
         </div>
         <div className={`d-flex justify-content-between ${styles.cardBottom}`}>
           <h5 className="t-primary03">{displayPrice}</h5>
-          <LinkArrow>查看詳情</LinkArrow>
+          <LinkArrow bookingId={bookingId}>查看詳情</LinkArrow>
         </div>
       </div>
       

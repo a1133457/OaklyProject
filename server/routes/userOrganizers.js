@@ -26,7 +26,7 @@ const router = express.Router();
 
 //-------------------------------------------------------------------------------------
 
-// 取得user的預約諮詢頁列表
+// GET /api/user/organizers/:userId - 取得user的預約諮詢頁列表
 router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params; // 取得路由參數
@@ -63,7 +63,74 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-// GET /api/user/organizers - 取得使用者的預約資訊詳細頁
+// GET /api/user/organizers/:userId/:bookingId - 取得使用者的預約資訊詳細頁
+router.get("/:userId/:bookingId", async (req, res) => {
+  try {
+    const { userId, bookingId } = req.params; // 取得路由參數
+
+    const sql = `
+    SELECT 
+      CONCAT('#', LPAD(b.id, 7, '0')) as booking_id,
+      b.id as raw_booking_id,
+      u.name as user_name,
+      u.email as user_email, 
+      u.phone as user_phone,
+      o.name as organizer_name,
+      CASE 
+        WHEN b.status IN (1, 4) THEN DATE_FORMAT(b.service_datetime, '%Y/%m/%d')
+        ELSE DATE_FORMAT(b.service_datetime, '%Y/%m/%d %H:%i')
+      END as service_datetime,
+      CONCAT(b.city, b.district, b.address) as full_address,
+      DATE_FORMAT(b.created_at, '%Y/%m/%d %H:%i') as created_at,
+      b.price,
+      b.status,
+      b.note,
+      CASE b.status
+        WHEN 1 THEN '諮詢中'
+        WHEN 2 THEN '預約成功'
+        WHEN 3 THEN '服務完成'
+        WHEN 4 THEN '已取消'
+      END as status_text
+    FROM bookings b
+    JOIN users u ON b.user_id = u.id
+    JOIN organizers o ON b.organizer_id = o.id
+    WHERE b.user_id = ? AND LPAD(b.id, 7, '0') = ? AND b.is_valid = 1`;
+
+    const [bookings] = await connection.execute(sql, [userId, bookingId]);
+
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "找不到該預約資訊"
+      });
+    }
+
+    const booking = bookings[0];
+
+    // 取得環境照片
+    const imageSql = `
+    SELECT image_url 
+    FROM booking_images 
+    WHERE booking_id = ?
+    ORDER BY created_at ASC`;
+
+    const [images] = await connection.execute(imageSql, [booking.raw_booking_id]);
+
+    booking.images = images.map(img => img.image_url);
+
+    res.status(200).json({
+      status: "success",
+      data: bookings,
+      message: "取得使用者的預約資訊詳情",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "獲取失敗，請洽管理人員",
+    });
+  }
+});
 
 // POST /api/user/organizers/add - (新增) 預約諮詢表單
 router.post("/add", upload.array("photos", 4), async (req, res) => {

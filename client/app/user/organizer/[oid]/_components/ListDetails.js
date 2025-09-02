@@ -2,7 +2,19 @@ import LinkArrow from '@/app/_components/LinkArrow'
 import styles from '@/styles/userOrganizerDetails/userOrganizerDetails.module.css'
 import Image from 'next/image'
 
-export default function ListDetails({ status = 1 }) {
+export default function ListDetails(
+  status,
+  organizerName,
+  serviceDate,
+  serviceAddress,
+  bookingId,
+  createdDate,
+  userName,
+  userPhone,
+  userEmail,
+  images,
+  note,
+  price) {
   const statusConfig = {
     1: {
       label: '諮詢中',
@@ -45,26 +57,26 @@ export default function ListDetails({ status = 1 }) {
           {/* info */}
           <div className={`d-flex flex-column flex-md-row ${styles.infoGap}`}>
             <div className="d-flex flex-column gap-sm flex-md-fill">
-              <p className="t-primary03">服務整理師：柳柏丞</p>
-              <p className="t-primary03">希望服務日期：2025/07/23</p>
+              <p className="t-primary03">服務整理師：{organizerName}</p>
+              <p className="t-primary03">希望服務日期：{status === 1 || 4 ? "希望" : ""}服務日期：{serviceDate}</p>
               <p className="t-primary03">
-                服務地址：台北市文山區新光路二段30號
+                服務地址：{serviceAddress}
               </p>
             </div>
             <div
               className={`d-flex flex-column gap-sm ${styles.minWidth} flex-md-fill`}
             >
-              <p className="t-primary03">預約編號：#000001</p>
-              <p className="t-primary03">建立時間：2025/06/20</p>
+              <p className="t-primary03">預約編號：{bookingId}</p>
+              <p className="t-primary03">建立時間：{createdDate}</p>
             </div>
           </div>
           <div className={`d-flex flex-column gap-md ${styles.ptMd}`}>
             {/* userInfo */}
             <div className="d-flex flex-column gap-sm flex-md-fill">
               <p className="t-primary03">預約人資訊：</p>
-              <p className="t-primary03">姓名：陳小姐</p>
-              <p className="t-primary03">電話：0912-345-678</p>
-              <p className="t-primary03">Email：example@email.com</p>
+              <p className="t-primary03">姓名：{userName}</p>
+              <p className="t-primary03">電話：{userPhone}</p>
+              <p className="t-primary03">Email：{userEmail}</p>
             </div>
             {/* img */}
             <div className="d-flex flex-column gap-xs flex-md-fill">
@@ -72,45 +84,30 @@ export default function ListDetails({ status = 1 }) {
               <div
                 className={`d-flex align-items-center flex-wrap ${styles.imgGap}`}
               >
-                <Image
-                  src="/img/hui/defaultimg.png"
-                  width={150}
-                  height={150}
-                  alt="使用者環境照片"
-                  className={styles.userHouseImage}
-                />
-                <Image
-                  src="/img/hui/defaultimg.png"
-                  width={150}
-                  height={150}
-                  alt="使用者環境照片"
-                  className={styles.userHouseImage}
-                />
-                <Image
-                  src="/img/hui/defaultimg.png"
-                  width={150}
-                  height={150}
-                  alt="使用者環境照片"
-                  className={styles.userHouseImage}
-                />
+                {images.map((imageUrl, index) => (
+                  <Image
+                    key={index}
+                    src={`http://localhost:3005${imageUrl}`}
+                    width={150}
+                    height={150}
+                    alt={`使用者環境照片 ${index + 1}`}
+                    className={styles.userHouseImage}
+                  />
+                ))}
+
               </div>
             </div>
             {/* note */}
             <div className="d-flex flex-column gap-xs">
               <p className="t-primary03">備註：</p>
               <p className="t-primary03">
-                希望整理客廳與收納櫃。
-                家中有兩隻活潑貓咪，容易掉毛，建議整理師穿著防毛材質的服裝，避免毛髮沾黏。
-                <br />
-                居住空間內有大量收納櫃與儲物區，整體物品數量較多，可能需要增加人手或延長作業時間。
-                <br />
-                請整理師攜帶適合清潔貓毛的工具（如黏毛滾、除毛刷等）以備不時之需。
+                {note ?? "無"}
               </p>
             </div>
           </div>
         </div>
         <div className={`d-flex justify-content-between ${styles.cardBottom}`}>
-          <h5 className="t-primary03">完成諮詢報價後顯示</h5>
+          <h5 className="t-primary03">{price ? `NT$ ${price}` : "完成諮詢報價後顯示"}</h5>
           {currentStatus.bottomText && (
             <h6 className="t-primary02">{currentStatus.bottomText}</h6>
           )}
