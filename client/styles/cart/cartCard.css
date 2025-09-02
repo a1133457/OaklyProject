@@ -90,6 +90,10 @@
     align-self: stretch;
 }
 
+.cart-main-first .price-num h4{
+    border-bottom: none;
+}
+
 
 
 .quantity {

@@ -67,8 +67,81 @@ router.get("/searchByDate", async (req, res) => {
   }
 });
 
+// 獲取單一文章
+router.get("/detail", async (req, res) => {
+  try {
+    const articleId = req.query.id;
+    console.log(articleId);
+
+    if (!articleId) {
+      const err = new Error("請提供文章 ID");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+
+    const sqlCheck = `
+        SELECT
+            a.id,
+            a.title,
+            a.content,
+            a.author,
+            DATE(a.published_date),
+            ai.img AS all_img,
+            ac.name AS category_name
+        FROM
+            articles a
+            LEFT JOIN article_img ai ON a.id = ai.article_id
+            LEFT JOIN article_category ac ON a.article_category_id = ac.id
+        WHERE
+            a.id = ?
+        GROUP BY
+            a.id,
+            a.title,
+            a.content,
+            a.author,
+            DATE(a.published_date)
+        `;
+
+    const params = [articleId];
+    let article = await connection
+      .execute(sqlCheck, params)
+      .then(([result]) => {
+        return result;
+      });
+    if (!article || article.length === 0) {
+      const err = new Error("找不到此文章");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+
+    // // 處理圖片資料
+    // const articles = result[0];
+    // if (article.all_img) {
+    //   article.all_img = article.all_img.split(","); // 將字串分割成陣列
+    // } else {
+    //   article.all_img = []; // 如果沒有圖片，設為空陣列
+    // }
+
+    res.status(200).json({
+      status: "success",
+      data: article,
+      message: "文章搜尋成功",
+    });
+  } catch (error) {
+    const statusCode = error.code ?? 500;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "文章查詢錯誤，請洽管理人員";
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  }
+});
+
 // 獲取特定 keyword 的文章
-router.get("/", async (req, res) => {
+router.get("/searchKeyword/", async (req, res) => {
   try {
     let keyword = req.query.keyword;
     console.log(keyword);
@@ -134,7 +207,7 @@ router.get("/", async (req, res) => {
 });
 
 // 獲取所有文章 只有主圖
-router.get("/", async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const sql = `
         SELECT a.id, a.title, DATE(a.published_date), MIN(ai.img) AS first_img, ac.name AS category_name
@@ -153,70 +226,6 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    const statusCode = error.code ?? 401;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "文章查詢錯誤，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
-  }
-});
-
-// 獲取單一文章
-router.get("/:id", async (req, res) => {
-  try {
-    const articleId = req.params.id;
-
-    if (!articleId) {
-      const err = new Error("請提供文章 ID");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-
-    const sqlCheck = `
-        SELECT
-            a.id,
-            a.title,
-            a.content,
-            a.author,
-            DATE(a.published_date),
-            ai.img AS all_img,
-            ac.name AS category_name
-        FROM
-            articles a
-            LEFT JOIN article_img ai ON a.id = ai.article_id
-            LEFT JOIN article_category ac ON a.article_category_id = ac.id
-        WHERE
-            a.id = ?
-        GROUP BY
-            a.id,
-            a.title,
-            a.content,
-            a.author,
-            DATE(a.published_date),
-            ac.name
-        `;
-
-    const params = [articleId];
-    let article = await connection
-      .execute(sqlCheck, params)
-      .then(([result]) => {
-        return result;
-      });
-    if (!article || article.length === 0) {
-      const err = new Error("找不到此文章");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-    res.status(200).json({
-      status: "success",
-      data: article,
-      message: "文章搜尋成功",
-    });
-  } catch (error) {
     const statusCode = error.code ?? 500;
     const statusText = error.status ?? "error";
     const message = error.message ?? "文章查詢錯誤，請洽管理人員";
@@ -284,8 +293,6 @@ router.get("/search/:id", async (req, res) => {
     });
   }
 });
-
-
 
 // 新增前端追蹤
 router.post("/:id/track", async (req, res) => {

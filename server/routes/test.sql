@@ -86,14 +86,13 @@ FROM
     LEFT JOIN article_img ai ON a.id = ai.article_id
     LEFT JOIN article_category ac ON a.article_category_id = ac.id
 WHERE
-    a.id = 1
+    a.id = 2
 GROUP BY
     a.id,
     a.title,
     a.content,
     a.author,
-    DATE(a.published_date),
-    ac.name
+    DATE(a.published_date)
 
 SELECT
     a.id,

@@ -13,7 +13,7 @@ const Footer = () => {
           </div>
           <p className="newsletter-text">訂閱我們的電子報，獲得最新優惠資訊</p>
           <form className="newsletter-form">
-            <input type="email" className="newsletter-input" placeholder="輸入您的信箱" />
+            <input type="email" name="email" className="newsletter-input" placeholder="輸入您的信箱" />
             <button type="submit" className="newsletter-btn">訂閱我們</button>
           </form>
         </div>

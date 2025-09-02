@@ -119,17 +119,19 @@ export default function Payment() {
                   </div>
                 )}
               </div>
+
+              {/* payment */}
               <div className="dropdown pay phone">
                 <button
-                  className={`toggleBtn2 ${showI ? "active" : ""} phone`}
+                  className={`toggleBtn2 ${showP ? "active" : ""} phone`}
                   onClick={() => {
-                    setShowI(!showI);
+                    setShowP(!showP);
                   }}
                   id="toggleBtn"
                 >
                   <h6>{selectP}</h6>
                 </button>
-                {showI && (
+                {showP && (
                   <ul className="dropdown-menu">
                     {payments.map((payment) => (
                       <li key={payment}>
@@ -137,7 +139,7 @@ export default function Payment() {
                           className="dropdown-item"
                           onClick={() => {
                             setSelectP(payment);
-                            setShowI(false);
+                            setShowP(false);
                           }}
                         >
                           {payment}

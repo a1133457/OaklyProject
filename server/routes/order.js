@@ -7,7 +7,7 @@ const upload = multer();
 const router = express.Router();
 
 // 查詢使用者單一訂單
-router.get("/", async (req, res) => {
+router.get("/detail", async (req, res) => {
   try {
     const connection = await pool.getConnection();
     const { userId, orderId } = req.query;
@@ -57,6 +57,8 @@ router.get("/", async (req, res) => {
       status: statusText,
       message,
     });
+  } finally {
+    connection.release(); // 必須加這行！
   }
 });
 
@@ -91,7 +93,7 @@ router.get("/", async (req, res) => {
         `;
 
     const [orders] = await connection.execute(sql, [userId]);
-    if (![orders] || [orders].length === 0) {
+    if (!orders || orders.length === 0) {
       const err = new Error("查詢訂單失敗");
       err.code = 400;
       err.status = "fail";
@@ -110,6 +112,8 @@ router.get("/", async (req, res) => {
       status: statusText,
       message,
     });
+  } finally {
+    connection.release(); // 必須加這行！
   }
 });
 
@@ -148,7 +152,6 @@ router.post("/add", async (req, res) => {
       throw err;
     }
 
-
     // 訂單亂碼
     function randomOrderNumber(length = 10) {
       const now = new Date();
@@ -183,7 +186,6 @@ router.post("/add", async (req, res) => {
       recipient_phone,
       postal_code,
       address,
-
     ]);
 
     const orderId = orderResult.insertId;
@@ -225,7 +227,6 @@ router.post("/add", async (req, res) => {
   } finally {
     connection.release();
   }
-
 });
 
 export default router;

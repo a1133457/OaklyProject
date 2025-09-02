@@ -1,6 +1,6 @@
 // import {Geist, Geist_Mono} from "next/font/google"
 import Script from "next/script";
-import { ArticleProvider } from "@/hooks/use-article";
+import { ArticleProvider } from "@/hooks/use-articleOld";
 // import "@/styles/basic.css";
 // import "@/styles/reset.css";
 import "@/styles/globalsHui.css"

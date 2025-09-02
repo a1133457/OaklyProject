@@ -1,7 +1,7 @@
-/* reset */
-@import '_resetHui.css';
 /* 導入 google Noto Sans TC 還有 INTER 英文字體 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+TC:wght@100..900&display=swap');
+/* reset */
+@import '_resetHui.css';
 /* bootstrap.css */
 @import '../node_modules/bootstrap/dist/css/bootstrap.css';
 /* 自訂root */
