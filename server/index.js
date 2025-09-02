@@ -6,6 +6,8 @@ import {v4 as uuidv4} from "uuid";
 import usersRouter from "./routes/users.js";
 import productsRouter from "./routes/productss.js";
 import organizersRouter from "./routes/organizers.js";
+import reviewsRouter from './routes/review.js';
+
 
 // 設定區
 const upload = multer();
@@ -33,6 +35,7 @@ app.get("/", (req, res)=>{
 
 app.use("/api/users", usersRouter);
 app.use("/api/pts", productsRouter);
+app.use('/api', reviewsRouter);
 app.use("/api/organizers", organizersRouter);
 app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));

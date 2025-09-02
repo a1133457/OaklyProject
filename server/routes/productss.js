@@ -203,47 +203,63 @@ router.get("/:id", async (req, res) => {
 
 
 
-// // 搜尋使用者
-// router.get("/search", (req, res)=>{
-//   // 網址參數(查詢參數)會被整理到 req 中的 query 裡
-//   const key = req.query.key;
-//   res.status(200).json({
-//     status: "success",
-//     data: {key},
-//     message: "搜尋使用者 成功"
-//   });
-// });
+router.get("/search", async (req, res) => {
+  let { q, page = 1, limit = 10 } = req.query;
+
+  q = q ? q.trim() : "";
+  page = parseInt(page, 10);
+  limit = parseInt(limit, 10);
+
+  if (!q) {
+    return res.status(400).json({ status: "error", message: "查詢字串不可為空" });
+  }
+
+  if (isNaN(page) || page < 1) page = 1;
+  if (isNaN(limit) || limit < 1) limit = 10;
+
+  const offset = (page - 1) * limit;
+
+  try {
+    let rows, countRows;
+
+    if (/^\d+$/.test(q)) {
+      // 數字 → ID 查詢 (不需要分頁，因為只會有一筆)
+      [rows] = await db.query("SELECT * FROM products WHERE id = ?", [q]);
+      countRows = [{ total: rows.length }];
+    } else {
+      // 文字 → 名稱模糊查詢 (要分頁)
+      [rows] = await db.query(
+        "SELECT * FROM products WHERE name LIKE ? LIMIT ? OFFSET ?",
+        [`%${q}%`, limit, offset]
+      );
+
+      [countRows] = await db.query(
+        "SELECT COUNT(*) AS total FROM products WHERE name LIKE ?",
+        [`%${q}%`]
+      );
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).json({ status: "error", message: "找不到符合的產品" });
+    }
+
+    res.json({
+      status: "success",
+      data: rows,
+      pagination: {
+        total: countRows[0].total,
+        page,
+        limit,
+        totalPages: Math.ceil(countRows[0].total / limit),
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "伺服器錯誤" });
+  }
+});
 
 
-
-// // 新增一個使用者
-// router.post("/", (req, res)=>{
-//   res.status(201).json({
-//     status: "success",
-//     data: {},
-//     message: "新增一個使用者 成功"
-//   });
-// });
-
-// // 更新(特定 ID 的)使用者
-// router.put("/:id", (req, res)=>{
-//   const id = req.params.id;
-//   res.status(200).json({
-//     status: "success",
-//     data: {id},
-//     message: "更新(特定 ID 的)使用者 成功"
-//   });
-// });
-
-// // 刪除(特定 ID 的)使用者
-// router.delete("/:id", (req, res)=>{
-//   const id = req.params.id;
-//   res.status(200).json({
-//     status: "success",
-//     data: {id},
-//     message: "刪除(特定 ID 的)使用者 成功"
-//   });
-// });
 
 
 
