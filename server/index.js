@@ -34,11 +34,11 @@ app.get("/", (req, res)=>{
 });
 
 app.use("/api/users", usersRouter);
-app.use("/api/pts", productsRouter);
 app.use('/api', reviewsRouter);
 app.use("/api/organizers", organizersRouter);
 app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
+
 // app.use("/api/coupon", coupon);
 
 

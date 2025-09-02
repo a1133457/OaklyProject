@@ -31,6 +31,95 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+router.get("/search", async (req, res) => {
+  let { q, page = 1, limit = 10 } = req.query;
+
+  console.log("🔍 搜尋API被呼叫:", { q, page, limit });
+
+  q = q ? q.trim() : "";
+  page = parseInt(page, 10);
+  limit = parseInt(limit, 10);
+
+  if (!q) {
+    return res.status(400).json({ status: "error", message: "查詢字串不可為空" });
+  }
+
+  if (isNaN(page) || page < 1) page = 1;
+  if (isNaN(limit) || limit < 1) limit = 10;
+
+  try {
+    // 🔥 直接使用現有的 getProductsFromDB 函數
+    const allProducts = await getProductsFromDB();
+    
+    const productMap = new Map();
+    allProducts.forEach(item => {
+      if (!productMap.has(item.id)) {
+        productMap.set(item.id, {
+          ...item,
+          images: item.img ? [`/uploads/${item.img}`] : []
+        });
+      } else if (item.img) {
+        productMap.get(item.id).images.push(`/uploads/${item.img}`);
+      }
+    });
+
+    const productsWithImages = Array.from(productMap.values());
+    
+    // 🔥 搜尋篩選
+    const filteredProducts = productsWithImages.filter(product => {
+      // ID 搜尋
+      if (/^\d+$/.test(q)) {
+        return product.id == q;
+      }
+      // 名稱模糊搜尋
+      return product.name.toLowerCase().includes(q.toLowerCase());
+    });
+
+    // 排序：開頭匹配優先
+    filteredProducts.sort((a, b) => {
+      const aStartsWith = a.name.toLowerCase().startsWith(q.toLowerCase());
+      const bStartsWith = b.name.toLowerCase().startsWith(q.toLowerCase());
+      
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    // 分頁處理
+    const offset = (page - 1) * limit;
+    const paginatedResults = filteredProducts.slice(offset, offset + limit);
+
+    console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
+    
+    if (paginatedResults.length > 0) {
+      console.log("找到的產品:", paginatedResults.map(r => r.name));
+    }
+
+    res.json({
+      status: "success",
+      data: paginatedResults,
+      pagination: {
+        total: filteredProducts.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filteredProducts.length / limit),
+      },
+    });
+
+  } catch (err) {
+    console.error("搜尋錯誤:", err);
+    res.status(500).json({ status: "error", message: "伺服器錯誤" });
+  }
+});
+
+
+
 //  獲取產品詳細資料
 router.get("/:id", async (req, res) => {
   try {
@@ -203,61 +292,7 @@ router.get("/:id", async (req, res) => {
 
 
 
-router.get("/search", async (req, res) => {
-  let { q, page = 1, limit = 10 } = req.query;
 
-  q = q ? q.trim() : "";
-  page = parseInt(page, 10);
-  limit = parseInt(limit, 10);
-
-  if (!q) {
-    return res.status(400).json({ status: "error", message: "查詢字串不可為空" });
-  }
-
-  if (isNaN(page) || page < 1) page = 1;
-  if (isNaN(limit) || limit < 1) limit = 10;
-
-  const offset = (page - 1) * limit;
-
-  try {
-    let rows, countRows;
-
-    if (/^\d+$/.test(q)) {
-      // 數字 → ID 查詢 (不需要分頁，因為只會有一筆)
-      [rows] = await db.query("SELECT * FROM products WHERE id = ?", [q]);
-      countRows = [{ total: rows.length }];
-    } else {
-      // 文字 → 名稱模糊查詢 (要分頁)
-      [rows] = await db.query(
-        "SELECT * FROM products WHERE name LIKE ? LIMIT ? OFFSET ?",
-        [`%${q}%`, limit, offset]
-      );
-
-      [countRows] = await db.query(
-        "SELECT COUNT(*) AS total FROM products WHERE name LIKE ?",
-        [`%${q}%`]
-      );
-    }
-
-    if (rows.length === 0) {
-      return res.status(404).json({ status: "error", message: "找不到符合的產品" });
-    }
-
-    res.json({
-      status: "success",
-      data: rows,
-      pagination: {
-        total: countRows[0].total,
-        page,
-        limit,
-        totalPages: Math.ceil(countRows[0].total / limit),
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "error", message: "伺服器錯誤" });
-  }
-});
 
 
 

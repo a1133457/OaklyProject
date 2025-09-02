@@ -710,6 +710,14 @@ span {
   width: 40px;
 }
 
+.nosearchfit{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-direction: column;
+  padding: 12px 0px;
+}
 
 
 

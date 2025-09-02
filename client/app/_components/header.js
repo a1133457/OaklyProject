@@ -10,65 +10,12 @@ export default function Header() {
   const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef(null);
-  const searchDropdownRef = useRef(null);
-
-  // 搜尋功能
-  const handleSearch = async (query) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    
-    try {
-      const response = await fetch(`http://localhost:3005/api/products/search?q=${encodeURIComponent(query)}`);
-
-      const data = await response.json();
-      console.log("🔍 API 回傳:", data); 
-
-      
-      if (data.status === 'success') {
-        const productResults = data.data.map(product => ({
-          id: product.id,
-          title: product.name,
-          type: 'product',
-          url: `/products/${product.id}`,
-          price: product.price,
-          image: product.image
-        }));
-        setSearchResults(productResults);
-      } else {
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error('搜尋失敗:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // 防抖搜尋
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      handleSearch(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
 
   // 點擊外部關閉搜尋
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        searchDropdownRef.current &&
-        !searchDropdownRef.current.contains(event.target) &&
-        !searchInputRef.current?.contains(event.target)
-      ) {
+      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
         setIsSearchOpen(false);
       }
     };
@@ -88,14 +35,13 @@ export default function Header() {
   // 處理 Enter 鍵搜尋
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+      // 修正：導航到搜尋結果頁面
+      window.location.href = `/products/search?q=${encodeURIComponent(searchQuery)}`;
+      setIsSearchOpen(false);
     }
   };
 
-  // 獲取搜尋結果類型圖示
-  const getSearchIcon = (type) => {
-    return '🛋️';
-  };
+
 
   return (
     <div className="container-fluid header">
@@ -104,16 +50,16 @@ export default function Header() {
           <img src="/img/Oakly-green.svg" alt="Oakly首頁" />
         </Link>
         <div className="menu">
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="/products">
             <h6>商品列表</h6>
           </Link>
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="/appointment">
             <h6>預約整理師</h6>
           </Link>
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="/articles">
             <h6>精選文章</h6>
           </Link>
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="/faq">
             <h6>常見問題</h6>
           </Link>
         </div>
@@ -141,53 +87,7 @@ export default function Header() {
                 className="search-input"
               />
               
-              {/* 搜尋結果下拉選單 */}
-              {(searchResults.length > 0 || isSearching) && (
-                <div 
-                  ref={searchDropdownRef}
-                  className="search-results"
-                >
-                  {isSearching ? (
-                    <div className="search-loading">
-                      <i className="fa-solid fa-spinner fa-spin"></i>
-                      <span>搜尋中...</span>
-                    </div>
-                  ) : searchResults.length > 0 ? (
-                    <>
-                      {searchResults.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={item.url}
-                          onClick={() => setIsSearchOpen(false)}
-                          className="search-result-item"
-                        >
-                          <span className="search-result-icon">
-                            {getSearchIcon(item.type)}
-                          </span>
-                          <div className="search-result-content">
-                            <div className="search-result-title">{item.title}</div>
-                            <div className="search-result-price">
-                              NT$ {item.price ? item.price.toLocaleString() : '價格洽詢'}
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                      <div className="search-footer">
-                        <Link 
-                          href={`/products?search=${encodeURIComponent(searchQuery)}`}
-                          onClick={() => setIsSearchOpen(false)}
-                        >
-                          查看全部 "{searchQuery}" 的產品搜尋結果
-                        </Link>
-                      </div>
-                    </>
-                  ) : searchQuery.trim() && (
-                    <div className="search-no-results">
-                      沒有找到相關結果
-                    </div>
-                  )}
-                </div>
-              )}
+
             </div>
           )}
         </div>
@@ -202,10 +102,10 @@ export default function Header() {
         </Link>
 
         <div className="user-log">
-          <Link href="/">
+          <Link href="/register">
             <h6>註冊</h6>
           </Link>
-          <Link href="/">
+          <Link href="/login">
             <h6>登入</h6>
           </Link>
         </div>
@@ -233,9 +133,12 @@ export default function Header() {
             ></button>
           </div>
           <div className="offcanvas-body">
-            <p>
-              Try scrolling the rest of the page to see this option in action.
-            </p>
+            <div className="mobile-menu">
+              <Link href="/products" className="mobile-menu-item">商品列表</Link>
+              <Link href="/appointment" className="mobile-menu-item">預約整理師</Link>
+              <Link href="/articles" className="mobile-menu-item">精選文章</Link>
+              <Link href="/faq" className="mobile-menu-item">常見問題</Link>
+            </div>
           </div>
         </div>
       </div>
