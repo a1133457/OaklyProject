@@ -6,6 +6,7 @@ import {v4 as uuidv4} from "uuid";
 import usersRouter from "./routes/users.js";
 import productsRouter from "./routes/productss.js";
 import organizersRouter from "./routes/organizers.js";
+import userOrganizersRouter from "./routes/userOrganizers.js";
 import couponRouter from "./routes/coupons.js";
 import userCouponRouter from "./routes/userCoupons.js";
 import articleRouter from "./routes/article.js";
@@ -39,6 +40,7 @@ app.get("/", (req, res)=>{
 app.use("/api/users", usersRouter);
 app.use("/api/pts", productsRouter);
 app.use("/api/organizers", organizersRouter);
+app.use("/api/user/organizers", userOrganizersRouter);
 app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
 app.use("/api/coupons", couponRouter);

@@ -136,7 +136,7 @@ export default function FormPage() {
 
     // 送出資料
     try {
-      const response = await fetch('http://localhost:3005/api/organizers/form', {
+      const response = await fetch('http://localhost:3005/api/user/organizers/add', {
         method: 'POST',
         body: formData
       });

@@ -8,20 +8,21 @@ router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params; // 取得路由參數
     const sql = `SELECT 
-  uc.*,
-  c.name,
-  c.discount,
-  c.min_discount,
-  c.start_at,
-  c.end_at,
-  GROUP_CONCAT(pc.name) as category_names
-FROM user_coupons uc
-JOIN coupons c ON uc.coupon_id = c.id
-LEFT JOIN coupon_categories cc ON c.id = cc.coupon_id
-LEFT JOIN products_category pc ON cc.category_id = pc.id
-WHERE uc.user_id = ? AND uc.status IN (0, 1)
-GROUP BY uc.id
-ORDER BY uc.status ASC`;
+      uc.*,
+      c.name,
+      c.discount,
+      c.min_discount,
+      c.start_at,
+      c.end_at,
+      GROUP_CONCAT(pc.name) as category_names
+    FROM user_coupons uc
+    JOIN coupons c ON uc.coupon_id = c.id
+    LEFT JOIN coupon_categories cc ON c.id = cc.coupon_id
+    LEFT JOIN products_category pc ON cc.category_id = pc.id
+    WHERE uc.user_id = ? AND uc.status IN (0, 1)
+    GROUP BY uc.id
+    ORDER BY uc.status ASC`;
+    
     const [coupons] = await connection.execute(sql, [userId]);
     res.status(200).json({
       status: "success",
