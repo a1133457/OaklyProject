@@ -120,7 +120,7 @@ router.get("/:userId/:bookingId", async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: bookings,
+      data: booking,
       message: "取得使用者的預約資訊詳情",
     });
   } catch (error) {

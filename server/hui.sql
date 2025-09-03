@@ -154,6 +154,7 @@ CREATE TABLE bookings (
     FOREIGN KEY (organizer_id) REFERENCES organizers(id)
 );
 
+DROP TABLE booking_images;
 -- 2.用戶家裡環境圖片
 CREATE TABLE booking_images (
     id INT PRIMARY KEY AUTO_INCREMENT,

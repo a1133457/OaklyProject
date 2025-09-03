@@ -2,19 +2,19 @@ import LinkArrow from '@/app/_components/LinkArrow'
 import styles from '@/styles/userOrganizerDetails/userOrganizerDetails.module.css'
 import Image from 'next/image'
 
-export default function ListDetails(
+export default function ListDetails({
   status,
   organizerName,
   serviceDate,
   serviceAddress,
   bookingId,
-  createdDate,
+  createdAt,
   userName,
   userPhone,
   userEmail,
   images,
   note,
-  price) {
+  price}) {
   const statusConfig = {
     1: {
       label: '諮詢中',
@@ -43,8 +43,8 @@ export default function ListDetails(
     },
   }
 
-  const currentStatus = statusConfig[status]
-
+ const currentStatus = statusConfig[status] || statusConfig[1] // 如果找不到就用預設值
+  // console.log('收到的 status:', status);
   return (
     <>
       <div
@@ -58,7 +58,7 @@ export default function ListDetails(
           <div className={`d-flex flex-column flex-md-row ${styles.infoGap}`}>
             <div className="d-flex flex-column gap-sm flex-md-fill">
               <p className="t-primary03">服務整理師：{organizerName}</p>
-              <p className="t-primary03">希望服務日期：{status === 1 || 4 ? "希望" : ""}服務日期：{serviceDate}</p>
+              <p className="t-primary03">{status === 1 || 4 ? "希望" : ""}服務日期：{serviceDate}</p>
               <p className="t-primary03">
                 服務地址：{serviceAddress}
               </p>
@@ -67,7 +67,7 @@ export default function ListDetails(
               className={`d-flex flex-column gap-sm ${styles.minWidth} flex-md-fill`}
             >
               <p className="t-primary03">預約編號：{bookingId}</p>
-              <p className="t-primary03">建立時間：{createdDate}</p>
+              <p className="t-primary03">建立時間：{createdAt}</p>
             </div>
           </div>
           <div className={`d-flex flex-column gap-md ${styles.ptMd}`}>
@@ -79,24 +79,25 @@ export default function ListDetails(
               <p className="t-primary03">Email：{userEmail}</p>
             </div>
             {/* img */}
-            <div className="d-flex flex-column gap-xs flex-md-fill">
-              <p className="t-primary03">環境照片：</p>
-              <div
-                className={`d-flex align-items-center flex-wrap ${styles.imgGap}`}
-              >
-                {images.map((imageUrl, index) => (
-                  <Image
-                    key={index}
-                    src={`http://localhost:3005${imageUrl}`}
-                    width={150}
-                    height={150}
-                    alt={`使用者環境照片 ${index + 1}`}
-                    className={styles.userHouseImage}
-                  />
-                ))}
-
+          {images && images.length > 0 && (
+              <div className="d-flex flex-column gap-xs flex-md-fill">
+                <p className="t-primary03">環境照片：</p>
+                <div
+                  className={`d-flex align-items-center flex-wrap ${styles.imgGap}`}
+                >
+                  {images.map((imageUrl, index) => (
+                    <Image
+                      key={index}
+                      src={`http://localhost:3005${imageUrl}`}
+                      width={150}
+                      height={150}
+                      alt={`使用者環境照片 ${index + 1}`}
+                      className={styles.userHouseImage}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             {/* note */}
             <div className="d-flex flex-column gap-xs">
               <p className="t-primary03">備註：</p>
