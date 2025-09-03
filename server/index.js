@@ -3,7 +3,7 @@ import multer from "multer";
 import cors from "cors";
 import moment from "moment";
 import {v4 as uuidv4} from "uuid";
-import usersRouter from "./routes/users.js";
+import usersRouter from "./routes/users2.js";
 import productsRouter from "./routes/productss.js";
 import organizersRouter from "./routes/organizers.js";
 import couponRouter from "./routes/coupons.js";
@@ -26,7 +26,7 @@ let corsOptions = {
 
 // 路由區
 const app = express();
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public')) //後端提供public的靜態檔案
@@ -34,6 +34,7 @@ app.use(express.static('public')) //後端提供public的靜態檔案
 app.get("/", (req, res)=>{
   res.send("首頁");
 });
+ 
 
 app.use("/api/users", usersRouter);
 app.use("/api/pts", productsRouter);
@@ -48,3 +49,4 @@ app.use("/api/order", orderRouter);
 app.listen(3005, ()=>{
   console.log("主機啟動 http://localhost:3005");
 });
+

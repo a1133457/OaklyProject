@@ -16,7 +16,6 @@ router.get("/", async (req, res) => {
   try {
     const sql = "SELECT * FROM `users`;";
     let [users] = await connection.execute(sql);
-
     res.status(200).json({
       status: "success",
       data: users,
