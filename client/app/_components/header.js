@@ -10,6 +10,8 @@ export default function Header() {
   const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
   const searchInputRef = useRef(null);
 
   // 點擊外部關閉搜尋
@@ -17,6 +19,7 @@ export default function Header() {
     const handleClickOutside = (event) => {
       if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
         setIsSearchOpen(false);
+        setIsInputFocused(false);
       }
     };
 
@@ -24,13 +27,23 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 處理搜尋按鈕點擊
-  const handleSearchToggle = () => {
-    setIsSearchOpen(!isSearchOpen);
-    if (!isSearchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
-    }
+  // 處理搜尋按鈕點擊 - 防止震動
+  const handleSearchToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsSearchOpen(prev => !prev);
+
   };
+
+  // 處理輸入框焦點
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+  };
+
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
+  };
+
 
   // 處理 Enter 鍵搜尋
   const handleKeyPress = (e) => {
@@ -38,6 +51,7 @@ export default function Header() {
       // 修正：導航到搜尋結果頁面
       window.location.href = `/products/search?q=${encodeURIComponent(searchQuery)}`;
       setIsSearchOpen(false);
+      setIsInputFocused(false);
     }
   };
 
@@ -68,13 +82,13 @@ export default function Header() {
       <div className="icon-group">
         {/* 搜尋功能 */}
         <div className="search-container">
-          <button 
+          <button
             onClick={handleSearchToggle}
             className="search-btn"
           >
             <i className="fa-solid fa-magnifying-glass"></i>
           </button>
-          
+
           {isSearchOpen && (
             <div className="search-input-container">
               <input
@@ -83,10 +97,13 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
                 placeholder="搜尋產品..."
                 className="search-input"
+
               />
-              
+
 
             </div>
           )}

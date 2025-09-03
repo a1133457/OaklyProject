@@ -7,7 +7,6 @@ import { useCart } from '@/app/contexts/CartContext';
 
 
 const MainProduct = () => {
-
   const [selectedFilters, setSelectedFilters] = useState({
     colors: [],
     materials: [],
@@ -24,6 +23,35 @@ const MainProduct = () => {
     series: []
   });
   const [tempPriceRange, setTempPriceRange] = useState({ min: 0, max: 50000 });
+
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+
+  const categoryMapping = {
+    // 客廳分類
+    '邊桌': '客廳',
+    '單椅': '客廳',
+    '茶几': '客廳',
+    '書櫃': '客廳',
+    '書桌': '客廳',
+    '邊櫃': '客廳',
+    // 廚房分類
+    '實木餐桌': '廚房',
+    '餐椅': '廚房',
+    '吧台桌': '廚房',
+    '吧台椅': '廚房',
+    // 臥室分類
+    '床架': '臥室',
+    '床邊桌': '臥室',
+    '化妝台': '臥室',
+    '全身鏡': '臥室',
+    '衣櫃': '臥室',
+    // 兒童房分類
+    '桌椅組': '兒童房',
+    // 收納空間分類
+    '收納盒': '收納空間',
+    '收納櫃': '收納空間'
+  };
 
 
   const colorMapping = {
@@ -195,11 +223,11 @@ const MainProduct = () => {
 
 
       return priceMatch && colorMatch && materialMatch && seriesMatch;
-     
+
     });
     console.log("筛选结果:", filtered.length, "个商品");
     console.log("商品列表:", filtered.map(p => p.name));
-    
+
     return filtered;
   };
 
@@ -306,22 +334,78 @@ const MainProduct = () => {
     return buttons;
   };
 
-  //產品api
   useEffect(() => {
-    fetch("http://localhost:3005/api/products")
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json);
-        setProducts(Array.isArray(json) ? json : []);
-      })
-      .catch((err) => {
+    const fetchProducts = async () => {
+      try {
+        let url = "http://localhost:3005/api/products";
+        let allProducts = [];
+
+        if (selectedSubCategory) {
+          // 如果選擇了子分類，先按大分類獲取商品，再按名稱篩選
+          const mainCategory = categoryMapping[selectedSubCategory];
+          if (mainCategory) {
+            const response = await fetch(`${url}?category=${encodeURIComponent(mainCategory)}`);
+            const categoryProducts = await response.json();
+
+            // 從中篩選包含子分類關鍵字的商品
+            allProducts = categoryProducts.filter(product =>
+              product.name.toLowerCase().includes(selectedSubCategory.toLowerCase()) ||
+              product.description?.toLowerCase().includes(selectedSubCategory.toLowerCase())
+            );
+          }
+        } else if (selectedCategory) {
+          // 只選擇了大分類
+          const response = await fetch(`${url}?category=${encodeURIComponent(selectedCategory)}`);
+          allProducts = await response.json();
+        } else {
+          // 獲取所有商品
+          const response = await fetch(url);
+          allProducts = await response.json();
+        }
+
+        console.log('獲取的商品:', allProducts);
+        setProducts(Array.isArray(allProducts) ? allProducts : []);
+        setCurrentPage(1);
+      } catch (err) {
         console.error("產品 API 請求錯誤：", err);
-      });
-  }, []);
+        setProducts([]);
+      }
+    };
+
+    fetchProducts();
+  }, [selectedCategory, selectedSubCategory]);
+  // //產品api
+  // useEffect(() => {
+  //   fetch("http://localhost:3005/api/products")
+  //     .then((res) => res.json())
+  //     .then((json) => {
+  //       console.log(json);
+  //       setProducts(Array.isArray(json) ? json : []);
+  //     })
+  //     .catch((err) => {
+  //       console.error("產品 API 請求錯誤：", err);
+  //     });
+  // }, []);
 
   const currentProducts = getCurrentPageProducts();
 
+  const handleCategoryClick = (e, categoryName) => {
+    e.preventDefault();
 
+    // 檢查是否為子分類
+    if (categoryMapping[categoryName]) {
+      // 這是子分類
+      setSelectedSubCategory(categoryName);
+      setSelectedCategory(categoryMapping[categoryName]);
+    } else {
+      // 這是大分類
+      setSelectedCategory(categoryName);
+      setSelectedSubCategory('');
+    }
+
+    // 清除其他篩選條件
+    clearFilters();
+  };
 
 
   return (
@@ -363,84 +447,88 @@ const MainProduct = () => {
           <div className="dropdown hover-dropdown">
             <div
               className="sub-nav-link dropdown-toggle"
-              // data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              空間<i className="fas fa-chevron-down  fa-sm"></i>
+              空間<i className="fas fa-chevron-down fa-sm"></i>
             </div>
             <div className="dropdown-menu dropdown-megamenu">
               <div className="megamenu-column">
-                <h6 className="dropdown-header">客廳</h6>
-                <a className="dropdown-item" href="#">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '客廳')}>
+                  客廳
+                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '邊桌')}>
                   邊桌
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '單椅')}>
                   單椅/單人沙發
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '茶几')}>
                   茶几
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '書櫃')}>
                   書櫃 / 書架
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '書桌')}>
                   書桌 / 書桌椅
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '邊櫃')}>
                   邊櫃 / 收納櫃
                 </a>
               </div>
               <div className="megamenu-column">
-                <h6 className="dropdown-header">廚房</h6>
-                <a className="dropdown-item" href="#">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '廚房')}>
+                  廚房
+                </a>                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '實木餐桌')}>
                   實木餐桌
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '餐椅')}>
                   餐椅 / 椅子
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '吧台桌')}>
                   吧台桌
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '吧台椅')}>
                   吧台椅
                 </a>
               </div>
               <div className="megamenu-column">
-                <h6 className="dropdown-header">臥室</h6>
-                <a className="dropdown-item" href="#">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '臥室')}>
+                  臥室
+                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
                   床架
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床邊桌')}>
                   床邊桌
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '化妝台')}>
                   化妝台
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '全身鏡')}>
                   全身鏡 / 鏡子
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '衣櫃')}>
                   衣櫃 / 衣架
                 </a>
               </div>
               <div className="megamenu-column">
-                <h6 className="dropdown-header">兒童房</h6>
-                <a className="dropdown-item" href="#">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '兒童房')}>
+                  兒童房
+                </a>                      <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '桌椅組')}>
                   桌椅組
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '衣櫃')}>
                   衣櫃
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
                   床架
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納櫃')}>
                   收納櫃
                 </a>
               </div>
               <div className="megamenu-column">
-                <h6 className="dropdown-header">收納空間</h6>
-                <a className="dropdown-item" href="#">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '收納用品')}>
+                  收納空間
+                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納盒')}>
                   收納盒 / 收納箱
                 </a>
               </div>
@@ -454,14 +542,26 @@ const MainProduct = () => {
       </div>
 
       {/* 子導航欄 */}
-      <div className="breadcrumb-nav">
-        <div className="sub-nav-content">
-          <div className="breadcrumb">
-            <a href="/">首頁</a>
+      <div className="breadcrumb">
+        <a href="/">首頁</a>
+        <div className="arrow">&gt;</div>
+        <a href="#" onClick={(e) => { e.preventDefault(); setSelectedCategory(''); setSelectedSubCategory(''); }}>
+          商品總頁
+        </a>
+        {selectedCategory && (
+          <>
             <div className="arrow">&gt;</div>
-            商品總頁
-          </div>
-        </div>
+            <a href="#" onClick={(e) => { e.preventDefault(); setSelectedSubCategory(''); }}>
+              {selectedCategory}
+            </a>
+          </>
+        )}
+        {selectedSubCategory && (
+          <>
+            <div className="arrow">&gt;</div>
+            {selectedSubCategory}
+          </>
+        )}
       </div>
 
       {/* 主要內容區域 */}

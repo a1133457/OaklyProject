@@ -1654,10 +1654,9 @@ body.modal-open {
     border-radius: 2px;
 
 }
-.body-no-scroll {
+.no-scroll {
     overflow: hidden !important;
   }
-
 
 /* 收藏彈窗樣式 */
 .wishlist-modal-backdrop {
@@ -1709,7 +1708,7 @@ body.modal-open {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: #6a6a6a;
 }
 
 .wishlist-modal-header {
@@ -1752,7 +1751,7 @@ body.modal-open {
 
 .wishlist-product-name {
     margin: 0 0 8px 0;
-    color: #333;
+    color: #494949;
     font-size: 16px;
     font-weight: 600;
 }
@@ -1771,7 +1770,7 @@ body.modal-open {
     display: block;
     margin-bottom: 10px;
     font-weight: bold;
-    color: #333;
+    color: #494949;
     font-size: 14px;
 }
 

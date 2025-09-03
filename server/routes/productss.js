@@ -7,10 +7,37 @@ import { getProductsFromDB } from "./models/products.js";
 const upload = multer();
 const router = express.Router();
 
-// 獲取所有產品
 router.get("/", async (req, res) => {
   try {
-    const products = await getProductsFromDB();
+    const { category } = req.query;
+    console.log('收到的 category 參數:', category);
+    
+    let products;
+    
+    if (category) {
+      const query = `
+        SELECT 
+          p.*,
+          pc.category_name,
+          pi.img
+        FROM products p
+        LEFT JOIN products_category pc ON p.category_id = pc.category_id
+        LEFT JOIN product_img pi ON p.id = pi.product_id
+        WHERE pc.category_name LIKE ?
+      `;
+      
+      try {
+        const [rows] = await db.execute(query, [`%${category}%`]);
+        console.log('分類查詢結果數量:', rows.length);
+        products = rows;
+      } catch (dbError) {
+        console.error('資料庫查詢錯誤:', dbError);
+        throw dbError;
+      }
+    } else {
+      products = await getProductsFromDB();
+    }
+    
     const productMap = new Map();
     products.forEach(item => {
       if (!productMap.has(item.id)) {
@@ -22,19 +49,19 @@ router.get("/", async (req, res) => {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
       }
     });
-    // 轉成陣列回傳
+    
     const productsWithImages = Array.from(productMap.values());
+    console.log('最終回傳產品數量:', productsWithImages.length);
     res.json(productsWithImages);
+    
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "取得商品失敗" });
+    console.error('詳細錯誤訊息:', error);
+    res.status(500).json({ 
+      message: "取得商品失敗",
+      error: error.message 
+    });
   }
 });
-
-
-
-
-
 
 
 router.get("/search", async (req, res) => {

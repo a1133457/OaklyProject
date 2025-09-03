@@ -239,7 +239,7 @@ body {
 
 .dropdown-menu {
   position: absolute;
-  top: 120%;
+  top: 100%; 
   left: 50%;
   transform: translateX(-50%);
 }
@@ -267,13 +267,15 @@ body {
 
 /* 標題樣式 */
 .dropdown-header {
-  font-weight: 500;
   font-size: 16px;
   text-align: left;
   padding: 0;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #EDEDED;
   color: #6A6A6A;
+  text-decoration: none ;
+  cursor: pointer;
+  font-weight: bold;
 
 }
 .filter-option.active {
@@ -714,9 +716,9 @@ span {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-direction: column;
-  padding: 12px 0px;
+  padding-bottom: 28px 
 }
 
 

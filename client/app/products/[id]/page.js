@@ -6,6 +6,10 @@ import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
 import { useCart } from '@/app/contexts/CartContext.js';
+import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
+
+
+
 
 
 
@@ -56,7 +60,9 @@ export default function PidPage({ params }) {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
 
+  
 
+  
   // 展開狀態管理
   const [expandedSections, setExpandedSections] = useState({
     productInfo: false,
@@ -100,6 +106,7 @@ export default function PidPage({ params }) {
 
     fetchProductData();
   }, [productId]);
+
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
@@ -145,7 +152,7 @@ export default function PidPage({ params }) {
     if (isProductInWishlist(product.id)) {
       removeFromWishlist(product.id);
     } else {
-      openWishlistModal(product,event);
+      openWishlistModal(product, event);
     }
   };
 
@@ -154,47 +161,48 @@ export default function PidPage({ params }) {
     handleWishlistClick(product);
   };
 
-const openWishlistModal = async (product, clickEvent = null) => {
-  setCurrentWishlistProduct(product);
-  setSelectedColor(product.colors?.[0] || null);
-  setSelectedSize(product.sizes?.[0] || null);
-  setWishlistQuantity(1);
-  setShowWishlistModal(true);
-  document.body.classList.add('no-scroll');
+  const openWishlistModal = async (product, clickEvent = null) => {
+    setCurrentWishlistProduct(product);
+    setSelectedColor(product.colors?.[0] || null);
+    setSelectedSize(product.sizes?.[0] || null);
+    setWishlistQuantity(1);
+    setShowWishlistModal(true);
+    document.body.classList.add('no-scroll');
 
-  // 如果是其他商品且缺少詳細資料，先獲取完整資料
-  if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
-    try {
-      setWishlistLoading(true);
-      const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
-      const result = await response.json();
+    // 如果是其他商品且缺少詳細資料，先獲取完整資料
+    if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
+      try {
+        setWishlistLoading(true);
+        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+        const result = await response.json();
 
-      if (result.status === 'success') {
-        product = result.data;
-        setCurrentWishlistProduct(result.data);
-        setSelectedColor(result.data.colors?.[0] || null);
-        setSelectedSize(result.data.sizes?.[0] || null);
+        if (result.status === 'success') {
+          product = result.data;
+          setCurrentWishlistProduct(result.data);
+          setSelectedColor(result.data.colors?.[0] || null);
+          setSelectedSize(result.data.sizes?.[0] || null);
+        }
+      } catch (err) {
+        console.error('獲取商品詳細資料失敗:', err);
+        alert('無法載入商品資料，請稍後再試');
+        return;
+      } finally {
+        setWishlistLoading(false);
       }
-    } catch (err) {
-      console.error('獲取商品詳細資料失敗:', err);
-      alert('無法載入商品資料，請稍後再試');
-      return;
-    } finally {
-      setWishlistLoading(false);
     }
-  }
 
- 
-};
 
-useEffect(() => {
-  if (showWishlistModal) {
-    document.body.classList.add('body-no-scroll');
-  } else {
-    document.body.classList.remove('body-no-scroll');
-  }
-  return () => document.body.classList.remove('body-no-scroll');
-}, [showWishlistModal]);
+  };
+  
+
+  useEffect(() => {
+    if (showWishlistModal) {
+      document.body.classList.add('body-no-scroll');
+    } else {
+      document.body.classList.remove('body-no-scroll');
+    }
+    return () => document.body.classList.remove('body-no-scroll');
+  }, [showWishlistModal]);
 
 
 
@@ -436,51 +444,8 @@ useEffect(() => {
           <a href="#" className="sub-nav-link">
             熱賣
           </a>
-          <div className="dropdown hover-dropdown">
-            <div
-              className="sub-nav-link dropdown-toggle"
-              aria-expanded="false"
-            >
-              空間<i className="fas fa-chevron-down  fa-sm"></i>
-            </div>
-            <div className="dropdown-menu dropdown-megamenu">
-              <div className="megamenu-column">
-                <h6 className="dropdown-header">客廳</h6>
-                <a className="dropdown-item" href="#">邊桌</a>
-                <a className="dropdown-item" href="#">單椅/單人沙發</a>
-                <a className="dropdown-item" href="#">茶几</a>
-                <a className="dropdown-item" href="#">書櫃 / 書架</a>
-                <a className="dropdown-item" href="#">書桌 / 書桌椅</a>
-                <a className="dropdown-item" href="#">邊櫃 / 收納櫃</a>
-              </div>
-              <div className="megamenu-column">
-                <h6 className="dropdown-header">廚房</h6>
-                <a className="dropdown-item" href="#">實木餐桌</a>
-                <a className="dropdown-item" href="#">餐椅 / 椅子</a>
-                <a className="dropdown-item" href="#">吧台桌</a>
-                <a className="dropdown-item" href="#">吧台椅</a>
-              </div>
-              <div className="megamenu-column">
-                <h6 className="dropdown-header">臥室</h6>
-                <a className="dropdown-item" href="#">床架</a>
-                <a className="dropdown-item" href="#">床邊桌</a>
-                <a className="dropdown-item" href="#">化妝台</a>
-                <a className="dropdown-item" href="#">全身鏡 / 鏡子</a>
-                <a className="dropdown-item" href="#">衣櫃 / 衣架</a>
-              </div>
-              <div className="megamenu-column">
-                <h6 className="dropdown-header">兒童房</h6>
-                <a className="dropdown-item" href="#">桌椅組</a>
-                <a className="dropdown-item" href="#">衣櫃</a>
-                <a className="dropdown-item" href="#">床架</a>
-                <a className="dropdown-item" href="#">收納櫃</a>
-              </div>
-              <div className="megamenu-column">
-                <h6 className="dropdown-header">收納空間</h6>
-                <a className="dropdown-item" href="#">收納盒 / 收納箱</a>
-              </div>
-            </div>
-          </div>
+          <CategoryDropdown />
+
           <a href="#" className="sub-nav-link">
             It's Oakly
           </a>
@@ -554,15 +519,20 @@ useEffect(() => {
               <button
                 type="button"
                 className="btn view-review"
-                onClick={() => setShowModal(true)}
-
-
+                onClick={() => {
+                  setShowModal(true);
+                  document.body.style.position = 'fixed';
+                  document.body.style.width = '100%';
+                  document.body.style.overflow = 'hidden';
+                }}
               >
                 查看評論
               </button>
-
               <div
                 className={`modal fade ${showModal ? 'show' : ''}`}
+
+                onWheel={(e) => e.preventDefault()}
+                onTouchMove={(e) => e.preventDefault()}
                 id="exampleModal"
                 tabIndex="-1"
                 aria-labelledby="exampleModalLabel"
@@ -581,7 +551,12 @@ useEffect(() => {
                       <button
                         type="button"
                         className="btn-close"
-                        onClick={() => setShowModal(false)}
+                        onClick={() => {
+                          setShowModal(false);
+                          document.body.style.position = '';
+                          document.body.style.width = '';
+                          document.body.style.overflow = '';
+                        }}
                         aria-label="Close"
                       ></button>
                     </div>
@@ -604,7 +579,12 @@ useEffect(() => {
               {showModal && (
                 <div
                   className="modal-backdrop fade show"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.overflow = '';
+                  }}
                 ></div>
               )}
             </div>
@@ -918,21 +898,21 @@ useEffect(() => {
                         +
                       </button>
                     </div>
-                    
+
                   </div>
                   <div className="wishlist-modal-footer">
-                <button
-                  onClick={addToWishlist}
-                  disabled={!selectedColor || !selectedSize}
-                  className="wishlist-submit-btn"
-                >
-                  加入收藏
-                </button>
-              </div>
+                    <button
+                      onClick={addToWishlist}
+                      disabled={!selectedColor || !selectedSize}
+                      className="wishlist-submit-btn"
+                    >
+                      加入收藏
+                    </button>
+                  </div>
                 </div>
               </div>
 
-         
+
             </div>
           </div>
         </>
