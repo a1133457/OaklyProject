@@ -600,17 +600,12 @@ export default function PidPage({ params }) {
                   {productData.colors?.map((color) => (
                     <div
                       key={color.id}
-                      className="color"
+                      className={`color ${selectedColor?.id === color.id ? 'selected' : ''}`}
                       style={{ backgroundColor: getColorCode(color.color_name) }}
                       title={color.color_name}
+                      onClick={() => setSelectedColor(color)} // 添加點擊事件
                     ></div>
-                  )) || (
-                      <>
-                        <div className="color" style={{ backgroundColor: "#000" }}></div>
-                        <div className="color" style={{ backgroundColor: "#224949" }}></div>
-                        <div className="color" style={{ backgroundColor: "#555555" }}></div>
-                      </>
-                    )}
+                  ))}
                 </div>
               </div>
             </div>
@@ -645,7 +640,7 @@ export default function PidPage({ params }) {
                 className="add-to-cart-btn"
                 onClick={() => {
                   console.log('商品資料：', productData);
-                  addToCart(productData, quantity);
+                  addToCart(productData, quantity, selectedColor, selectedSize);
                 }}
               >加入購物車</button>
             </div>

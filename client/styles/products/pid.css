@@ -1265,7 +1265,15 @@ body.modal-open {
     font-weight: 700;
     word-wrap: break-word
 }
-
+.color {
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .color.selected {
+    border: 1px solid #ededed;
+  }
+  
 /* 指示點 */
 .carousel-dots {
     display: flex;

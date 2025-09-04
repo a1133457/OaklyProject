@@ -15,7 +15,7 @@ export const useCart = () => {
 
 
 // 成功通知組件
-const AddToCartSuccessModal = ({ product, quantity, isVisible, onClose }) => {
+const AddToCartSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
@@ -84,21 +84,21 @@ const AddToCartSuccessModal = ({ product, quantity, isVisible, onClose }) => {
   return (
     <div className="cart-success-overlay"
       style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      alignItems: 'flex-start',
-      zIndex: 1000,
-      animation: isVisible ? 'fadeIn 0.3s ease-out' : 'fadeOut 0.3s ease-out'
-    }}
-onClick={onClose}>
-      <div className="cart-success-modal" onClick={(e) => e.stopPropagation()} 
-          style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-start',
+        zIndex: 1000,
+        animation: isVisible ? 'fadeIn 0.3s ease-out' : 'fadeOut 0.3s ease-out'
+      }}
+      onClick={onClose}>
+      <div className="cart-success-modal" onClick={(e) => e.stopPropagation()}
+        style={{
           backgroundColor: 'white',
           borderRadius: '2px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
@@ -138,13 +138,15 @@ onClick={onClose}>
             <h4 className="product-name-m">{product.name}</h4>
             <p className="product-price-p">NT$ {product.price?.toLocaleString()}</p>
             <div className="product-info-o">
-            {product.colors && product.colors.length > 0 && (
-                <span className="color-label">顏色: {product.colors[0].color_name}</span>
-         
-            )}
+              {selectedColor && (
+                <span className="color-label">顏色: {selectedColor.color_name}</span>
+              )}
+              {selectedSize && (
+                <span className="size-label">尺寸: {selectedSize.size_label}</span>
+              )}
               <span className="quantity-info">數量: {quantity}</span>
             </div>
-            
+
           </div>
         </div>
 
@@ -204,7 +206,9 @@ export const CartProvider = ({ children }) => {
   const [successModal, setSuccessModal] = useState({
     isVisible: false,
     product: null,
-    quantity: 0
+    quantity: 0,
+    selectedColor: null,
+    selectedSize: null
   });
 
   // 從 localStorage 載入購物車資料
@@ -229,7 +233,7 @@ export const CartProvider = ({ children }) => {
 
 
   // 加入購物車
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = (product, quantity = 1, selectedColor = null, selectedSize = null) => {
     const existingItem = cartItems.find(item => item.id === product.id);
 
     if (existingItem) {
@@ -248,7 +252,9 @@ export const CartProvider = ({ children }) => {
     setSuccessModal({
       isVisible: true,
       product: product,
-      quantity: quantity
+      quantity: quantity,
+      selectedColor: selectedColor,
+      selectedSize: selectedSize
     });
 
     return true;
@@ -320,6 +326,8 @@ export const CartProvider = ({ children }) => {
       <AddToCartSuccessModal
         product={successModal.product}
         quantity={successModal.quantity}
+        selectedColor={successModal.selectedColor}
+        selectedSize={successModal.selectedSize}
         isVisible={successModal.isVisible}
         onClose={closeSuccessModal}
       />

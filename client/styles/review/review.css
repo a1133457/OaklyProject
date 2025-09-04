@@ -137,6 +137,187 @@ justify-content: center;
     text-align: left;
     font-size: 14px;
 }
+/* 圖片上傳區域樣式 */
+.image-upload-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+  }
+  
+  .upload-label {
+    display: block;
+    font-weight: 500;
+    color: #8B8B8B;
+    margin-top: 10px;
+  }
+  
+  .upload-label i {
+    margin-right: 8px;
+    color: #DBA783;
+  }
+  
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #DBA783;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  .upload-btn:hover {
+    background: #c9966f;
+    transform: translateY(-1px);
+  }
+  
+  /* 圖片預覽容器 */
+  .image-preview-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+  }
+  
+  .image-preview {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    border: 2px solid #eee;
+
+  }
+  
+  .image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .remove-image {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #CD8A5B;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 10; 
+  }
+  
+  /* 評論中的圖片顯示 */
+  .review-images {
+    margin: 15px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    z-index: 11; 
+
+  }
+  
+  .review-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #eee;
+  }
+  
+  .review-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  /* 預設圖片佔位符 */
+.default-image-placeholder {
+    width: 120px;
+    height: 120px;
+    border: 2px dashed #DBA783;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    color: #6a6a6a;
+  }
+  
+  .default-image-placeholder:hover {
+    background: #f0f0f0;
+    border-color: #c9966f;
+  }
+  
+  .default-image-placeholder i {
+    font-size: 24px;
+    color: #DBA783;
+    margin-bottom: 8px;
+  }
+  
+  .default-image-placeholder span {
+    font-size: 12px;
+    text-align: center;
+  }
+  .swal2-close{
+    border:none !important;
+    outline: none !important;
+  }
+  .swal2-close:hover{
+    color: #6a6a6a;
+  }
+  
+
+  /* 添加更多圖片的按鈕 */
+  .add-more-image {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed #DBA783;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.3s ease;
+  }
+  
+  .add-more-image:hover {
+    background: #f0f0f0;
+    border-color: #c9966f;
+  }
+  
+  .add-more-image i {
+    font-size: 20px;
+    color: #DBA783;
+  }
+  
+  /* 調整圖片預覽容器 */
+  .image-preview-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+    align-items: center;
+    
+
+  }
+  
+ 
 
 /* 評論列表 */
 .review-list {
@@ -481,5 +662,23 @@ textarea:focus {
     .footer {
         display: none;
     }
+    .image-preview-container {
+        gap: 8px;
+      }
+      
+      .image-preview {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .review-image {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .upload-btn {
+        width: 100%;
+        justify-content: center;
+      }
 
 }
