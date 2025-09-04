@@ -147,3 +147,13 @@ ORDER BY o.create_at DESC, oi.id ASC;
             LEFT JOIN order_items oi ON o.id = oi.order_id
         WHERE o.user_id = 1 AND o.id = 1
         ORDER BY o.create_at DESC, oi.id ASC;
+
+SELECT 
+  c.*,
+  GROUP_CONCAT(cc.category_id) as category_ids,
+  GROUP_CONCAT(pc.name) as category_names
+FROM coupons c
+LEFT JOIN coupon_categories cc ON c.id = cc.coupon_id
+LEFT JOIN products_category pc ON cc.category_id = pc.id
+WHERE c.is_valid = 1 AND c.valid_days IS NOT NULL
+GROUP BY c.id

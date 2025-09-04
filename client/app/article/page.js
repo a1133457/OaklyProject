@@ -51,10 +51,38 @@ export default function ArticlePage() {
             <div className="main-article">
               <div className="phone-title">
                 <h4>文章列表</h4>
-                <button>
+                <button
+                  className="menu-toggle searchArticle"
+                  type="button"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#offcanvasScrolling"
+                  aria-controls="offcanvasScrolling"
+                >
                   <p>搜尋文章</p>
                   <i className="fa-solid fa-magnifying-glass"></i>
                 </button>
+                <div
+                  className="offcanvas offcanvas-end"
+                  data-bs-scroll="true"
+                  tabIndex="-1"
+                  id="offcanvasScrolling"
+                  aria-labelledby="offcanvasScrollingLabel"
+                >
+                  <div className="offcanvas-header">
+                    <h5 className="offcanvas-title" id="offcanvasScrollingLabel">
+                      搜尋文章
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      data-bs-dismiss="offcanvas"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div className="offcanvas-body">
+                   <SideBar/>
+                  </div>
+                </div>
               </div>
               <div className="main-article-title">
                 <p>最新文章</p>
@@ -64,7 +92,7 @@ export default function ArticlePage() {
                 <ArticleCard />
               </div>
               <div className="phone">
-              <PhoneMoreArticle />
+                <PhoneMoreArticle />
               </div>
               {/* 分頁區------- */}
               <Pagination />

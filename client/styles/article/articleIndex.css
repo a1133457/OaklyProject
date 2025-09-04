@@ -370,9 +370,11 @@ Image {
   }
   .main {
     padding: 0;
+    width: 430px;
   }
   .main-list {
     height: 100%;
+    padding: 0 20px;
   }
   .phone-title {
     width: 100%;
@@ -380,7 +382,7 @@ Image {
     flex-direction: row;
     justify-content: space-between;
   }
-  .phone-title button {
+  .menu-toggle.searchArticle {
     width: 114px;
     height: 40px;
     display: flex;

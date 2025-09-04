@@ -4,116 +4,129 @@ import { createContext, useContext, useState, useEffect, useRef } from "react";
 
 // #region 1. 建立 CartContext
 const CartContext = createContext(null);
+// 設定呈現的名稱 (displayName)
+// 這是要搭配瀏覽器上的 react 開發擴充使用，方便除錯，不給的話會都用 "Context"
 CartContext.displayName = "cartContext";
 // #endregion
 
 // #region 2. 建立&導出 Provider 元件(狀態在其中管理)
+// 建立一個統一管理會員登出入狀態的包裹(有開頭結尾)元件
+// 與會員有關的認證授權的狀態，和相關方法都集中在這元件中
 export function CartProvider({ children }) {
-  // 購物車中購買項目狀態
-  const [cartItems, setCartItems] = useState([]);
+  // 定義購物車項目
+  const [items, setItems] = useState([]);
+
   // 使用 useRef 來追蹤是否已經初始化，避免初始渲染時的寫入
-  const isInitialized = useRef(false);
+  // const isInitialized = useRef(false);
 
   // 處理新增
-  const handleAdd = (product) => {
+  const onAdd = (product) => {
     // 先判斷此商品是否已經在購物車
-    const foundIndex = cartItems.findIndex((v) => v.id === product.id);
+    const foundIndex = items.findIndex((v) => v.id === product.id);
 
     // 如果有找到
     if (foundIndex !== -1) {
-      // 做遞增
-      handleIncrease(product.id);
+      // 如果有找到 -> 做遞增
+      onIncrease(product.id);
     } else {
-      // 做新增
+      // 如果沒找到 -> 做新加入
       // 先寫出要新增的物件值，因為商品(product)和購物車項目(cartItem)間差了一個數量(count)屬性，預設為 1
-      const newCartItem = { ...product, count: 1 };
-      setCartItems([newCartItem, ...cartItems]);
+      const newItem = { ...product, count: 1 };
+      // 1 // 2
+      const nextItems = [newItem, ...items]
+      setItems(nextItems);
     }
   };
 
   // 處理遞增
-  const handleIncrease = (cartItemId) => {
+  const onIncrease = (itemId) => {
     // 第一層用陣列的 map 來展開每個成員
-    const nextCartItems = cartItems.map((cartItem) => {
+    const nextItems = items.map((v) => {
       // 如果比對出 id = cartItemId 的成員，進行展開物件並遞增 count 的值
-      if (cartItem.id === cartItemId) {
-        return { ...cartItem, count: cartItem.count + 1 };
+      // v 代表陣列中物件值 例如: {id: 0, name: '小熊餅乾', count: 1}
+      if (v.id === itemId) {
+        // 如果比對出 id 是 itemId 的話，把 count 屬性值 +1 (用展開運算子(淺拷貝)+屬性值覆蓋)
+        return { ...v, count: v.count + 1 };
       } else {
-        return cartItem;
+        return v;
       }
     });
     // 3 設定回狀態
-    setCartItems(nextCartItems);
+    setItems(nextItems);
   };
 
   // 處理遞減
-  const handleDecrease = (cartItemId) => {
+  const onDecrease = (itemId) => {
     // 第一層用陣列的 map 來展開每個成員
-    const nextCartItems = cartItems.map((cartItem) => {
+    const nextItems = items.map((v) => {
       // 如果比對出 id = cartItemId 的成員，進行展開物件並遞減 count 的值
-      if (cartItem.id === cartItemId) {
-        return { ...cartItem, count: cartItem.count - 1 };
+      // v代表陣列中物件值 例如: {id: 0, name: '小熊餅乾', count: 1 }
+      if (v.id === itemId) {
+        return { ...v, count: v.count - 1 };
       } else {
-        return cartItem;
+        return v;
       }
     });
     // 3 設定回狀態
-    setCartItems(nextCartItems);
+    setItems(nextItems);
   };
 
   //處理刪除
-  const handleRemove = (cartItemId) => {
-    const nextCartItems = cartItems.filter((cartItem) => {
-      return cartItem.id !== cartItemId;
+  const onRemove = (itemId) => {
+    const nextItems = items.filter((v) => {
+      //v代表陣列中物件值 例如: {id: 0, name: '小熊餅乾', count: 1 }
+      return v.id !== itemId;
     });
 
     // 3 設定回狀態
-    setCartItems(nextCartItems);
+    setItems(nextItems);
   };
 
   // 使用陣列的迭代方法 reduce(累加/歸納)
-  const totalQty = cartItems.reduce((acc, v) => acc + v.count, 0);
-  const totalAmount = cartItems.reduce((acc, v) => acc + v.price, 0);
+  // 計算總數量 (reduce 是陣列累加/歸納的迭代方式)
+  const totalQty = items.reduce((acc, v) => acc + v.count, 0);
+  const totalAmount = items.reduce((acc, v) => acc + v.count * v.price, 0);
 
   // 統一的 localStorage 同步化處理
-  useEffect(()=>{
-    // 第一次渲染時，從 localStorage 讀取資料
-    if(!isInitialized.current){
-        try{
-            const storedItems = JSON.parse(localStorage.getItem("cart")) || [];
-            setCartItems(storedItems);
-            isInitialized.current = true;
-        }catch(error){
-            console.error("讀取購物車資料失敗: ", error);
-            // 如果讀取失敗，清空 localStorage 中的購物車資料
-            localStorage.removeItem("cart");
-            isInitialized.current = true;
-            
-        }
-    }else{
-        // 後續的 cartItems 變更，寫入 localStorage
-        try{
-            localStorage.setItem("cart", JSON.stringify(cartItems));
-        }catch(error){
-            console.error("儲存購物車資料失敗: ", error)
-        }
-    }
-  }, [cartItems])
+  // useEffect(() => {
+  //   // 第一次渲染時，從 localStorage 讀取資料
+  //   if (!isInitialized.current) {
+  //     try {
+  //       const storedItems = JSON.parse(localStorage.getItem("cart")) || [];
+  //       setCartItems(storedItems);
+  //       isInitialized.current = true;
+  //     } catch (error) {
+  //       console.error("讀取購物車資料失敗: ", error);
+  //       // 如果讀取失敗，清空 localStorage 中的購物車資料
+  //       localStorage.removeItem("cart");
+  //       isInitialized.current = true;
+
+  //     }
+  //   } else {
+  //     // 後續的 cartItems 變更，寫入 localStorage
+  //     try {
+  //       localStorage.setItem("cart", JSON.stringify(cartItems));
+  //     } catch (error) {
+  //       console.error("儲存購物車資料失敗: ", error)
+  //     }
+  //   }
+  // }, [cartItems])
 
   return (
     <CartContext.Provider
-        value={{
-            cartItems,
-            totalAmount,
-            totalQty,
-            handleAdd,
-            handleDecrease,
-            handleIncrease,
-            handleRemove,
-        }}
-        >
-            {children}
-        </CartContext.Provider>
+    // 用 Context 傳遞要共享的資料或方式
+      value={{
+        items,
+        totalAmount,
+        totalQty,
+        onAdd,
+        onDecrease,
+        onIncrease,
+        onRemove,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
   )
 }
 // #endregion

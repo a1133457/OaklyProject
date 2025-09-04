@@ -1,5 +1,8 @@
+"use client"
+
 import express from "express";
 import connection from "../connect.js";
+
 
 const router = express.Router();
 
