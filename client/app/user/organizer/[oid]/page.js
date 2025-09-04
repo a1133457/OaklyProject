@@ -7,36 +7,39 @@ import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 import ItemTab from "../_components/ItemTab";
 import { useFetch } from "@/hooks/use-fetch";
 import { useState } from "react";
-import { useParams } from 'next/navigation'
+import { useParams } from "next/navigation";
+import { useTab } from "@/contexts/TabContext";
+import { useRouter } from "next/navigation";
 
 export default function UserOrganizerDetailPage() {
-  const params = useParams()
-  const bookingId = params.oid
+  const router = useRouter();
 
-  const userId = 1
+  const params = useParams();
+  const bookingId = params.oid;
 
-  const [currentTab, setCurrentTab] = useState(1);
+  const userId = 1;
+
+  const { currentTab, setCurrentTab } = useTab(); // ← 使用 Context
+  // const [currentTab, setCurrentTab] = useState(1);
   // 抓取使用者的預約列表
   const result = useFetch(
     `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`
   );
 
-  const booking = result.data?.data // 修正：確保有資料才渲染
+  const booking = result.data?.data; // 修正：確保有資料才渲染
 
   // 修正：加上載入狀態和錯誤處理
   if (result.loading) {
-    return <div>載入中...</div>
+    return <div>載入中...</div>;
   }
 
   if (result.error) {
-    return <div>載入失敗：{result.error.message}</div>
+    return <div>載入失敗：{result.error.message}</div>;
   }
 
   if (!booking) {
-    return <div>找不到預約資料</div>
+    return <div>找不到預約資料</div>;
   }
-
-
 
   return (
     <>
@@ -44,7 +47,13 @@ export default function UserOrganizerDetailPage() {
         <div className="container-xl">
           <div className="d-flex flex-column gap-lg section">
             <h2 className="t-primary01 text-center">預約記錄</h2>
-            <ItemTab currentTab={currentTab} onTabChange={setCurrentTab} />
+            <ItemTab
+              currentTab={currentTab}
+              onTabChange={(newTab) => {
+                setCurrentTab(newTab);
+                router.push("/user/organizer");
+              }}
+            />
             <ListDetails
               status={booking.status}
               organizerName={booking.organizer_name}
