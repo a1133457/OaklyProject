@@ -25,8 +25,7 @@ const upload = multer({
 const router = express.Router();
 
 //-------------------------------------------------------------------------------------
-
-// GET /api/user/organizers/:userId - 取得user的預約諮詢頁列表
+//GET /api/user/organizers/:userId - 取得user的預約諮詢頁列表
 router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params; // 取得路由參數
@@ -63,8 +62,9 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-// GET /api/user/organizers/:userId/:bookingId - 取得使用者的預約資訊詳細頁
+//GET /api/user/organizers/:userId/:bookingId - 取得使用者的預約資訊詳細頁
 router.get("/:userId/:bookingId", async (req, res) => {
+
   try {
     const { userId, bookingId } = req.params; // 取得路由參數
 
@@ -76,9 +76,12 @@ router.get("/:userId/:bookingId", async (req, res) => {
       u.email as user_email, 
       u.phone as user_phone,
       o.name as organizer_name,
+      b.city,
+      b.district, 
+      b.address,
       CASE 
-        WHEN b.status IN (1, 4) THEN DATE_FORMAT(b.service_datetime, '%Y/%m/%d')
-        ELSE DATE_FORMAT(b.service_datetime, '%Y/%m/%d %H:%i')
+      WHEN b.status IN (1, 4) THEN DATE_FORMAT(b.service_datetime, '%Y/%m/%d')
+      ELSE DATE_FORMAT(b.service_datetime, '%Y/%m/%d %H:%i')
       END as service_datetime,
       CONCAT(b.city, b.district, b.address) as full_address,
       DATE_FORMAT(b.created_at, '%Y/%m/%d %H:%i') as created_at,
@@ -101,7 +104,7 @@ router.get("/:userId/:bookingId", async (req, res) => {
     if (bookings.length === 0) {
       return res.status(404).json({
         status: "error",
-        message: "找不到該預約資訊"
+        message: "找不到該預約資訊",
       });
     }
 
@@ -114,9 +117,11 @@ router.get("/:userId/:bookingId", async (req, res) => {
     WHERE booking_id = ?
     ORDER BY created_at ASC`;
 
-    const [images] = await connection.execute(imageSql, [booking.raw_booking_id]);
+    const [images] = await connection.execute(imageSql, [
+      booking.raw_booking_id,
+    ]);
 
-    booking.images = images.map(img => img.image_url);
+    booking.images = images.map((img) => img.image_url);
 
     res.status(200).json({
       status: "success",
@@ -132,7 +137,7 @@ router.get("/:userId/:bookingId", async (req, res) => {
   }
 });
 
-// POST /api/user/organizers/add - (新增) 預約諮詢表單
+//POST /api/user/organizers/add - (新增) 預約諮詢表單
 router.post("/add", upload.array("photos", 4), async (req, res) => {
   try {
     const {
@@ -189,5 +194,99 @@ router.post("/add", upload.array("photos", 4), async (req, res) => {
     });
   }
 });
+
+//PUT /api/user/organizers/:userId/:bookingId - ( 編輯 ) 預約資訊
+router.put(
+  "/:userId/:bookingId",
+  upload.array("photos", 4),
+  async (req, res) => {
+    try {
+      const { userId, bookingId } = req.params;
+      const {
+        city,
+        district,
+        address,
+        organizer_id,
+        service_datetime,
+        note,
+        remove_images, // 要刪除的圖片 URL 陣列
+      } = req.body;
+
+      // 先檢查預約是否存在且屬於該用戶
+      const checkSql = `
+      SELECT id, status 
+      FROM bookings 
+      WHERE user_id = ? AND LPAD(id, 7, '0') = ? AND is_valid = 1`;
+
+      const [existingBooking] = await connection.execute(checkSql, [
+        userId,
+        bookingId,
+      ]);
+
+      if (existingBooking.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "找不到該預約資訊或無權限編輯",
+        });
+      }
+
+      const booking = existingBooking[0];
+      const rawBookingId = booking.id;
+
+      // 檢查預約狀態是否可編輯（已完成或已取消不能編輯）
+      if (booking.status === 3 || booking.status === 4) {
+        return res.status(400).json({
+          status: "error",
+          message: "此預約狀態無法編輯",
+        });
+      }
+
+      // 更新預約基本資訊
+      const updateSql = `
+      UPDATE bookings 
+      SET city = ?, district = ?, address = ?, organizer_id = ?, 
+          service_datetime = ?, note = ?
+      WHERE id = ?`;
+
+      await connection.execute(updateSql, [
+        city,
+        district,
+        address,
+        organizer_id,
+        service_datetime,
+        note,
+        rawBookingId,
+      ]);
+
+      // 處理要刪除的圖片
+      if (remove_images && Array.isArray(remove_images)) {
+        for (const imageUrl of remove_images) {
+          const deleteSql = `DELETE FROM booking_images WHERE booking_id = ? AND image_url = ?`;
+          await connection.execute(deleteSql, [rawBookingId, imageUrl]);
+        }
+      }
+
+      // 處理新上傳的圖片
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          const imageUrl = `/uploads/booking_images/${file.filename}`;
+          const imageSql = `INSERT INTO booking_images (booking_id, image_url) VALUES (?, ?)`;
+          await connection.execute(imageSql, [rawBookingId, imageUrl]);
+        }
+      }
+
+      res.status(200).json({
+        status: "success",
+        message: "預約資訊更新成功",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        status: "error",
+        message: error.message ?? "更新失敗，請洽管理人員",
+      });
+    }
+  }
+);
 
 export default router;

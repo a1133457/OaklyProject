@@ -1,28 +1,143 @@
 "use client";
-import styles from '@/styles/organizer/organizer.module.css'
+import styles from "@/styles/organizer/organizer.module.css";
+import styles2 from "@/styles/userOrganizerDetails/userOrganizerDetails.module.css";
+import { useFetch } from "@/hooks/use-fetch";
+import { useParams } from "next/navigation";
+import { useTab } from "@/contexts/TabContext";
+import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 //CSS
 // import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 // 自訂組件(全域)
-import GreenBorderButton from '@/app/_components/GreenBorderButton'
+import GreenBorderButton from "@/app/_components/GreenBorderButton";
 // 自訂組件 (專用)
 
-
-// 以後要串會員資料 先假資料假裝一下
-const memberData = {
-  name: '王小明',
-  email: 'wang@example.com',
-  phone: '0912345678',
-}
-
-
 export default function UserOrganizerEditPage() {
+  const params = useParams();
+  const bookingId = params.oid;
+  const userId = 1;
+
+  // 修改狀態
+  const [editData, setEditData] = useState({
+    selectedCity: "",
+    selectedDistrict: "",
+    address: "",
+    serviceDate: "",
+    selectedOrganizers: "",
+    note: "",
+  });
+
+  const [selectedFiles, setSelectedFiles] = useState([]); // 檔案上傳另外管理
+  const [isConfirmed, setIsConfirmed] = useState(false); // checkbox 另外管理
+
+  const result = useFetch(
+    `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`
+  );
+//   const result = useFetch(
+//   `http://localhost:3005/api/user/organizers/TEST/${userId}/${bookingId}`
+// );
+
+  const booking = result.data?.data; // 修正：確保有資料才渲染
+
+  // 初始化editData
+  useEffect(() => {
+    if (booking) {
+      console.log("=== BOOKING 資料 ===");
+      console.log(JSON.stringify(booking, null, 2)); // 用 JSON.stringify 顯示完整結構
+      setEditData({
+        selectedCity: booking.selectedCity || "",
+        selectedDistrict: booking.selectedDistrict || "",
+        address: booking.address || "",
+        serviceDate: booking.serviceDate || "",
+        selectedOrganizers: booking.organizer_name || "",
+        note: booking.note || "",
+      });
+    }
+  }, [booking]);
+
+  // 整理師fetch
+  const organizerResult = useFetch("http://localhost:3005/api/organizers");
+  const organizers = organizerResult.data ? organizerResult.data.data : [];
+  if (organizerResult.error) {
+    console.error("載入整理師資料失敗:", organizerResult.error);
+  }
+
+  // 圖片上傳
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    //限制4張
+    if (files.length > 4) {
+      alert("最多只能上傳4張圖片!");
+      e.target.value = "";
+      return;
+    }
+    setSelectedFiles(files);
+  };
+
+  // 圖片的input 創建 ref 來控制 input
+  const fileInputRef = useRef(null);
+  const handleDivClick = () => {
+    fileInputRef.current.click();
+  };
+
+  //日期選擇
+  const getMinDate = () => {
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + 14);
+    return minDate.toISOString().split("T")[0];
+  };
+
+  // 地區JSON fetch
+  const taiwanResult = useFetch("/TwCities.json");
+  const taiwanData = taiwanResult.data || [];
+  if (taiwanResult.error) {
+    console.error("載入地區失敗:", taiwanResult.error);
+  }
+
+  // 地區北中南的地區分類
+  const cityRegionMap = {
+    // 北部 - 1
+    臺北市: 1,
+    新北市: 1,
+    桃園市: 1,
+    基隆市: 1,
+    新竹市: 1,
+    新竹縣: 1,
+    // 中部 - 2
+    臺中市: 2,
+    苗栗縣: 2,
+    彰化縣: 2,
+    南投縣: 2,
+    雲林縣: 2,
+    // 南部 - 3
+    嘉義市: 3,
+    嘉義縣: 3,
+    臺南市: 3,
+    高雄市: 3,
+    屏東縣: 3,
+  };
+
+  // 修正：加上載入狀態和錯誤處理
+  if (result.loading) {
+    return <div>載入中...</div>;
+  }
+
+  if (result.error) {
+    return <div>載入失敗：{result.error.message}</div>;
+  }
+
+  if (!booking) {
+    return <div>找不到預約資料</div>;
+  }
+
   return (
     <>
       <section>
         <div className="container-xl">
           <div className="d-flex flex-column gap-lg section">
-            <h2 className="t-primary01 text-center">預約記錄</h2>
-             <form action="" method="POST" className="d-flex flex-column">
+            <h2 className="t-primary01 text-center">編輯預約</h2>
+            <form action="" method="POST" className="d-flex flex-column">
               {/* 第一個 row - 姓名 + 手機 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
@@ -34,7 +149,7 @@ export default function UserOrganizerEditPage() {
                     id="name"
                     name="name"
                     className="form-control"
-                    value={memberData.name}
+                    value={booking.user_name}
                     readOnly
                     disabled
                     tabIndex="-1"
@@ -49,7 +164,7 @@ export default function UserOrganizerEditPage() {
                     id="phone"
                     name="phone"
                     className="form-control"
-                    value={memberData.phone}
+                    value={booking.user_phone}
                     readOnly
                     disabled
                     tabIndex="-1"
@@ -67,7 +182,7 @@ export default function UserOrganizerEditPage() {
                     id="email"
                     name="email"
                     className="form-control"
-                    value={memberData.email}
+                    value={booking.user_email}
                     readOnly
                     disabled
                     tabIndex="-1"
@@ -80,17 +195,52 @@ export default function UserOrganizerEditPage() {
                   <label className="form-label t-primary03">服務地址*</label>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
-                  <select className="form-select mb-sm" name="city" required>
-                    <option value="">請選擇縣市</option>
+                  <select
+                    value={editData.selectedCity}
+                    onChange={(e) => {
+                      setEditData({
+                        ...editData,
+                        selectedCity: e.target.value,
+                        selectedDistrict: "",
+                      });
+                    }}
+                    className="form-select mb-sm"
+                    name="city"
+                    required
+                  >
+                    <option value="" disabled>
+                      請選擇縣市
+                    </option>
+                    {taiwanData.map((city) => (
+                      <option key={city.name} value={city.name}>
+                        {city.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
+                    value={editData.selectedDistrict}
+                    onChange={(e) => {
+                      setEditData({
+                        ...editData,
+                        selectedDistrict: e.target.value,
+                      });
+                    }}
                     className="form-select mb-sm"
                     name="district"
                     required
                   >
-                    <option value="">請選擇區域</option>
+                    <option value="" disabled>
+                      請選擇區域
+                    </option>
+                    {taiwanData
+                      .find((city) => city.name === editData.selectedCity)
+                      ?.districts.map((district) => (
+                        <option key={district.name} value={district.name}>
+                          {district.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <div className="col-12 col-lg-6 mb-xl">
@@ -99,6 +249,10 @@ export default function UserOrganizerEditPage() {
                     className="form-control"
                     name="address"
                     placeholder="請輸入詳細地址"
+                    value={editData.address}
+                    onChange={(e) => {
+                      setEditData({ ...editData, address: e.target.value });
+                    }}
                     required
                   />
                 </div>
@@ -107,26 +261,57 @@ export default function UserOrganizerEditPage() {
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
                   <label className="form-label t-primary03">選擇整理師*</label>
-                  <select className="form-select" name="city" required>
+                  <select
+                    value={editData.selectedOrganizers}
+                    onChange={(e) => {
+                      setEditData({
+                        ...editData,
+                        selectedOrganizers: e.target.value,
+                      });
+                    }}
+                    className="form-select"
+                    name="city"
+                    required
+                  >
                     <option value="">請先選擇服務地址</option>
+                    {editData.selectedCity &&
+                      organizers
+                        .filter(
+                          (organizer) =>
+                            organizer.region ===
+                            cityRegionMap[editData.selectedCity]
+                        )
+                        .map((organizer) => (
+                          <option key={organizer.id} value={organizer.id}>
+                            {organizer.name}
+                          </option>
+                        ))}
                   </select>
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
                   <label className="form-label t-primary03">
-                    希望服務日期*
+                    <span className="label700">希望服務日期*</span>
+                    （為確保最佳服務品質，請選擇2週後的日期）
                   </label>
                   <input
                     type="date"
                     id="date"
                     name="date"
                     className="form-control"
-                    value={memberData.date}
+                    min={getMinDate()}
+                    value={editData.serviceDate}
+                    onChange={(e) => {
+                      setEditData({
+                        ...editData,
+                        serviceDate: e.target.value,
+                      });
+                    }}
                     required
                   />
                 </div>
               </div>
               {/* 上傳照片 */}
-              <div className="row">
+              {/* <div className="row">
                 <div className="col-12">
                   <label className="form-label t-primary03">
                     上傳整理環境照片*
@@ -151,17 +336,47 @@ export default function UserOrganizerEditPage() {
                     支援格式：.jpg、.jpeg、.png，建議每張 ≤ 5MB
                   </p>
                 </div>
-              </div>
+              </div> */}
+              {/* 現有照片顯示 */}
+              {booking.images && booking.images.length > 0 && (
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <label className="form-label t-primary03">
+                      現有環境照片
+                    </label>
+                    <div className={`d-flex flex-wrap ${styles2.imgGap}`}>
+                      {booking.images.map((imageUrl, index) => (
+                        <div key={index}>
+                          <img
+                            src={`http://localhost:3005${imageUrl}`}
+                            alt={`環境照片 ${index + 1}`}
+                            width={150}
+                            height={150}
+                            className={styles2.userHouseImage}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* 備註 */}
               <div className="row">
                 <div className="col-12">
                   <label className="form-label t-primary03">備註</label>
                   <textarea
-                    name=""
-                    id=""
+                    name="note"
+                    id="note"
                     rows="4"
                     placeholder="請填寫特殊需求或想告訴整理師的事項（例如：寵物、家中空間限制…）"
                     className="form-control mb-xl"
+                    value={editData.note}
+                    onChange={(e) => {
+                      setEditData({
+                        ...editData,
+                        note: e.target.value,
+                      });
+                    }}
                   ></textarea>
                 </div>
               </div>
@@ -171,6 +386,10 @@ export default function UserOrganizerEditPage() {
                   name="confirm"
                   id="confirm"
                   className="form-check-input me-2 "
+                  checked={isConfirmed}
+                  onChange={(e) => {
+                    setIsConfirmed(e.target.checked);
+                  }}
                 />
                 請確認以上資訊無誤，整理師將依據您提供的資料安排聯繫！
               </label>

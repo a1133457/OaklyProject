@@ -17,6 +17,8 @@ export default function UserOrganizerPage() {
   const userOrganizersResult = useFetch(
     "http://localhost:3005/api/user/organizers/1"
   );
+
+  
   const userOrganizers = userOrganizersResult.data
     ? userOrganizersResult.data.data
     : [];
