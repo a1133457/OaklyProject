@@ -16,6 +16,13 @@ const Review = ({ productId = 1 }) => {
   const [images, setImages] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const fileInputRef = useRef(null);
+  const [sortBy, setSortBy] = useState('newest');
+  const [sortOptions, setSortOptions] = useState([]);
+  const [statistics, setStatistics] = useState({
+    averageRating: '0.0',
+    totalReviews: 0,
+    ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  });
 
   // 處理圖片選擇
   const handleImageSelect = (e) => {
@@ -121,25 +128,31 @@ const Review = ({ productId = 1 }) => {
 
 
   // 獲取評論
-  const fetchReviews = async () => {
+  const fetchReviews = async (sort = 'newest') => {
     try {
-      const response = await fetch(`http://localhost:3005/api/products/${productId}/reviews`);
+      const response = await fetch(`http://localhost:3005/api/products/${productId}/reviews?sortBy=${sort}`);
       if (!response.ok) throw new Error('網路錯誤');
       const result = await response.json();
       if (result.status === 'success') {
-        console.log('獲取到的評論資料:', result.data);
-        result.data.forEach((review, index) => {
-          console.log(`評論 ${index}:`, {
-            id: review.id,
-            user_name: review.user_name,
-            reviews_img: review.reviews_img
-          });
-        });
-        setReviews(result.data);
-        
+        // 現在後端回傳的格式是 { data: { reviews, pagination, statistics } }
+        setReviews(result.data.reviews);
+        if (result.data.statistics) {
+          setStatistics(result.data.statistics);
+        }
       }
     } catch (error) {
       console.error('獲取評論失敗:', error);
+    }
+  };
+  const fetchSortOptions = async () => {
+    try {
+      const response = await fetch('http://localhost:3005/api/reviews/sort-options');
+      const result = await response.json();
+      if (result.status === 'success') {
+        setSortOptions(result.data.sortOptions);
+      }
+    } catch (error) {
+      console.error('獲取排序選項失敗:', error);
     }
   };
 
@@ -301,17 +314,22 @@ const Review = ({ productId = 1 }) => {
     }
   };
   useEffect(() => {
-    fetchReviews();
+    fetchReviews(sortBy);
+; fetchSortOptions();
   }, [productId]);
-  const averageRating = reviews.length > 0
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-    : '0.0';
+  const averageRating = statistics.averageRating || '0.0';
+
 
   const getRatingDistribution = () => {
-    if (reviews.length === 0) return [0, 0, 0, 0, 0];
-    const dist = [0, 0, 0, 0, 0];
-    reviews.forEach(review => dist[review.rating - 1]++);
-    return dist.map(count => Math.round((count / reviews.length) * 100));
+    if (!statistics.ratingDistribution) return [0, 0, 0, 0, 0];
+    const total = statistics.totalReviews || 1;
+    return [
+      Math.round((statistics.ratingDistribution[1] / total) * 100),
+      Math.round((statistics.ratingDistribution[2] / total) * 100),
+      Math.round((statistics.ratingDistribution[3] / total) * 100),
+      Math.round((statistics.ratingDistribution[4] / total) * 100),
+      Math.round((statistics.ratingDistribution[5] / total) * 100),
+    ];
   };
 
   const distribution = getRatingDistribution();
@@ -329,8 +347,8 @@ const Review = ({ productId = 1 }) => {
                 <i key={i} className={`fas fa-star ${i < Math.round(averageRating) ? 'filled' : ''}`}></i>
               ))}
             </div>
-            <div className="review-count">{reviews.length}則評論</div>
-          </div>
+            <div className="review-count">{statistics.totalReviews}則評論</div>
+            </div>
           <div className="rating-distribution">
             {[5, 4, 3, 2, 1].map((star, index) => (
               <div key={star} className="rating-bar">
@@ -347,6 +365,22 @@ const Review = ({ productId = 1 }) => {
 
       {/* 個別評論區塊 */}
       <section className="review-list">
+        <div className="review-controls">
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              fetchReviews(e.target.value);
+            }}
+            className="sort-select"
+          >
+            {sortOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.icon} {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         {reviews.map((review) => (
           <div key={review.id} className="review-item">
             <div className="user-info">
