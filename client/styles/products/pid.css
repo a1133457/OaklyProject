@@ -563,6 +563,55 @@ body {
     border-radius: 100%;
 }
 
+.saved-icon:hover {
+    background-color: #8b8b8b;
+    border: none;
+    cursor: pointer;
+
+}
+
+.saved-icon.wishlisted {
+    color: #ededed;
+  }
+  
+.saved-icon.wishlisted i {
+    color: #DBA783;
+}
+.saved-icon.wishlisted:hover i {
+    color: #CD8A5B; /* 已收藏 hover 時更深的黃色 */
+  }
+
+
+.saved-icon:not(.wishlisted):hover {
+    background:#ededed;
+  }
+
+.saved-icon:not(.wishlisted):hover i {
+    color: #DBA783 !important;
+}
+
+.saved-icon:not(.wishlisted):active {
+    background: #ededed;
+    border: none;
+    cursor: pointer;
+  }
+  
+.saved-icon:not(.wishlisted):active i {
+    color: #CD8A5B !important; 
+}
+.saved-icon:not(.wishlisted):active i::before {
+    font-weight: 900 !important; 
+    content: "\f004" !important;   
+  }
+
+
+.saved-icon {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
 .colors {
     display: flex;
     gap: 20px;
@@ -1650,13 +1699,15 @@ body.modal-open {
 .browse-more-btn:active {
     transform: translateY(0);
 }
-.cart-success-actions button{
+
+.cart-success-actions button {
     border-radius: 2px;
 
 }
+
 .no-scroll {
     overflow: hidden !important;
-  }
+}
 
 /* 收藏彈窗樣式 */
 .wishlist-modal-backdrop {
@@ -1677,9 +1728,9 @@ body.modal-open {
     margin: 0;
     padding: 0;
     top: 50% !important;
-    left: 50% !important; 
+    left: 50% !important;
     transform: translate(-50%, -50%) !important;
-  }
+}
 
 .wishlist-modal-content {
     background: white;
@@ -2221,4 +2272,3 @@ body.modal-open {
 
 
 }
-

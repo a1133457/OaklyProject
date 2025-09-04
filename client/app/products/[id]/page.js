@@ -60,9 +60,9 @@ export default function PidPage({ params }) {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
 
-  
 
-  
+
+
   // 展開狀態管理
   const [expandedSections, setExpandedSections] = useState({
     productInfo: false,
@@ -193,7 +193,7 @@ export default function PidPage({ params }) {
 
 
   };
-  
+
 
   useEffect(() => {
     if (showWishlistModal) {
@@ -628,11 +628,10 @@ export default function PidPage({ params }) {
               </div>
               <div className="saved">
                 <div
-                  className="saved-icon"
+                  className={`saved-icon ${isWishlisted ? 'wishlisted' : ''}`}
                   onClick={(e) => handleWishlistClick(null, e)}
                   style={{
                     cursor: 'pointer',
-                    color: isWishlisted ? '#e74c3c' : '#6A6A6A'
                   }}
                 >
                   <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
