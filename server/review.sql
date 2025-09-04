@@ -13,6 +13,7 @@ CREATE TABLE reviews (
 SET FOREIGN_KEY_CHECKS = 0;
 SET FOREIGN_KEY_CHECKS = 1;
 
+ALTER TABLE reviews ADD COLUMN reviews_img TEXT;
 
 ALTER TABLE reviews ADD COLUMN email VARCHAR(255) AFTER user_name;
 UPDATE reviews SET email = CASE 

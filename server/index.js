@@ -38,6 +38,8 @@ app.use('/api', reviewsRouter);
 app.use("/api/organizers", organizersRouter);
 app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('public/uploads'));    // 評論圖片
+
 
 // app.use("/api/coupon", coupon);
 
