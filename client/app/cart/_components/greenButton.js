@@ -2,9 +2,9 @@
 
 import "@/styles/cart/button.css";
 
-export default function GreenButton({ step, to }) {
+export default function GreenButton({ step, onClick }) {
   return (
-    <button onClick={() => navigate(to)} className="green-button">
+    <button onClick={onClick} className="green-button">
       <h6>{step}</h6>
     </button>
   );

@@ -11,7 +11,7 @@ import withReactContent from "sweetalert2-react-content";
 import CouponSelect from "./couponSelect";
 import { useEffect, useState } from "react";
 
-export default function Total({ type }) {
+export default function Total({ type, onClick }) {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -154,12 +154,12 @@ export default function Total({ type }) {
                     </div>
                 </div>
                 <div className="nextOrBack">
-                    <GreenButton step={"前往下一步"} />
+                    <GreenButton step={"前往下一步"}  onClick={handleSubmit}/>
                     <WhiteButton step={"繼續購物"} />
                 </div>
                 <div className="nextOrBack-phone">
-                    <WhiteButton step={"繼續購物"} to="/product" />
-                    <GreenButton step={"前往下一步"} to="/cart/detail" />
+                    <WhiteButton step={"繼續購物"} />
+                    <GreenButton step={"前往下一步"} onClick={handleSubmit} />
                 </div>
             </>
         )
