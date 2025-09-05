@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 // 針對單一頁面使用css modules技術
-import styles from '@/styles/coupon/coupon.module.css'
+import styles from "@/styles/coupon/coupon.module.css";
 
 // 自訂組件(全域)
-import GreenBorderButton from '@/app/_components/GreenBorderButton'
+import GreenBorderButton from "@/app/_components/GreenBorderButton";
 // 自訂組件(專屬)
-import QuizBox from './_components/QuizBox'
-import CouponCard from './_components/CouponCard'
-import MemberCard from './_components/MemberCard'
+import QuizBox from "./_components/QuizBox";
+import CouponCard from "./_components/CouponCard";
+import MemberCard from "./_components/MemberCard";
 
 export default function CouponPage() {
   const [coupons, setCoupons] = useState([]);
@@ -18,23 +18,26 @@ export default function CouponPage() {
       try {
         const res = await fetch("http://localhost:3005/api/coupons");
         const data = await res.json();
-        console.log('解析的JSON', data);
+        console.log("解析的JSON", data);
         setCoupons(data.data);
-
       } catch (err) {
-        console.log('優惠券顯示錯誤:', err);
+        console.log("優惠券顯示錯誤:", err);
       }
-    }
+    };
     fetchCoupons();
-  }, [])
+  }, []);
 
   return (
     <>
       <section
         className={`${styles.couponHeader} d-flex flex-column justify-content-center gap-lg`}
       >
-        <h1 className="text-lg-start text-center text-white">找一張專屬你空間的優惠</h1>
-        <h3 className={`text-lg-start text-center text-white ${styles.borderLeft}`}>
+        <h1 className="text-lg-start text-center text-white">
+          找一張專屬你空間的優惠
+        </h1>
+        <h3
+          className={`text-lg-start text-center text-white ${styles.borderLeft}`}
+        >
           本月限定空間選物禮券，讓你的生活整理多一點餘裕。
         </h3>
       </section>
@@ -51,23 +54,28 @@ export default function CouponPage() {
             <div
               className={`d-flex justify-content-center align-items-center ${styles.couponContent}`}
             >
-              {
-                coupons
-                  .map((coupon) => (
-                    <CouponCard
-                      key={coupon.id}
-                      tag={`適用${coupon.category_ids.split(',').length === 6 ? "全站商品" : `${coupon.category_names}類`}`}
-                      date={`領取後 ${coupon.valid_days} 天有效`}
-discountNumber={
-  coupon.discount_type === 2 
-    ? Math.round((coupon.discount) * 100)
-    : Math.round(coupon.discount)
-}
-discountType={coupon.discount_type}
-                      smallSpend={coupon.min_discount === 0 ? "不限金額" : `最低消費$${coupon.min_discount}`}
-                    />
-                  ))
-              }
+              {coupons.map((coupon) => (
+                <CouponCard
+                  key={coupon.id}
+                  tag={`適用${
+                    coupon.category_ids.split(",").length === 6
+                      ? "全站商品"
+                      : `${coupon.category_names}類`
+                  }`}
+                  date={`領取後 ${coupon.valid_days} 天有效`}
+                  discountNumber={
+                    coupon.discount_type === 2
+                      ? Math.round(coupon.discount * 100)
+                      : Math.round(coupon.discount)
+                  }
+                  discountType={coupon.discount_type}
+                  smallSpend={
+                    coupon.min_discount === 0
+                      ? "不限金額"
+                      : `最低消費$${coupon.min_discount}`
+                  }
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -162,5 +170,5 @@ discountType={coupon.discount_type}
         </div>
       </section>
     </>
-  )
+  );
 }

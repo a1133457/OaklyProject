@@ -1,0 +1,292 @@
+import express from "express";
+import connection from "../connect.js";
+import multer from "multer";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+
+// 設定 multer 儲存配置
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/booking_images/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = uuidv4() + path.extname(file.originalname);
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 限制 5MB
+  },
+});
+
+const router = express.Router();
+
+//-------------------------------------------------------------------------------------
+//GET /api/user/organizers/:userId - 取得user的預約諮詢頁列表
+router.get("/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params; // 取得路由參數
+
+    const sql = `SELECT 
+    CONCAT('#', LPAD(b.id, 7, '0')) as booking_id, 
+    CASE 
+        WHEN b.status IN (1, 4) THEN DATE_FORMAT(b.service_datetime, '%Y/%m/%d')
+        ELSE DATE_FORMAT(b.service_datetime, '%Y/%m/%d %H:%i')
+    END as service_datetime,
+    CONCAT(b.city, b.district, b.address) as full_address,
+    DATE_FORMAT(b.created_at, '%Y/%m/%d %H:%i') as created_at,
+    b.price,
+    b.status,
+    o.name as organizer_name
+    FROM bookings b
+    JOIN organizers o ON b.organizer_id = o.id  
+    WHERE b.user_id = ? AND b.is_valid = 1
+    ORDER BY b.created_at DESC`;
+
+    const [bookings] = await connection.execute(sql, [userId]);
+
+    res.status(200).json({
+      status: "success",
+      data: bookings,
+      message: "取得使用者的預約資訊列表",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "獲取失敗，請洽管理人員",
+    });
+  }
+});
+
+//GET /api/user/organizers/:userId/:bookingId - 取得使用者的預約資訊詳細頁
+router.get("/:userId/:bookingId", async (req, res) => {
+
+  try {
+    const { userId, bookingId } = req.params; // 取得路由參數
+
+    const sql = `
+    SELECT 
+      CONCAT('#', LPAD(b.id, 7, '0')) as booking_id,
+      b.id as raw_booking_id,
+      u.name as user_name,
+      u.email as user_email, 
+      u.phone as user_phone,
+      o.name as organizer_name,
+      b.city,
+      b.district, 
+      b.address,
+      CASE 
+      WHEN b.status IN (1, 4) THEN DATE_FORMAT(b.service_datetime, '%Y/%m/%d')
+      ELSE DATE_FORMAT(b.service_datetime, '%Y/%m/%d %H:%i')
+      END as service_datetime,
+      CONCAT(b.city, b.district, b.address) as full_address,
+      DATE_FORMAT(b.created_at, '%Y/%m/%d %H:%i') as created_at,
+      b.price,
+      b.status,
+      b.note,
+      CASE b.status
+        WHEN 1 THEN '諮詢中'
+        WHEN 2 THEN '預約成功'
+        WHEN 3 THEN '服務完成'
+        WHEN 4 THEN '已取消'
+      END as status_text
+    FROM bookings b
+    JOIN users u ON b.user_id = u.id
+    JOIN organizers o ON b.organizer_id = o.id
+    WHERE b.user_id = ? AND LPAD(b.id, 7, '0') = ? AND b.is_valid = 1`;
+
+    const [bookings] = await connection.execute(sql, [userId, bookingId]);
+
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "找不到該預約資訊",
+      });
+    }
+
+    const booking = bookings[0];
+
+    // 取得環境照片
+    const imageSql = `
+    SELECT image_url 
+    FROM booking_images 
+    WHERE booking_id = ?
+    ORDER BY created_at ASC`;
+
+    const [images] = await connection.execute(imageSql, [
+      booking.raw_booking_id,
+    ]);
+
+    booking.images = images.map((img) => img.image_url);
+
+    res.status(200).json({
+      status: "success",
+      data: booking,
+      message: "取得使用者的預約資訊詳情",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "獲取失敗，請洽管理人員",
+    });
+  }
+});
+
+//POST /api/user/organizers/add - (新增) 預約諮詢表單
+router.post("/add", upload.array("photos", 4), async (req, res) => {
+  try {
+    const {
+      user_id,
+      city,
+      district,
+      address,
+      organizer_id,
+      service_datetime,
+      note,
+    } = req.body;
+
+    const sql = `INSERT INTO bookings 
+                 (user_id, city, district, address, organizer_id, service_datetime, note) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    const [bookingResult] = await connection.execute(sql, [
+      user_id,
+      city,
+      district,
+      address,
+      organizer_id,
+      service_datetime,
+      note,
+    ]);
+
+    const bookingId = bookingResult.insertId;
+
+    // 處理圖片
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const imageUrl = `/uploads/booking_images/${file.filename}`;
+        const imageSql = `INSERT INTO booking_images (booking_id, image_url) VALUES (?, ?)`;
+        await connection.execute(imageSql, [bookingId, imageUrl]);
+      }
+    }
+
+    res.status(201).json({
+      status: "success",
+      data: {
+        booking_id: bookingId,
+        uploaded_images: req.files ? req.files.length : 0,
+      },
+      message: "提交諮詢表單成功",
+    });
+  } catch (error) {
+    console.log(error);
+    const statusCode = error.code ?? 500;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "提交失敗，請洽管理人員";
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  }
+});
+
+//PUT /api/user/organizers/:userId/:bookingId - ( 編輯 ) 預約資訊
+router.put(
+  "/:userId/:bookingId",
+  upload.array("photos", 4),
+  async (req, res) => {
+    try {
+      const { userId, bookingId } = req.params;
+      const {
+        city,
+        district,
+        address,
+        organizer_id,
+        service_datetime,
+        note,
+        remove_images, // 要刪除的圖片 URL 陣列
+      } = req.body;
+
+      // 先檢查預約是否存在且屬於該用戶
+      const checkSql = `
+      SELECT id, status 
+      FROM bookings 
+      WHERE user_id = ? AND LPAD(id, 7, '0') = ? AND is_valid = 1`;
+
+      const [existingBooking] = await connection.execute(checkSql, [
+        userId,
+        bookingId,
+      ]);
+
+      if (existingBooking.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "找不到該預約資訊或無權限編輯",
+        });
+      }
+
+      const booking = existingBooking[0];
+      const rawBookingId = booking.id;
+
+      // 檢查預約狀態是否可編輯（已完成或已取消不能編輯）
+      if (booking.status === 3 || booking.status === 4) {
+        return res.status(400).json({
+          status: "error",
+          message: "此預約狀態無法編輯",
+        });
+      }
+
+      // 更新預約基本資訊
+      const updateSql = `
+      UPDATE bookings 
+      SET city = ?, district = ?, address = ?, organizer_id = ?, 
+          service_datetime = ?, note = ?
+      WHERE id = ?`;
+
+      await connection.execute(updateSql, [
+        city,
+        district,
+        address,
+        organizer_id,
+        service_datetime,
+        note,
+        rawBookingId,
+      ]);
+
+      // 處理要刪除的圖片
+      if (remove_images && Array.isArray(remove_images)) {
+        for (const imageUrl of remove_images) {
+          const deleteSql = `DELETE FROM booking_images WHERE booking_id = ? AND image_url = ?`;
+          await connection.execute(deleteSql, [rawBookingId, imageUrl]);
+        }
+      }
+
+      // 處理新上傳的圖片
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          const imageUrl = `/uploads/booking_images/${file.filename}`;
+          const imageSql = `INSERT INTO booking_images (booking_id, image_url) VALUES (?, ?)`;
+          await connection.execute(imageSql, [rawBookingId, imageUrl]);
+        }
+      }
+
+      res.status(200).json({
+        status: "success",
+        message: "預約資訊更新成功",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        status: "error",
+        message: error.message ?? "更新失敗，請洽管理人員",
+      });
+    }
+  }
+);
+
+export default router;

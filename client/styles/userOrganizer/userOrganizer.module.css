@@ -89,15 +89,21 @@
   color: var(--primary-03, #919191);
   line-height: 24px;
   letter-spacing: 1px;
+  border: none;
 
+  
   &:hover {
     color: var(--secondary-01, #DBA783);
   }
-
-  &:active {
-    color: var(--secondary-01, #DBA783);
+  
+  &:active{
+    color: var(--secondary-01, #DBA783) !important;
   }
 }
+
+.active {
+    color: var(--secondary-01, #DBA783) !important;
+  }
 
 .bold {
   font-weight: 700;

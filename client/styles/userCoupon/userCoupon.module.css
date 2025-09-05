@@ -55,4 +55,9 @@
   color: white;
   font-weight: 700;
   background-color: var(--secondary-01, #dba783);
+
+  &:hover, &:focus{
+    background: var(--secondary-02, #C89571) !important;
+    color: white !important;
+  }
 }

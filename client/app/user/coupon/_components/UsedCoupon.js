@@ -1,7 +1,7 @@
 import UsedLeft from './UsedLeft'
 import styles from '@/styles/userCoupon/userCoupon.module.css'
 
-export default function UsedCoupon({ tag, name, smallCost, date, costCate, cost }) {
+export default function UsedCoupon({ tag, name, smallCost, usedDate, costCate1,  costCate2, cost }) {
   return (
     <>
       <div
@@ -15,11 +15,12 @@ export default function UsedCoupon({ tag, name, smallCost, date, costCate, cost 
               <p className="t-gray500">{smallCost}</p>
             </div>
           </div>
-          <p className="t-gray500">{date}</p>
+          <p className="t-gray500">{usedDate}</p>
         </div>
         <h3 className="t-gray600">
-          {costCate}
+          {costCate1}
           <span className={styles.cost}>{cost}</span>
+          {costCate2}
         </h3>
         <UsedLeft />
       </div>

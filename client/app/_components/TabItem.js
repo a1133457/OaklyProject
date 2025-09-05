@@ -1,7 +1,10 @@
-export default function TabItem({ children }) {
+export default function TabItem({ children, onClick, ...props }) {
   return (
     <>
-      <button className="btn tab-items">{children}</button>
+      <button className="btn tab-items"
+      onClick={onClick}
+      {...props}
+      >{children}</button>
     </>
   )
 }

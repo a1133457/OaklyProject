@@ -272,9 +272,9 @@ p {
     width: 13px;
     height: 13px;
     background-color: var(--secondary-01);
-    mask: url(../public/img/hui/icon/double-arrow.svg) no-repeat center;
+    mask: url(/img/hui/icon/double-arrow.svg) no-repeat center;
     mask-size: contain;
-    -webkit-mask: url(../public/img/hui/icon/double-arrow.svg) no-repeat center;
+    -webkit-mask: url(/img/hui/icon/double-arrow.svg) no-repeat center;
     -webkit-mask-size: contain;
     transition: all 0.3s ease;
   }
