@@ -8,6 +8,8 @@ import "@/styles/globalsHui.css"
 import Header from "./_components/header";
 import Footer from "./_components/footer"
 import { CartProvider } from "@/hooks/use-cart";
+// import { CartProvider } from './contexts/CartContext.js';
+
 
 export const metadata = {
   title: "Create Next App",

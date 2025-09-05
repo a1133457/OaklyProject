@@ -7,10 +7,37 @@ import { getProductsFromDB } from "./models/products.js";
 const upload = multer();
 const router = express.Router();
 
-// 獲取所有產品
 router.get("/", async (req, res) => {
   try {
-    const products = await getProductsFromDB();
+    const { category } = req.query;
+    console.log('收到的 category 參數:', category);
+    
+    let products;
+    
+    if (category) {
+      const query = `
+        SELECT 
+          p.*,
+          pc.category_name,
+          pi.img
+        FROM products p
+        LEFT JOIN products_category pc ON p.category_id = pc.category_id
+        LEFT JOIN product_img pi ON p.id = pi.product_id
+        WHERE pc.category_name LIKE ?
+      `;
+      
+      try {
+        const [rows] = await db.execute(query, [`%${category}%`]);
+        console.log('分類查詢結果數量:', rows.length);
+        products = rows;
+      } catch (dbError) {
+        console.error('資料庫查詢錯誤:', dbError);
+        throw dbError;
+      }
+    } else {
+      products = await getProductsFromDB();
+    }
+    
     const productMap = new Map();
     products.forEach(item => {
       if (!productMap.has(item.id)) {
@@ -22,14 +49,103 @@ router.get("/", async (req, res) => {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
       }
     });
-    // 轉成陣列回傳
+    
     const productsWithImages = Array.from(productMap.values());
+    console.log('最終回傳產品數量:', productsWithImages.length);
     res.json(productsWithImages);
+    
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "取得商品失敗" });
+    console.error('詳細錯誤訊息:', error);
+    res.status(500).json({ 
+      message: "取得商品失敗",
+      error: error.message 
+    });
   }
 });
+
+
+router.get("/search", async (req, res) => {
+  let { q, page = 1, limit = 10 } = req.query;
+
+  console.log("🔍 搜尋API被呼叫:", { q, page, limit });
+
+  q = q ? q.trim() : "";
+  page = parseInt(page, 10);
+  limit = parseInt(limit, 10);
+
+  if (!q) {
+    return res.status(400).json({ status: "error", message: "查詢字串不可為空" });
+  }
+
+  if (isNaN(page) || page < 1) page = 1;
+  if (isNaN(limit) || limit < 1) limit = 10;
+
+  try {
+    // 🔥 直接使用現有的 getProductsFromDB 函數
+    const allProducts = await getProductsFromDB();
+    
+    const productMap = new Map();
+    allProducts.forEach(item => {
+      if (!productMap.has(item.id)) {
+        productMap.set(item.id, {
+          ...item,
+          images: item.img ? [`/uploads/${item.img}`] : []
+        });
+      } else if (item.img) {
+        productMap.get(item.id).images.push(`/uploads/${item.img}`);
+      }
+    });
+
+    const productsWithImages = Array.from(productMap.values());
+    
+    // 🔥 搜尋篩選
+    const filteredProducts = productsWithImages.filter(product => {
+      // ID 搜尋
+      if (/^\d+$/.test(q)) {
+        return product.id == q;
+      }
+      // 名稱模糊搜尋
+      return product.name.toLowerCase().includes(q.toLowerCase());
+    });
+
+    // 排序：開頭匹配優先
+    filteredProducts.sort((a, b) => {
+      const aStartsWith = a.name.toLowerCase().startsWith(q.toLowerCase());
+      const bStartsWith = b.name.toLowerCase().startsWith(q.toLowerCase());
+      
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    // 分頁處理
+    const offset = (page - 1) * limit;
+    const paginatedResults = filteredProducts.slice(offset, offset + limit);
+
+    console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
+    
+    if (paginatedResults.length > 0) {
+      console.log("找到的產品:", paginatedResults.map(r => r.name));
+    }
+
+    res.json({
+      status: "success",
+      data: paginatedResults,
+      pagination: {
+        total: filteredProducts.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filteredProducts.length / limit),
+      },
+    });
+
+  } catch (err) {
+    console.error("搜尋錯誤:", err);
+    res.status(500).json({ status: "error", message: "伺服器錯誤" });
+  }
+});
+
+
 
 //  獲取產品詳細資料
 router.get("/:id", async (req, res) => {
@@ -203,47 +319,9 @@ router.get("/:id", async (req, res) => {
 
 
 
-// // 搜尋使用者
-// router.get("/search", (req, res)=>{
-//   // 網址參數(查詢參數)會被整理到 req 中的 query 裡
-//   const key = req.query.key;
-//   res.status(200).json({
-//     status: "success",
-//     data: {key},
-//     message: "搜尋使用者 成功"
-//   });
-// });
 
 
 
-// // 新增一個使用者
-// router.post("/", (req, res)=>{
-//   res.status(201).json({
-//     status: "success",
-//     data: {},
-//     message: "新增一個使用者 成功"
-//   });
-// });
-
-// // 更新(特定 ID 的)使用者
-// router.put("/:id", (req, res)=>{
-//   const id = req.params.id;
-//   res.status(200).json({
-//     status: "success",
-//     data: {id},
-//     message: "更新(特定 ID 的)使用者 成功"
-//   });
-// });
-
-// // 刪除(特定 ID 的)使用者
-// router.delete("/:id", (req, res)=>{
-//   const id = req.params.id;
-//   res.status(200).json({
-//     status: "success",
-//     data: {id},
-//     message: "刪除(特定 ID 的)使用者 成功"
-//   });
-// });
 
 
 

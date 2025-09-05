@@ -9,6 +9,8 @@ import organizersRouter from "./routes/organizers.js";
 import couponRouter from "./routes/coupons.js";
 import articleRouter from "./routes/article.js";
 import orderRouter from "./routes/order.js";
+import reviewsRouter from './routes/review.js';
+
 
 // 設定區
 const upload = multer();
@@ -36,13 +38,17 @@ app.get("/", (req, res)=>{
 });
 
 app.use("/api/users", usersRouter);
-app.use("/api/pts", productsRouter);
+app.use('/api', reviewsRouter);
 app.use("/api/organizers", organizersRouter);
 app.use("/api/products", productsRouter);
 app.use('/uploads', express.static('uploads'));
 app.use("/api/coupons", couponRouter);
 app.use("/api/article", articleRouter);
 app.use("/api/order", orderRouter);
+app.use('/uploads', express.static('public/uploads'));    // 評論圖片
+
+
+// app.use("/api/coupon", coupon);
 
 
 app.listen(3005, ()=>{
