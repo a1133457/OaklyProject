@@ -6,7 +6,7 @@ import { useCart } from "@/hooks/use-cart";
 
 export default function CartCard({ type }) {
   const [showForm, setShowForm] = useState(false);
-  const { items, onDecrease, onIncrease, onRemove, totalOty, totalAmount } = useCart();
+  const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } = useCart();
   if (items) {
     if (type === "order") {
       return (

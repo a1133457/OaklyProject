@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import "@/styles/cart/couponSelect.css";
+import CanUseCoupon from "@/app/user/coupon/_components/CanUseCoupon";
 
 export default function CouponSelect({ coupons, onSelect }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,13 +23,14 @@ export default function CouponSelect({ coupons, onSelect }) {
 
             {isOpen && (
                 <div className="overlay">
-                    <div className="modal">
+                    <div className="my-coupon">
                         {/* X 關閉按鈕 */}
                         <button className="closeButton" onClick={() => setIsOpen(false)}>
                             <i className="fa-solid fa-xmark"></i>
                         </button>
-                        <h3>選擇可用優惠券</h3>
-                        <ul>
+                        <h5>選擇可用優惠券</h5>
+                        <div className="my-coupon-line"></div>
+                        {/* <ul>
                             {coupons.map((coupon) => (
                                 <li key={coupon.id}>
                                     <button
@@ -39,8 +41,9 @@ export default function CouponSelect({ coupons, onSelect }) {
                                     </button>
                                 </li>
                             ))}
-                        </ul>
-                        <button onClick={() => setIsOpen(false)}>取消</button>
+                        </ul> */}
+                        <CanUseCoupon/>
+                        
                     </div>
                 </div>
             )}

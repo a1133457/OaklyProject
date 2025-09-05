@@ -8,8 +8,6 @@
   box-shadow: 10px 10px 35px 0 rgba(0, 0, 0, 0.25);
 }
 
-
-
 .frame {
   flex: auto;
   width: 1098px;
@@ -75,6 +73,16 @@
   color: var(--color-gray-900);
 }
 
+.phoneLogo{
+  display: none;
+}
+
+.side-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
 /* .btn-close{
     color: var(--color-gray-900);
 } */
@@ -111,7 +119,7 @@
     justify-content: space-between;
   }
 
-  .side-right{
+  .side-right {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -162,7 +170,7 @@
     padding: 15px 30px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: var(--color-gray-900)
+    color: var(--color-gray-900);
   }
 
   .menu-item:hover {
@@ -222,7 +230,8 @@
     border-top: 1px solid #e5e5e5;
   }
 
-  .menu-item a , .auth-menu .menu-item{
+  .menu-item a,
+  .auth-menu .menu-item {
     text-decoration: none;
     color: var(--color-gray-900);
   }
