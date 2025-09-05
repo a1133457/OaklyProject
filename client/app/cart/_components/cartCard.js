@@ -36,7 +36,7 @@ export default function CartCard({ type }) {
                       <button onClick={() => onDecrease(item.id)} className="minus">
                         <i className="fa-solid fa-minus"></i>
                       </button>
-                      <div className="num">{item.count}</div>
+                      <div className="num">{item.quantity}</div>
                       <button onClick={() => onIncrease(item.id)} className="plus">
                         <i className="fa-solid fa-plus"></i>
                       </button>
@@ -69,7 +69,7 @@ export default function CartCard({ type }) {
                         <button onClick={() => onDecrease(item.id)} className="minus">
                           <i className="fa-solid fa-minus"></i>
                         </button>
-                        <div className="num">{item.count}</div>
+                        <div className="num">{item.quantity}</div>
                         <button onClick={() => onIncrease(item.id)} className="plus">
                           <i className="fa-solid fa-plus"></i>
                         </button>
@@ -82,7 +82,7 @@ export default function CartCard({ type }) {
                     <i className="fa-solid fa-trash"></i>
                   </button>
                   <div className="price-num">
-                    <h4>${item.price * item.count}</h4>
+                    <h4>${item.price * item.quantity}</h4>
                   </div>
                 </div>
               </div>
@@ -109,8 +109,8 @@ export default function CartCard({ type }) {
                   </div>
                 </div>
                 <div className="card-right">
-                  <h3>${item.price * item.count}</h3>
-                  <div className="quantity">數量: {item.count}</div>
+                  <h3>${item.price * item.quantity}</h3>
+                  <div className="quantity">數量: {item.quantity}</div>
                 </div>
               </div>
             ))}
@@ -132,7 +132,7 @@ export default function CartCard({ type }) {
                           <p>顏色: {item.color}</p>
                           <p>size: {item.size}</p>
                           <p>材質: {item.material}</p>
-                          <h4>${item.price * item.count}</h4>
+                          <h4>${item.price * item.quantity}</h4>
                         </div>
                       </div>
                     </div>

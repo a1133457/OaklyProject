@@ -26,6 +26,37 @@ const MainProduct = () => {
 
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  // 在現有 state 下方新增
+  const [currentTitle, setCurrentTitle] = useState('全部商品');
+  const [currentHeroImage, setCurrentHeroImage] = useState('/img/lan/header.png');
+
+  // 新增分類資料映射
+  const categoryData = {
+    '': {
+      title: '全部商品',
+      image: '/img/lan/header.png'
+    },
+    '客廳': {
+      title: '客廳',
+      image: '/img/lan/livingroom.jpg'
+    },
+    '廚房': {
+      title: '廚房',
+      image: '/img/lan/kitchen.jpg'
+    },
+    '臥室': {
+      title: '臥室',
+      image: '/img/lan/bedroom.jpg'
+    },
+    '兒童房': {
+      title: '兒童房',
+      image: '/img/lan/child.jpg'
+    },
+    '收納用品': {
+      title: '收納用品',
+      image: '/img/lan/storage.jpg'
+    }
+  };
 
   const categoryMapping = {
     // 客廳分類
@@ -48,9 +79,12 @@ const MainProduct = () => {
     '衣櫃': '臥室',
     // 兒童房分類
     '桌椅組': '兒童房',
-    // 收納空間分類
-    '收納盒': '收納空間',
-    '收納櫃': '收納空間'
+    '衣櫃': '兒童房', // 兒童房的衣櫃/衣架
+    '床架': '兒童房', // 兒童房的床架
+    '收納櫃': '兒童房', // 兒童房的收納櫃
+    // 收納用品分類
+    '收納盒': '收納用品',
+    '收納箱': '收納用品'
   };
 
 
@@ -395,12 +429,26 @@ const MainProduct = () => {
     // 檢查是否為子分類
     if (categoryMapping[categoryName]) {
       // 這是子分類
+      const mainCategory = categoryMapping[categoryName];
       setSelectedSubCategory(categoryName);
       setSelectedCategory(categoryMapping[categoryName]);
+      setSelectedCategory(mainCategory);
+
+      // 更新標題和背景圖片為主分類
+      const categoryInfo = categoryData[mainCategory] || categoryData[''];
+      setCurrentTitle(categoryInfo.title);
+      setCurrentHeroImage(categoryInfo.image);
+
     } else {
       // 這是大分類
       setSelectedCategory(categoryName);
       setSelectedSubCategory('');
+
+      // 更新標題和背景圖片
+      const categoryInfo = categoryData[categoryName] || categoryData[''];
+      setCurrentTitle(categoryInfo.title);
+      setCurrentHeroImage(categoryInfo.image);
+
     }
 
     // 清除其他篩選條件
@@ -421,7 +469,7 @@ const MainProduct = () => {
         </div>
       </div>
       <div className="alls">
-        <div className="all-0">全部商品</div>
+        <div className="all-0">{currentTitle}</div>
         <div className="all-1">Oakly 質感家具，打造理想生活空間</div>
         <div className="all-2">
           精選每一件家具，只為帶來溫潤木質與極簡設計的完美結合。從客廳到臥室，Oakly
@@ -430,9 +478,9 @@ const MainProduct = () => {
       </div>
       {/* Hero 區域 */}
       <section className="hero">
-        <img src="/img/lan/header.png" alt="hero" />
+        <img src={currentHeroImage} alt="hero" />
         <div className="hero-content">
-          <h1 className="hero-title">全部商品</h1>
+          <h1 className="hero-title">{currentTitle}</h1>
 
         </div>
       </section>
@@ -527,8 +575,9 @@ const MainProduct = () => {
               </div>
               <div className="megamenu-column">
                 <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '收納用品')}>
-                  收納空間
-                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納盒')}>
+                  收納用品
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納盒')}>
                   收納盒 / 收納箱
                 </a>
               </div>
@@ -542,26 +591,43 @@ const MainProduct = () => {
       </div>
 
       {/* 子導航欄 */}
-      <div className="breadcrumb">
-        <a href="/">首頁</a>
-        <div className="arrow">&gt;</div>
-        <a href="#" onClick={(e) => { e.preventDefault(); setSelectedCategory(''); setSelectedSubCategory(''); }}>
-          商品總頁
-        </a>
-        {selectedCategory && (
-          <>
-            <div className="arrow">&gt;</div>
-            <a href="#" onClick={(e) => { e.preventDefault(); setSelectedSubCategory(''); }}>
-              {selectedCategory}
+      <div className="breadcrumb-nav">
+        <div className="sub-nav-content">
+          <div className="breadcrumb">
+
+            <a href="/" onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory('');
+              setSelectedSubCategory('');
+              setCurrentTitle('全部商品');
+              setCurrentHeroImage('/img/lan/header.png');
+            }}>
+              首頁
             </a>
-          </>
-        )}
-        {selectedSubCategory && (
-          <>
             <div className="arrow">&gt;</div>
-            {selectedSubCategory}
-          </>
-        )}
+            <a href="#" onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory('');
+              setSelectedSubCategory('');
+              setCurrentTitle('全部商品');
+              setCurrentHeroImage('/img/lan/header.png');
+            }}>
+              商品總頁
+            </a>
+            {selectedCategory && (
+              <>
+                <div className="arrow">&gt;</div>
+                <span>{selectedCategory}</span>
+              </>
+            )}
+            {selectedSubCategory && (
+              <>
+                <div className="arrow">&gt;</div>
+                <span>{selectedSubCategory}</span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* 主要內容區域 */}

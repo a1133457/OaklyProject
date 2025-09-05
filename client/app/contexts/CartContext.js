@@ -14,7 +14,7 @@ export const useCart = () => {
 
 
 
-// 成功通知組件
+// 計算購物車數量
 const AddToCartSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
   useEffect(() => {
     if (isVisible) {
@@ -311,13 +311,33 @@ export const CartProvider = ({ children }) => {
   };
 
   const contextValue = {
+    // 原有的屬性
     cartItems,
     cartCount,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
-    getTotalPrice
+    getTotalPrice,
+    
+    items: cartItems,
+    onDecrease: (id) => {
+      const item = cartItems.find(item => item.id === id);
+      if (item && item.quantity > 1) {
+        updateQuantity(id, item.quantity - 1);
+      } else {
+        removeFromCart(id);
+      }
+    },
+    onIncrease: (id) => {
+      const item = cartItems.find(item => item.id === id);
+      if (item) {
+        updateQuantity(id, item.quantity + 1);
+      }
+    },
+    onRemove: removeFromCart,
+    totalQty: cartCount,
+    totalAmount: getTotalPrice()
   };
 
   return (
