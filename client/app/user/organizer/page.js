@@ -8,9 +8,10 @@ import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 import ItemTab from "./_components/ItemTab";
 import { useFetch } from "@/hooks/use-fetch";
 import { useState } from "react";
-import { useTab } from "@/contexts/TabContext"; 
+import { useTab } from "@/contexts/TabContext";
 
 export default function UserOrganizerPage() {
+
   const { currentTab, setCurrentTab } = useTab();  // ← 使用 Context
   // const [currentTab, setCurrentTab] = useState(1);
   // 抓取使用者的預約列表
@@ -18,10 +19,8 @@ export default function UserOrganizerPage() {
     "http://localhost:3005/api/user/organizers/1"
   );
 
-  
-  const userOrganizers = userOrganizersResult.data
-    ? userOrganizersResult.data.data
-    : [];
+
+  const userOrganizers = userOrganizersResult?.data?.data || [];
 
 
 
@@ -34,7 +33,7 @@ export default function UserOrganizerPage() {
   // 狀態文字對應表
   const statusTexts = {
     1: "我們已收到您的需求，整理師將儘快與您聯繫",
-    2: "整理師正在準備報價中，請耐心等候", 
+    2: "整理師正在準備報價中，請耐心等候",
     3: "服務進行中，感謝您的耐心等待",
     4: "服務已完成，謝謝您的使用"
   };
@@ -60,7 +59,7 @@ export default function UserOrganizerPage() {
                 price={organizer.price}
               />
             ))}
-          <h6 className="t-gray600 text-center">{statusTexts[currentTab]}</h6>
+            <h6 className="t-gray600 text-center">{statusTexts[currentTab]}</h6>
           </div>
         </div>
       </section>

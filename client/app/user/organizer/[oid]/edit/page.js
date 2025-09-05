@@ -141,7 +141,7 @@ export default function UserOrganizerEditPage() {
               {/* 第一個 row - 姓名 + 手機 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="name" className="form-label t-primary03">
+                  <label htmlFor="name" className="form-label t-primary03 label700">
                     姓名*
                   </label>
                   <input
@@ -156,7 +156,7 @@ export default function UserOrganizerEditPage() {
                   />
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="phone" className="form-label t-primary03">
+                  <label htmlFor="phone" className="form-label t-primary03 label700">
                     手機號碼*
                   </label>
                   <input
@@ -174,7 +174,7 @@ export default function UserOrganizerEditPage() {
               {/* 第二個 row - 信箱獨立一行 */}
               <div className="row">
                 <div className="col-12 mb-xl">
-                  <label htmlFor="email" className="form-label t-primary03">
+                  <label htmlFor="email" className="form-label t-primary03 label700">
                     信箱*
                   </label>
                   <input
@@ -192,7 +192,7 @@ export default function UserOrganizerEditPage() {
               {/* 服務地址區塊 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03">服務地址*</label>
+                  <label className="form-label t-primary03 label700">服務地址*</label>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
@@ -260,7 +260,7 @@ export default function UserOrganizerEditPage() {
               {/* 選整理師+日期 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03">選擇整理師*</label>
+                  <label className="form-label t-primary03 label700">選擇整理師*</label>
                   <select
                     value={editData.selectedOrganizers}
                     onChange={(e) => {
@@ -289,7 +289,7 @@ export default function UserOrganizerEditPage() {
                   </select>
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03">
+                  <label className="form-label t-primary03 ">
                     <span className="label700">希望服務日期*</span>
                     （為確保最佳服務品質，請選擇2週後的日期）
                   </label>
@@ -341,7 +341,7 @@ export default function UserOrganizerEditPage() {
               {booking.images && booking.images.length > 0 && (
                 <div className="row mb-3">
                   <div className="col-12">
-                    <label className="form-label t-primary03">
+                    <label className="form-label t-primary03 label700">
                       現有環境照片
                     </label>
                     <div className={`d-flex flex-wrap ${styles2.imgGap}`}>
@@ -363,7 +363,7 @@ export default function UserOrganizerEditPage() {
               {/* 備註 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03">備註</label>
+                  <label className="form-label t-primary03 label700">備註</label>
                   <textarea
                     name="note"
                     id="note"
@@ -380,7 +380,7 @@ export default function UserOrganizerEditPage() {
                   ></textarea>
                 </div>
               </div>
-              <label className="t-primary03 mb-xl text-xl-center">
+              <label className="t-primary03 mb-xl text-xl-center label700">
                 <input
                   type="checkbox"
                   name="confirm"
