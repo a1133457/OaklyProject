@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
 import "@/styles/header.css";
 
 export default function Header() {
+  const { user, logout } = useAuth();
+
   return (
     <div className="container-fluid header">
       <div className="frame">
@@ -11,40 +14,43 @@ export default function Header() {
           <img src="/img/Oakly-green.svg" alt="Oakly首頁" />
         </Link>
         <div className="menu">
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="/products">
             <h6>商品列表</h6>
           </Link>
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="organizers">
             <h6>預約整理師</h6>
           </Link>
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="article">
             <h6>精選文章</h6>
           </Link>
-          <Link className="nav-items" href="">
+          <Link className="nav-items" href="/">
             <h6>常見問題</h6>
           </Link>
         </div>
       </div>
       <div className="icon-group">
-        {/* <Link>
-          <i className="fa-solid fa-magnifying-glass"></i>
-        </Link> */}
+        <Link href="/" alt="">
+          <img src="/img/Oakly-green.svg" alt="Oakly首頁" />
+        </Link>
+        <div className="side-right">
+
         <Link href="/cart" alt="">
-          <i className="fa-solid fa-cart-shopping"></i>
+          <i className="fa-solid fa-cart-shopping ms-auto"></i>
         </Link>
 
         <div className="user-log">
-          <Link href="/">
+          <Link href="/user/register">
             <h6>註冊</h6>
           </Link>
-          <Link href="/">
+          <Link href="/user/login">
             <h6>登入</h6>
           </Link>
         </div>
 
-        <button className="menu-toggle">
+        {/* <button className="menu-toggle">
           <i className="fa-solid fa-circle-user"></i>
-        </button>
+        </button> */}
+
         <button
           className="menu-toggle"
           type="button"
@@ -55,17 +61,19 @@ export default function Header() {
           <i className="fa-solid fa-bars"></i>
         </button>
 
+        {/* sidebar */}
         <div
-          className="offcanvas offcanvas-end"
-          data-bs-scroll="true"
+          className="offcanvas offcanvas-end sidebar"
           tabIndex="-1"
           id="offcanvasScrolling"
           aria-labelledby="offcanvasScrollingLabel"
         >
           <div className="offcanvas-header">
-            <h5 className="offcanvas-title" id="offcanvasScrollingLabel">
-              購物車
-            </h5>
+            <div className="offcanvas-title" id="offcanvasScrollingLabel">
+              <a href="/">
+                <img className="phoneLogo" src="/img/Oakly-green.svg" alt="Oakly首頁" />
+              </a>
+            </div>
             <button
               type="button"
               className="btn-close"
@@ -73,11 +81,84 @@ export default function Header() {
               aria-label="Close"
             ></button>
           </div>
+
           <div className="offcanvas-body">
-            <p>
-              Try scrolling the rest of the page to see this option in action.
-            </p>
+            <div className="user-menu">
+              <div className="menu-item">
+                <i></i>
+                <a href="/products">
+                  <span>商品列表</span>
+                </a>
+              </div>
+              <div className="menu-item">
+                <i>📰</i>
+                <a href="/organizer">
+                  <span>預約整理師</span>
+                </a>
+              </div>
+              <div className="menu-item">
+                <i>📰</i>
+                <a href="/article">
+                  <span>精選文章</span>
+                </a>
+              </div>
+              <div className="menu-item">
+                <i>⚙️</i>
+                <a href="/">
+                  <span>常見問題</span>
+                </a>
+              </div>
+
+              {user ? (
+                <div className="auth-user">
+                  <div className="user-info">
+                    <img src={user.avatar || "/img/default-avatar.png"} alt="頭像" className="avatar" />
+                    <span>{user.name}</span>
+                  </div>
+                  <div className="user-submenu">
+                    <a href="/user/profile" className="menu-item">
+                      <i>👤</i>
+                      <span>個人資料</span>
+                    </a>
+                    <a href="/dashboard/order" className="menu-item">
+                      <i>📦</i>
+                      <span>我的訂單</span>
+                    </a>
+                    <a href="/dashboard/coupon" className="menu-item">
+                      <i>📦</i>
+                      <span>我的優惠券</span>
+                    </a>
+                    <a href="/dashboard/favorite" className="menu-item">
+                      <i>📦</i>
+                      <span>我的最愛</span>
+                    </a>
+                    <a href="/dashboard/bookmark" className="menu-item">
+                      <i>📦</i>
+                      <span>收藏文章</span>
+                    </a>
+                    <button onClick={logout} className="menu-item">
+                      <i>🚪</i>
+                      <span>登出</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="auth-menu">
+                  <a href="/user/register" className="menu-item">
+                    <i>📝</i>
+                    <span>註冊</span>
+                  </a>
+                  <a href="/user/login" className="menu-item">
+                    <i>🔑</i>
+                    <span>登入</span>
+                  </a>
+                </div>
+              )}
+
+         
+            </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
