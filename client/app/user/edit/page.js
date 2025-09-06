@@ -12,7 +12,7 @@ import UserFormRow from '@/app/_components/UserFormRow'
 import Button from '@/app/_components/Button'
 import ButtonGroup from '@/app/_components/ButtonGroup'
 
-export default function UserEditForm() {
+export default function UserEditPage() {
     const [name, setName] = useState('')
     const [birthday, setBirthday] = useState('')
     const [phone, setPhone] = useState('')

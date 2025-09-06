@@ -216,10 +216,16 @@ router.post("/login", upload.none(), async (req, res) => {
       secretKey,
       { expiresIn: "30m" }
     );
+    const newUser = {
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+    } 
+
     res.status(200).json({
       status: "success",
       message: "登入成功",
-      data: token
+      data: {token, user: newUser},
     });
   } catch (error) {
     // 捕獲錯誤
@@ -280,12 +286,15 @@ router.post("/status", checkToken, async (req, res) => {
     const { email } = req.decoded;
 
     const sqlCheck1 = "SELECT * FROM `users` WHERE `email` = ?;";
-    let user = await pool.execute(sqlCheck1, [email]).then(([result]) => {
+    let user = await pool
+    .execute(sqlCheck1, [email])
+    .then(([result]) => {
       return result[0];
     });
+
     if (!user) {
       const err = new Error("請登入");
-      err.code = 401;
+      err.code = 401; 
       err.status = "error";
       throw err;
     }
@@ -294,11 +303,20 @@ router.post("/status", checkToken, async (req, res) => {
       name: user.name,
       email: user.email,
       avatar: user.avatar,
-    }, secretKey, { expiresIn: "30m" });
+    },
+    secretKey, 
+    { expiresIn: "30m" });
+
+    const newUser = {
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+    }
+
     res.status(200).json({
       status: "success",
       message: "處於登入狀態",
-      data: token
+      data: {token, user: newUser},
     });
   } catch (error) {
     // 捕獲錯誤
@@ -315,16 +333,18 @@ router.post("/status", checkToken, async (req, res) => {
 });
 
 function checkToken(req, res, next) {
-  console.log("checkToken");
+  // console.log("checkToken");
 
   let token = req.get("Authorization");
-  console.log(token);
+  console.log("收到的 header:", token);
+
   if (token && token.includes("Bearer ")) {
     // 有符合
     token = token.slice(7);
+    console.log("解析後的 token:", token);
     jwt.verify(token, secretKey, (error, decoded) => {
       if (error) {
-        console.log(error);
+        console.log("JWT 驗證失敗:", error);
         res.status(401).json({
           status: "error",
           message: "登入驗證失效 ,請重新登入",
@@ -332,6 +352,7 @@ function checkToken(req, res, next) {
 
         return;
       }
+      console.log("JWT 驗證成功:", decoded);
       req.decoded = decoded;
       next();
     });
