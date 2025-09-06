@@ -8,10 +8,290 @@ import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
 import { useCart } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
 
+// 跟隨指針移動的滾動條類別
+class CustomThumbnailScrollbar {
+  constructor(onImageChange) {
+    this.isDragging = false;
+    this.startX = 0;
+    this.startScrollLeft = 0;
+    this.startThumbLeft = 0;
+    this.onImageChange = onImageChange;
+    this.lastImageIndex = -1;
+    this.init();
+  }
 
+  init() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.setupScrollbar());
+    } else {
+      this.setupScrollbar();
+    }
+  }
 
+  setupScrollbar() {
+    const thumbnailContainer = document.querySelector('.thumbnail-images');
+    if (!thumbnailContainer) return;
 
+    const thumbnails = thumbnailContainer.querySelectorAll('.thumbnail');
+    if (thumbnails.length <= 1) return;
 
+    this.thumbnails = Array.from(thumbnails);
+    this.thumbnailContainer = thumbnailContainer;
+
+    const existingScrollbar = document.querySelector('.custom-scrollbar-container');
+    if (existingScrollbar) {
+      existingScrollbar.remove();
+    }
+
+    const scrollbarContainer = this.createScrollbarContainer();
+    thumbnailContainer.parentNode.insertBefore(scrollbarContainer, thumbnailContainer);
+    thumbnailContainer.style.marginTop = '10px';
+
+    this.setupScrollEvents(thumbnailContainer, scrollbarContainer);
+    this.updateScrollbar(thumbnailContainer, scrollbarContainer);
+  }
+
+  createScrollbarContainer() {
+    const container = document.createElement('div');
+    container.className = 'custom-scrollbar-container';
+    container.style.cssText = `
+      position: relative;
+      width: 500px;
+      max-width: 500px;
+      height: 8px;
+      margin-bottom: 6px;
+    `;
+
+    const track = document.createElement('div');
+    track.className = 'custom-scrollbar-track';
+    track.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #f1f1f1;
+      border-radius: 2px;
+      z-index: 10;
+    `;
+
+    const thumb = document.createElement('div');
+    thumb.className = 'custom-scrollbar-thumb';
+    thumb.style.cssText = `
+      position: absolute;
+      top: 0;
+      height: 4px;
+      background: #666;
+      border-radius: 2px;
+      cursor: pointer;
+      z-index: 11;
+      min-width: 30px;
+      max-width: 50px;
+    `;
+
+    container.appendChild(track);
+    container.appendChild(thumb);
+
+    return container;
+  }
+
+  calculateImageIndex(scrollLeft, scrollWidth, clientWidth) {
+    if (!this.thumbnails || this.thumbnails.length === 0) return 0;
+
+    const maxScrollLeft = scrollWidth - clientWidth;
+    if (maxScrollLeft <= 0) return 0;
+
+    const scrollPercentage = scrollLeft / maxScrollLeft;
+    const imageIndex = Math.round(scrollPercentage * (this.thumbnails.length - 1));
+
+    return Math.max(0, Math.min(imageIndex, this.thumbnails.length - 1));
+  }
+
+  setupScrollEvents(container, scrollbarContainer) {
+    const thumb = scrollbarContainer.querySelector('.custom-scrollbar-thumb');
+    const track = scrollbarContainer.querySelector('.custom-scrollbar-track');
+
+    // 只在非拖拽時更新滾動條
+    container.addEventListener('scroll', () => {
+      if (!this.isDragging) {
+        this.updateScrollbar(container, scrollbarContainer);
+
+        const imageIndex = this.calculateImageIndex(
+          container.scrollLeft,
+          container.scrollWidth,
+          container.clientWidth
+        );
+
+        if (imageIndex !== this.lastImageIndex && this.onImageChange) {
+          this.onImageChange(imageIndex);
+          this.lastImageIndex = imageIndex;
+        }
+      }
+    });
+
+    this.setupDragEvents(container, thumb, track);
+
+    track.addEventListener('click', (e) => {
+      this.handleTrackClick(e, container, thumb, track);
+    });
+  }
+
+  updateScrollbar(container, scrollbarContainer) {
+    const thumb = scrollbarContainer.querySelector('.custom-scrollbar-thumb');
+    const track = scrollbarContainer.querySelector('.custom-scrollbar-track');
+
+    if (!thumb || !track) return;
+
+    const scrollLeft = container.scrollLeft;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+
+    if (scrollWidth <= clientWidth) {
+      scrollbarContainer.style.display = 'none';
+      return;
+    } else {
+      scrollbarContainer.style.display = 'block';
+    }
+
+    const trackWidth = track.offsetWidth;
+    const thumbWidth = Math.max(30, Math.min(50, trackWidth / this.thumbnails.length * 2));
+
+    const maxThumbPosition = trackWidth - thumbWidth;
+    const scrollRatio = scrollLeft / (scrollWidth - clientWidth);
+    const thumbPosition = scrollRatio * maxThumbPosition;
+
+    thumb.style.width = thumbWidth + 'px';
+    thumb.style.left = Math.max(0, Math.min(thumbPosition, maxThumbPosition)) + 'px';
+  }
+
+  setupDragEvents(container, thumb, track) {
+    let initialOffset = 0;
+
+    const handleMouseDown = (e) => {
+      this.isDragging = true;
+      
+      // 記錄滑鼠點擊滑塊時的偏移量
+      const thumbRect = thumb.getBoundingClientRect();
+      initialOffset = e.clientX - thumbRect.left;
+
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+
+      e.preventDefault();
+      thumb.classList.add('dragging');
+      thumb.style.background = '#333';
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    };
+
+    const handleMouseMove = (e) => {
+      if (!this.isDragging) return;
+
+      // 直接計算滑塊位置，完全跟隨滑鼠
+      const trackRect = track.getBoundingClientRect();
+      const thumbWidth = thumb.offsetWidth;
+      const trackWidth = trackRect.width;
+      
+      // 滑鼠在軌道中的位置減去初始偏移
+      const mouseX = e.clientX;
+      const trackLeft = trackRect.left;
+      const newThumbLeft = mouseX - trackLeft - initialOffset;
+      
+      // 限制範圍
+      const maxThumbLeft = trackWidth - thumbWidth;
+      const clampedLeft = Math.max(0, Math.min(newThumbLeft, maxThumbLeft));
+      
+      // 立即設置滑塊位置 - 這應該是瞬間的
+      thumb.style.left = clampedLeft + 'px';
+      
+      // 計算滾動位置
+      const ratio = maxThumbLeft > 0 ? clampedLeft / maxThumbLeft : 0;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      const newScrollLeft = ratio * maxScroll;
+      
+      // 設置滾動位置
+      container.scrollLeft = newScrollLeft;
+
+      // 更新圖片
+      const imageIndex = this.calculateImageIndex(newScrollLeft, container.scrollWidth, container.clientWidth);
+      if (imageIndex !== this.lastImageIndex && this.onImageChange) {
+        this.onImageChange(imageIndex);
+        this.lastImageIndex = imageIndex;
+      }
+    };
+
+    const handleMouseUp = () => {
+      this.isDragging = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      thumb.classList.remove('dragging');
+      thumb.style.background = '#666';
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    thumb.addEventListener('mousedown', handleMouseDown);
+    thumb.addEventListener('dragstart', (e) => e.preventDefault());
+
+    thumb.addEventListener('mouseenter', () => {
+      if (!this.isDragging) {
+        thumb.style.background = '#555';
+        document.body.style.cursor = 'grab';
+      }
+    });
+
+    thumb.addEventListener('mouseleave', () => {
+      if (!this.isDragging) {
+        thumb.style.background = '#666';
+        document.body.style.cursor = '';
+      }
+    });
+  }
+
+  handleTrackClick(e, container, thumb, track) {
+    if (e.target === thumb) return;
+
+    const trackRect = track.getBoundingClientRect();
+    const clickX = e.clientX - trackRect.left;
+    const trackWidth = track.offsetWidth;
+    const thumbWidth = thumb.offsetWidth;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+
+    // 點擊軌道時，讓滑塊中心移動到點擊位置
+    const targetThumbCenter = clickX;
+    const targetThumbLeft = targetThumbCenter - (thumbWidth / 2);
+    const maxThumbPosition = trackWidth - thumbWidth;
+    const clampedThumbLeft = Math.max(0, Math.min(targetThumbLeft, maxThumbPosition));
+    
+    const clickRatio = maxThumbPosition > 0 ? clampedThumbLeft / maxThumbPosition : 0;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    const targetScrollLeft = clickRatio * maxScrollLeft;
+
+    container.scrollTo({
+      left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
+      behavior: 'smooth'
+    });
+  }
+
+  scrollToImage(imageIndex) {
+    if (!this.thumbnailContainer || !this.thumbnails) return;
+
+    const scrollWidth = this.thumbnailContainer.scrollWidth;
+    const clientWidth = this.thumbnailContainer.clientWidth;
+    const maxScrollLeft = scrollWidth - clientWidth;
+
+    const scrollRatio = imageIndex / (this.thumbnails.length - 1);
+    const targetScrollLeft = scrollRatio * maxScrollLeft;
+
+    this.thumbnailContainer.scrollTo({
+      left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
+      behavior: 'smooth'
+    });
+
+    this.lastImageIndex = imageIndex;
+  }
+}
 
 
 export default function PidPage({ params }) {
@@ -204,6 +484,24 @@ export default function PidPage({ params }) {
     return () => document.body.classList.remove('body-no-scroll');
   }, [showWishlistModal]);
 
+  useEffect(() => {
+    let thumbnailScrollbar;
+
+    // 延遲執行以確保 DOM 元素已渲染
+    const timer = setTimeout(() => {
+      // 傳入回調函數來處理圖片切換
+      thumbnailScrollbar = new CustomThumbnailScrollbar((imageIndex) => {
+        setSelectedImage(imageIndex);
+      });
+    }, 100);
+
+    // 清理函數
+    return () => {
+      clearTimeout(timer);
+      const customScrollbars = document.querySelectorAll('.custom-scrollbar-container');
+      customScrollbars.forEach(el => el.remove());
+    };
+  }, [productData]);
 
 
   const isProductInWishlist = (targetProductId) => {
@@ -433,6 +731,7 @@ export default function PidPage({ params }) {
     return `https://via.placeholder.com/300x200/f0f0f0/666?text=${encodeURIComponent(product.name)}`;
   };
 
+
   return (
     <div className="detail-product-page">
       {/* 麵包屑導航 */}
@@ -521,9 +820,8 @@ export default function PidPage({ params }) {
                 className="btn view-review"
                 onClick={() => {
                   setShowModal(true);
-                  document.body.style.position = 'fixed';
-                  document.body.style.width = '100%';
-                  document.body.style.overflow = 'hidden';
+                  document.body.classList.add('modal-open');
+
                 }}
               >
                 查看評論
