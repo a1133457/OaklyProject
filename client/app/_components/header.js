@@ -8,7 +8,7 @@ import { useCart } from '@/app/contexts/CartContext';
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const { cartCount } = useCart();
+  // const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
