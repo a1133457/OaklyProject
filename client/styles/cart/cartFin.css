@@ -19,9 +19,10 @@
     display: flex;
     padding: 32px 48px;
     flex-direction: column;
+    gap: 20px;
     align-items: center;
-    border-radius: 20px;
-    border: 5px solid var(--color-gray-200, #e4e4e4);
+    border-radius: 5px;
+    border: 2px solid var(--color-gray-200, #e4e4e4);
     background-color: var(--white, #fff);
     box-shadow: 10px 10px 35px 0 rgba(0, 0, 0, 0.25);
 }

@@ -33,7 +33,7 @@ export default function UserSidebarPage() {
 
       <Link href="/user/favorites" className={`${styles.heart} ${pathname === '/user/favorites' ? styles.active : ''}`}>
         <i className="fas fa-heart"></i>
-        我的最愛
+        願望清單
       </Link>
 
       <Link href="/user/bookmarks" className={`${styles.bookmark} ${pathname === '/user/bookmarks' ? styles.active : ''}`}>

@@ -1,7 +1,7 @@
-/* reset */
-@import '_resetHui.css';
 /* 導入 google Noto Sans TC 還有 INTER 英文字體 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+TC:wght@100..900&display=swap');
+/* reset */
+@import '_resetHui.css';
 /* bootstrap.css */
 @import '../node_modules/bootstrap/dist/css/bootstrap.css';
 /* 自訂root */
@@ -387,5 +387,190 @@ textarea.form-control:focus {
   &:focus {
     border-color: var(--primary-03);
     box-shadow: none;
+  }
+}
+
+.container-xl{
+    @media (max-width: 1200px) {
+    padding: 0px;
+  }
+}
+
+.cart-success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: start;
+  justify-content: flex-end;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.cart-success-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+.cart-success-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+}
+
+.success-icon {
+  flex-shrink: 0;
+}
+
+.cart-success-header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #6a6a6a;
+}
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #8b8b8b;
+  transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #6a6a6a;
+}
+
+.cart-success-content {
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+}
+
+.product-image2 {
+  flex-shrink: 0;
+}
+
+.product-image2 img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.product-details {
+  flex: 1;
+}
+
+.product-name-m{
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6a6a6a;
+  line-height: 1.4;
+}
+
+.product-price-p{
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #9FA79A;
+}
+
+.product-info-o {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  color: #6a6a6a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cart-success-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px;
+}
+
+.continue-shopping {
+  flex: 1;
+  padding: 12px 20px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #6a6a6a;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.continue-shopping:hover {
+  background: #f8f8f8;
+  border-color: #bbb;
+}
+
+.view-cart {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: #9FA79A;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.view-cart:hover {
+  background: #83937A;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 響應式設計 */
+@media (max-width: 480px) {
+  .cart-success-modal {
+    margin: 20px;
+  }
+  
+  .cart-success-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .cart-success-actions {
+    flex-direction: column;
   }
 }

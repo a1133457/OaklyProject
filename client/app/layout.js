@@ -1,11 +1,15 @@
 // import {Geist, Geist_Mono} from "next/font/google"
 import Script from "next/script";
-import { ArticleProvider } from "@/hooks/use-article";
+import { ArticleProvider } from "@/hooks/use-articleOld";
+import { AuthProvider } from "@/hooks/use-auth";
 // import "@/styles/basic.css";
 // import "@/styles/reset.css";
 import "@/styles/globalsHui.css"
 import Header from "./_components/header";
 import Footer from "./_components/footer"
+import { CartProvider } from "@/hooks/use-cart";
+// import { CartProvider } from './contexts/CartContext.js';
+
 
 export const metadata = {
   title: "Create Next App",
@@ -27,14 +31,18 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
         />
       </head>
-      <ArticleProvider>
-        <body>
-          <Header />
-          {children}
-           <Footer />
-        </body>
-      </ArticleProvider>
-     
+      <body>
+        <AuthProvider>
+          <CartProvider>
+            <ArticleProvider>
+              <Header />
+              {children}
+              <Footer />
+            </ArticleProvider>
+          </CartProvider>
+        </AuthProvider>
+      </body>
+
     </html>
   );
 }

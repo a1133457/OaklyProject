@@ -36,7 +36,7 @@ body {
 /* Hero 區域 */
 .hero {
   position: relative;
-  height: 700px;
+  height: 704px;
   overflow: hidden;
 }
 
@@ -44,6 +44,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  ;
 
 
 }
@@ -64,10 +65,10 @@ body {
 }
 
 .hero-title {
-  font-size: 48px;
   font-weight: 700;
   margin: 0;
   color: white;
+  
 
 }
 
@@ -238,7 +239,7 @@ body {
 
 .dropdown-menu {
   position: absolute;
-  top: 120%;
+  top: 100%; 
   left: 50%;
   transform: translateX(-50%);
 }
@@ -266,13 +267,15 @@ body {
 
 /* 標題樣式 */
 .dropdown-header {
-  font-weight: 500;
   font-size: 16px;
   text-align: left;
   padding: 0;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #EDEDED;
   color: #6A6A6A;
+  text-decoration: none ;
+  cursor: pointer;
+  font-weight: bold;
 
 }
 .filter-option.active {
@@ -331,6 +334,35 @@ body {
 
 .filter-section {
   padding: 12px 16px
+}
+
+.filter-section input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.filter-section input[type="checkbox"]:checked {
+  background-color: #6A6A6A;
+  border:none
+}
+
+.filter-section input[type="checkbox"]:checked::after {
+  content: '\f00c'; 
+  font-family: 'FontAwesome';
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%)scale(0.8);
+  display: block;
 }
 
 .filter-section:last-child {
@@ -410,11 +442,12 @@ span {
 .price-slider input[type="range"] {
   width: 100%;
   height: 4px;
-  background: #DBE5DE;
+  background-color: #6A6A6A;
   outline: none;
   border: none;
-
   border-radius: 2px;
+  accent-color: #6A6A6A; /* 現代瀏覽器支援的統一顏色設定 */
+
 }
 
 .sort {
@@ -434,19 +467,20 @@ span {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  cursor: poNoto Sans TC;
+  cursor: pointer;
   border: 2px solid transparent;
   transition: border-color 0.3s ease;
+  border: 2px solid #ddd;
+
 }
 
 .color-option:hover {
-  border-color: #2d5016;
+  border: 1px solid #8B8B8B;
+}
+.color-option.selected {
+  border: 2px solid #6a6a6a;
 }
 
-.color-option.selected {
-  border-color: #2d5016;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #2d5016;
-}
 
 /* 篩選按鈕 */
 .filter-buttons {
@@ -485,7 +519,6 @@ span {
 
 .filter-btn {
   gap: 8px;
-
   background: #719A8B;
   color: white;
 
@@ -584,6 +617,7 @@ span {
 
 
 
+
 .image img {
   display: block;
   overflow: hidden;
@@ -669,6 +703,7 @@ span {
 
 .page-btn.active {
   background: #719A8B;
+  color: #fff;
 }
 
 .page-btn.prev,
@@ -677,6 +712,14 @@ span {
   width: 40px;
 }
 
+.nosearchfit{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-direction: column;
+  padding-bottom: 28px 
+}
 
 
 

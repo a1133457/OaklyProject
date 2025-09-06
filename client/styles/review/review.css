@@ -11,18 +11,59 @@ body {
     flex-direction: column;
     justify-content: center;
     align-content: center;
-    font-family:'Noto Sans TC', sans-serif;
+    font-family: 'Noto Sans TC', sans-serif;
     line-height: 1.6;
     background-color: #ffffff;
 }
 
-.container-fluid.header
-{
+.container-fluid.header {
     display: none;
 }
 
+.review-controls {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 8px 60px 0px 60px;
+    cursor: pointer;
+}
 
-/* 評論頁面樣式 */
+.sort-select:hover {
+    border: 1px solid #494949;
+    background-color: #ededed;
+    cursor: pointer;
+
+
+
+}
+
+.sort-select:focus,
+.sort-select:active {
+    border: 1px solid #494949;
+    background-color: #ededed;
+    cursor: pointer;
+
+}
+
+
+.sort-select {
+    border: 1px solid #8b8b8b;
+    outline: none;
+    border-radius: 25px;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 4px 12px;
+    color: #494949;
+    font-weight: 500;
+    box-sizing: border-box;
+    cursor: pointer;
+
+
+
+}
+
+
 .review-page {
     display: flex;
     flex-direction: column;
@@ -35,17 +76,17 @@ body {
 
 /* 評論總覽區塊 */
 .review-summary {
-    padding: 16px 180px;
+    padding: 16px 160px;
     margin-bottom: 12px;
     text-align: center;
 }
 
 
 .rating-overview {
-    width:100%;
+    width: 100%;
     display: flex;
-justify-content: center;   
- align-content: center;
+    justify-content: center;
+    align-content: center;
     margin: 0 auto;
     flex-wrap: nowrap;
     max-width: 800px;
@@ -69,12 +110,13 @@ justify-content: center;
     width: 100%;
     align-content: center;
 }
-.rating-stars{
+
+.rating-stars {
     display: flex;
     gap: 5px;
     width: 100%;
     margin-bottom: 16px;
-    
+
     justify-content: center;
 }
 
@@ -139,6 +181,191 @@ justify-content: center;
     font-size: 14px;
 }
 
+/* 圖片上傳區域樣式 */
+.image-upload-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 2px dashed #ddd;
+    border-radius: 2px;
+    background: #fafafa;
+}
+
+.upload-label {
+    display: block;
+    font-weight: 500;
+    color: #8B8B8B;
+    margin-top: 10px;
+}
+
+.upload-label i {
+    margin-right: 8px;
+    color: #DBA783;
+}
+
+.upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #DBA783;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+    background: #c9966f;
+    transform: translateY(-1px);
+}
+
+/* 圖片預覽容器 */
+.image-preview-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.image-preview {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    border: 2px solid #eee;
+
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-image {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #CD8A5B;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 10;
+}
+
+/* 評論中的圖片顯示 */
+.review-images {
+    margin: 15px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    z-index: 11;
+
+}
+
+.review-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #eee;
+}
+
+.review-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 預設圖片佔位符 */
+.default-image-placeholder {
+    width: 120px;
+    height: 120px;
+    border: 2px dashed #DBA783;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    color: #6a6a6a;
+}
+
+.default-image-placeholder:hover {
+    background: #f0f0f0;
+    border-color: #c9966f;
+}
+
+.default-image-placeholder i {
+    font-size: 24px;
+    color: #DBA783;
+    margin-bottom: 8px;
+}
+
+.default-image-placeholder span {
+    font-size: 12px;
+    text-align: center;
+}
+
+.swal2-close {
+    border: none !important;
+    outline: none !important;
+}
+
+.swal2-close:hover {
+    color: #6a6a6a;
+}
+
+
+/* 添加更多圖片的按鈕 */
+.add-more-image {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed #DBA783;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+.add-more-image:hover {
+    background: #f0f0f0;
+    border-color: #c9966f;
+}
+
+.add-more-image i {
+    font-size: 20px;
+    color: #DBA783;
+}
+
+/* 調整圖片預覽容器 */
+.image-preview-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+    align-items: center;
+
+
+}
+
+
+
 /* 評論列表 */
 .review-list {
     width: 100%;
@@ -152,12 +379,11 @@ justify-content: center;
 
 .review-item {
     width: 100%;
-    padding: 46px 120px;
+    padding: 46px 60px;
     background: white;
     flex-direction: column;
     justify-content: flex-start;
     align-content: center;
-    gap: 8px;
     display: flex;
     font-size: 16px;
     font-family: Noto Sans TC;
@@ -170,7 +396,7 @@ justify-content: center;
 .user-info {
     display: flex;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
 .user-avatar {
@@ -196,10 +422,10 @@ justify-content: center;
 }
 
 .review-rating {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
- .fas.fa-star {
+.fas.fa-star {
     color: #ffffff;
     margin-right: 4px;
 }
@@ -210,9 +436,9 @@ justify-content: center;
 }
 
 .review-text {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.6;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
 .review-engagement {
@@ -250,7 +476,7 @@ justify-content: center;
 /* 撰寫評論區塊 */
 .write-review {
     margin-bottom: 40px;
-    padding: 36px 120px;
+    padding: 36px 60px;
     flex-direction: column;
     justify-content: center;
     align-content: center;
@@ -279,14 +505,19 @@ justify-content: center;
 
 .rating-input .fas.fa-star {
     font-size: 32px;
-    color: #EDEDED; /* 預設顏色為淺灰色 */
+    color: #EDEDED;
+    /* 預設顏色為淺灰色 */
     cursor: pointer;
     transition: all 0.3s ease;
-    width: 24px; /* 固定寬度 */
-    height: 24px; /* 固定高度 */
+    width: 24px;
+    /* 固定寬度 */
+    height: 24px;
+    /* 固定高度 */
     display: inline-flex;
     align-items: center;
-    background-color: transparent; /* 透明背景 */}
+    background-color: transparent;
+    /* 透明背景 */
+}
 
 .rating-input .fas.fa-star.filled {
     color: #6A6A6A;
@@ -306,11 +537,11 @@ justify-content: center;
 
 .form-row input {
     flex: 1;
-    padding: 15px;
+    padding: 12px;
     border: 1px #8B8B8B solid;
-    border-radius: 12px;
-     color: #6A6A6A;
-    font-size: 16px;
+    border-radius: 2px;
+    color: #6A6A6A;
+    font-size: 14px;
     font-family: Noto Sans TC;
     font-weight: 400;
     line-height: 24px;
@@ -327,14 +558,14 @@ justify-content: center;
 }
 
 textarea {
-    border-radius: 12px;
-margin-bottom: 24px;
+    border-radius: 2px;
+    margin-bottom: 14px;
     width: 100%;
     height: 120px;
-    padding: 15px;
+    padding: 14px;
     border: 1px #8B8B8B solid;
     color: #6A6A6A;
-    font-size: 16px;
+    font-size: 14px;
     font-family: Noto Sans TC;
     font-weight: 400;
     line-height: 24px;
@@ -353,14 +584,13 @@ textarea:focus {
     display: flex;
     gap: 10px;
     justify-content: left;
-    margin-top: 24px;
 }
 
 .submit-btn,
 .return-btn {
     padding: 12px 32px;
     border: none;
-    border-radius: 8px;
+    border-radius: 2px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -384,15 +614,18 @@ textarea:focus {
 .return-btn:hover {
     background-color: #5a6268;
 }
+
 .footer {
-        display: none;
-    }
+    display: none;
+}
 
 
 /* 手機版樣式 */
 @media (max-width: 430px) {
-    .modal-header{
-        display: none;}
+    .modal-header {
+        display: none;
+    }
+
     .review-page {
         padding: 16px;
     }
@@ -414,9 +647,11 @@ textarea:focus {
         margin-left: 0;
         width: 100%;
     }
-    .average-rating{
+
+    .average-rating {
         margin: 0;
     }
+
     .rating-number {
         font-size: 36px;
     }
@@ -480,8 +715,28 @@ textarea:focus {
         flex-direction: column;
         gap: 16px;
     }
+
     .footer {
         display: none;
+    }
+
+    .image-preview-container {
+        gap: 8px;
+    }
+
+    .image-preview {
+        width: 80px;
+        height: 80px;
+    }
+
+    .review-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .upload-btn {
+        width: 100%;
+        justify-content: center;
     }
 
 }
