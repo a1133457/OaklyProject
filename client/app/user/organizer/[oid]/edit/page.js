@@ -33,9 +33,9 @@ export default function UserOrganizerEditPage() {
   const result = useFetch(
     `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`
   );
-//   const result = useFetch(
-//   `http://localhost:3005/api/user/organizers/TEST/${userId}/${bookingId}`
-// );
+  //   const result = useFetch(
+  //   `http://localhost:3005/api/user/organizers/TEST/${userId}/${bookingId}`
+  // );
 
   const booking = result.data?.data; // 修正：確保有資料才渲染
 
@@ -45,11 +45,13 @@ export default function UserOrganizerEditPage() {
       console.log("=== BOOKING 資料 ===");
       console.log(JSON.stringify(booking, null, 2)); // 用 JSON.stringify 顯示完整結構
       setEditData({
-        selectedCity: booking.selectedCity || "",
-        selectedDistrict: booking.selectedDistrict || "",
+        selectedCity: booking.city || "",
+        selectedDistrict: booking.district || "",
         address: booking.address || "",
-        serviceDate: booking.serviceDate || "",
-        selectedOrganizers: booking.organizer_name || "",
+        serviceDate: booking.service_datetime
+          ? booking.service_datetime.split(' ')[0].replace(/\//g, '-')
+          : "",
+        selectedOrganizers: booking.organizer_id || "",
         note: booking.note || "",
       });
     }
@@ -117,6 +119,57 @@ export default function UserOrganizerEditPage() {
     高雄市: 3,
     屏東縣: 3,
   };
+
+  //提交按鈕
+  const handleSubmit = async () => {
+    // 檢查必填欄位
+    if (!editData.selectedCity || !editData.selectedDistrict ||
+      !editData.address || !editData.selectedOrganizers ||
+      !editData.serviceDate || !isConfirmed) {
+      alert("請填寫所有必填欄位並確認資訊無誤");
+      return;
+    }
+
+    try {
+      // 準備要提交的資料
+      const submitData = {
+        city: editData.selectedCity,
+        district: editData.selectedDistrict,
+        address: editData.address,
+        organizer_id: editData.selectedOrganizers,
+        service_datetime: editData.serviceDate, // 轉換格式
+        note: editData.note,
+      };
+
+      console.log("準備提交的資料:", submitData);
+
+      // 發送 PUT 請求到後端
+      const response = await fetch(
+        `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submitData),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("預約資訊更新成功！");
+        // 可以跳轉到詳細頁或列表頁
+        // router.push(`/user/organizer/${bookingId}`);
+      } else {
+        alert(`更新失敗：${result.message}`);
+      }
+    } catch (error) {
+      console.error("提交錯誤:", error);
+      alert("網路錯誤，請稍後再試");
+    }
+  };
+
 
   // 修正：加上載入狀態和錯誤處理
   if (result.loading) {
@@ -394,7 +447,8 @@ export default function UserOrganizerEditPage() {
                 請確認以上資訊無誤，整理師將依據您提供的資料安排聯繫！
               </label>
               <div className="d-flex justify-content-center">
-                <GreenBorderButton>修改完成</GreenBorderButton>
+                <GreenBorderButton onClick={handleSubmit}>取消預約</GreenBorderButton>
+                <GreenBorderButton onClick={handleSubmit}>修改完成</GreenBorderButton>
               </div>
             </form>
           </div>
