@@ -12,10 +12,10 @@ export function AuthProvider({ children }) {
   const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-  const router = useRouter();
-  const pathname = usePathname();
-  const loginRoute = "/user/login";
-  const protectedRoutes = ["/user"];
+//   const router = useRouter();
+//   const pathname = usePathname();
+//   const loginRoute = "/user/login";
+//   const protectedRoutes = ["/user"];
 
   const login = async (email, password) => {
     console.log(`在 use-auth 中, ${email}, ${password}`);
@@ -98,11 +98,11 @@ export function AuthProvider({ children }) {
     }
   };
 
-  useEffect(() => {
-    if (!isLoading && !user && protectedRoutes.includes(pathname)) {
-      router.replace(loginRoute); // 導頁
-    }
-  }, [isLoading, user, pathname]);
+//   useEffect(() => {
+//     if (!isLoading && !user && protectedRoutes.includes(pathname)) {
+//       router.replace(loginRoute); // 導頁
+//     }
+//   }, [isLoading, user, pathname]);
 
     useEffect(() => {
         const API = "http://localhost:3005/api/users/status";
