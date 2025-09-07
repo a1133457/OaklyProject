@@ -220,7 +220,40 @@ export default function UserOrganizerEditPage() {
     }
   };
 
+  //刪除按鈕
+  const handleDelete = async () => {
+    console.log("開始刪除流程");
 
+    if (!window.confirm("確定要取消此預約嗎？")) {
+      console.log("使用者取消刪除");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const responseText = await response.text();
+      console.log("後端回應:", responseText);
+
+      if (response.ok) {
+        alert("預約取消成功！");
+        window.location.href = "http://localhost:3000/user/organizer";
+      } else {
+        alert("取消失敗，請稍後再試");
+      }
+
+    } catch (error) {
+      console.error("請求錯誤:", error);
+      alert("網路錯誤，請稍後再試");
+    }
+  };
+
+  
   // 修正：加上載入狀態和錯誤處理
   if (result.loading) {
     return <div>載入中...</div>;
@@ -513,7 +546,7 @@ export default function UserOrganizerEditPage() {
                 請確認以上資訊無誤，整理師將依據您提供的資料安排聯繫！
               </label>
               <div className="d-flex justify-content-center">
-                <GreenBorderButton onClick={handleSubmit}>取消預約</GreenBorderButton>
+                <GreenBorderButton onClick={handleDelete}>取消預約</GreenBorderButton>
                 <GreenBorderButton onClick={handleSubmit}>修改完成</GreenBorderButton>
               </div>
             </form>

@@ -306,22 +306,58 @@ router.put(
   }
 );
 
-//DELETE /api/user/organizers/:userId/:bookingId - (刪除) 預約資訊
+//DELETE /api/user/organizers/:userId/:bookingId - (取消) 預約資訊
 router.delete("/:userId/:bookingId", async (req, res) => {
   try {
     const { userId, bookingId } = req.params;
-    
-    // 先簡單回傳，確認路由可以接收到參數
+
+    // 步驟1: 檢查預約是否存在且屬於該用戶
+    const checkSql = `
+      SELECT id, status 
+      FROM bookings 
+      WHERE user_id = ? AND LPAD(id, 7, '0') = ? AND is_valid = 1`;
+
+    const [existingBooking] = await connection.execute(checkSql, [
+      userId,
+      bookingId,
+    ]);
+
+    if (existingBooking.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "找不到該預約資訊或無權限取消",
+      });
+    }
+
+    const booking = existingBooking[0];
+    const rawBookingId = booking.id;
+
+    // 步驟2: 檢查預約狀態是否可取消
+    if (booking.status === 3 || booking.status === 4) {
+      return res.status(400).json({
+        status: "error",
+        message: "此預約狀態無法取消",
+      });
+    }
+
+    // 步驟3: 更新狀態為已取消 (4)
+    const cancelSql = `
+      UPDATE bookings 
+      SET status = 4 
+      WHERE id = ?`;
+
+    await connection.execute(cancelSql, [rawBookingId]);
+
     res.status(200).json({
       status: "success",
-      message: `收到刪除請求：用戶${userId}的預約${bookingId}`,
+      message: "預約取消成功",
     });
-    
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
       status: "error",
-      message: "刪除失敗",
+      message: error.message ?? "取消失敗，請洽管理人員",
     });
   }
 });

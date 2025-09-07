@@ -41,6 +41,7 @@ export default function ListDetails({
       description: '此筆預約已取消。如有其他需求，歡迎隨時重新預約或聯繫我們',
       bottomText: '',
       action: '重新預約',
+      actionLink: "http://localhost:3000/organizer/form", 
     },
   }
 
