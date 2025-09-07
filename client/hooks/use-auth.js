@@ -63,10 +63,12 @@ export function AuthProvider({ children }) {
                 setUser(null);
                 //localStorage.setItem(appKey, token);
                 localStorage.removeItem(appKey);
+                // return { success: true };
             } else {
                 //alert(result.message)
                 // 接 吐司？
-                throw new Error(result.message);
+                throw new Error(result.message); //老師版
+                //return { success: false, message: result.message };
             }
         } catch (error) {
             console.log(`解析token失敗: ${error.message}`);
