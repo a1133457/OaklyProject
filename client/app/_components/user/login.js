@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from '@/hooks/use-auth'
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from '@/app/auth/auth.module.css'
@@ -7,12 +8,13 @@ import UserTextInput from '@/app/_components/UserTextInput'
 import Button from '@/app/_components/Button'
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const {login} = useAuth()
 
     const onSubmit = (e) => {
         e.preventDefault()
-        console.log({ email, password })
+        login(email, password);
         // TODO: 呼叫後端 API
     }
 
