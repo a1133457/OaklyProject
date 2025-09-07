@@ -3,8 +3,13 @@ USE okaly;
 SET FOREIGN_KEY_CHECKS = 0;
 SET FOREIGN_KEY_CHECKS = 1;
 
+SELECT * FROM users;
+
 DELETE FROM users 
 WHERE DATE(created_at) = '2025-09-07';
+
+SELECT * FROM users WHERE email = 'li.meihao@example.com';
+
 
 
 -- 1) 基礎/父表

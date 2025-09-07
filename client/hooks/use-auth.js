@@ -30,14 +30,17 @@ export function AuthProvider({ children }) {
                 setUser(result.data.user);
                 localStorage.setItem(appKey, token);
                 console.log("成功");
+                return { success: true, message: result.message };
                 
             } else {
                 console.log("失敗");
-                alert(result.message);
+                //alert(result.message);
+                return { success: false, message: result.message };
                 // 接 吐司？
             }
         } catch (error) {
             console.log(error);
+            return { success: false, message: "伺服器錯誤，請稍後再試" };
 
         }
     };

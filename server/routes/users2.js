@@ -200,7 +200,9 @@ router.post("/login", upload.none(), async (req, res) => {
       throw err;
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // 測試完要改回來
+    // const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;

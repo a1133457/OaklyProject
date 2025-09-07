@@ -10,17 +10,20 @@ import Button from '@/app/_components/Button'
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [error, setError] = useState("")   // ✅ 錯誤訊息
     const { login } = useAuth()
     const router = useRouter()  // ✅ 宣告 router
 
     const onSubmit = async (e) => {
         e.preventDefault()
-        try {
-            await login(email, password)
-            console.log("[LOGIN] success")
-            router.push('/')   // ✅ 登入成功後導頁
-        } catch (err) {
-            console.error("[LOGIN] failed:", err)
+        const result = await login(email, password)
+
+        if (result.success) {
+            alert("登入成功")
+            router.push('/')   // ✅ 只在成功時才跳首頁
+        } else {
+            alert(result.message || "登入失敗，請再試一次")
+            // ❌ 不跳轉
         }
     }
 
@@ -30,6 +33,8 @@ export default function LoginPage() {
             <div className={styles.right}>
                 <form className={styles.form} onSubmit={onSubmit}>
                     <div className={styles.title}>LOGIN</div>
+                    {/* ✅ 登入失敗訊息 */}
+                    {error && <div className="text-danger mb-3">{error}</div>}
 
                     <UserTextInput
                         id="email"
