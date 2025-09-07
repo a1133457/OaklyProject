@@ -42,7 +42,7 @@ export default function CouponSelect({ coupons, onSelect }) {
                                 </li>
                             ))}
                         </ul> */}
-                        <CanUseCoupon/>
+                        <CanUseCoupon />
                         
                     </div>
                 </div>

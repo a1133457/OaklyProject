@@ -5,13 +5,296 @@ import "@/styles/products/pid.css";
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
-import { useCart } from '@/app/contexts/CartContext.js';
+// import { useCart } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
+import {useCart} from '@/hooks/use-cart';
+// 導入吐司訊息用方法+元件
+import { toast, ToastContainer } from 'react-toastify';
 
+// 跟隨指針移動的滾動條類別
+class CustomThumbnailScrollbar {
+  constructor(onImageChange) {
+    this.isDragging = false;
+    this.startX = 0;
+    this.startScrollLeft = 0;
+    this.startThumbLeft = 0;
+    this.onImageChange = onImageChange;
+    this.lastImageIndex = -1;
+    this.init();
+  }
 
+  init() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.setupScrollbar());
+    } else {
+      this.setupScrollbar();
+    }
+  }
 
+  setupScrollbar() {
+    const thumbnailContainer = document.querySelector('.thumbnail-images');
+    if (!thumbnailContainer) return;
 
+    const thumbnails = thumbnailContainer.querySelectorAll('.thumbnail');
+    if (thumbnails.length <= 1) return;
 
+    this.thumbnails = Array.from(thumbnails);
+    this.thumbnailContainer = thumbnailContainer;
+
+    const existingScrollbar = document.querySelector('.custom-scrollbar-container');
+    if (existingScrollbar) {
+      existingScrollbar.remove();
+    }
+
+    const scrollbarContainer = this.createScrollbarContainer();
+    thumbnailContainer.parentNode.insertBefore(scrollbarContainer, thumbnailContainer);
+    thumbnailContainer.style.marginTop = '10px';
+
+    this.setupScrollEvents(thumbnailContainer, scrollbarContainer);
+    this.updateScrollbar(thumbnailContainer, scrollbarContainer);
+  }
+
+  createScrollbarContainer() {
+    const container = document.createElement('div');
+    container.className = 'custom-scrollbar-container';
+    container.style.cssText = `
+      position: relative;
+      width: 500px;
+      max-width: 500px;
+      height: 8px;
+      margin-bottom: 6px;
+    `;
+
+    const track = document.createElement('div');
+    track.className = 'custom-scrollbar-track';
+    track.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #f1f1f1;
+      border-radius: 2px;
+      z-index: 10;
+    `;
+
+    const thumb = document.createElement('div');
+    thumb.className = 'custom-scrollbar-thumb';
+    thumb.style.cssText = `
+      position: absolute;
+      top: 0;
+      height: 4px;
+      background: #666;
+      border-radius: 2px;
+      cursor: pointer;
+      z-index: 11;
+      min-width: 30px;
+      max-width: 50px;
+    `;
+
+    container.appendChild(track);
+    container.appendChild(thumb);
+
+    return container;
+  }
+
+  calculateImageIndex(scrollLeft, scrollWidth, clientWidth) {
+    if (!this.thumbnails || this.thumbnails.length === 0) return 0;
+
+    const maxScrollLeft = scrollWidth - clientWidth;
+    if (maxScrollLeft <= 0) return 0;
+
+    const scrollPercentage = scrollLeft / maxScrollLeft;
+    const imageIndex = Math.round(scrollPercentage * (this.thumbnails.length - 1));
+
+    return Math.max(0, Math.min(imageIndex, this.thumbnails.length - 1));
+  }
+
+  setupScrollEvents(container, scrollbarContainer) {
+    const thumb = scrollbarContainer.querySelector('.custom-scrollbar-thumb');
+    const track = scrollbarContainer.querySelector('.custom-scrollbar-track');
+
+    // 只在非拖拽時更新滾動條
+    container.addEventListener('scroll', () => {
+      if (!this.isDragging) {
+        this.updateScrollbar(container, scrollbarContainer);
+
+        const imageIndex = this.calculateImageIndex(
+          container.scrollLeft,
+          container.scrollWidth,
+          container.clientWidth
+        );
+
+        if (imageIndex !== this.lastImageIndex && this.onImageChange) {
+          this.onImageChange(imageIndex);
+          this.lastImageIndex = imageIndex;
+        }
+      }
+    });
+
+    this.setupDragEvents(container, thumb, track);
+
+    track.addEventListener('click', (e) => {
+      this.handleTrackClick(e, container, thumb, track);
+    });
+  }
+
+  updateScrollbar(container, scrollbarContainer) {
+    const thumb = scrollbarContainer.querySelector('.custom-scrollbar-thumb');
+    const track = scrollbarContainer.querySelector('.custom-scrollbar-track');
+
+    if (!thumb || !track) return;
+
+    const scrollLeft = container.scrollLeft;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+
+    if (scrollWidth <= clientWidth) {
+      scrollbarContainer.style.display = 'none';
+      return;
+    } else {
+      scrollbarContainer.style.display = 'block';
+    }
+
+    const trackWidth = track.offsetWidth;
+    const thumbWidth = Math.max(30, Math.min(50, trackWidth / this.thumbnails.length * 2));
+
+    const maxThumbPosition = trackWidth - thumbWidth;
+    const scrollRatio = scrollLeft / (scrollWidth - clientWidth);
+    const thumbPosition = scrollRatio * maxThumbPosition;
+
+    thumb.style.width = thumbWidth + 'px';
+    thumb.style.left = Math.max(0, Math.min(thumbPosition, maxThumbPosition)) + 'px';
+  }
+
+  setupDragEvents(container, thumb, track) {
+    let initialOffset = 0;
+
+    const handleMouseDown = (e) => {
+      this.isDragging = true;
+      
+      // 記錄滑鼠點擊滑塊時的偏移量
+      const thumbRect = thumb.getBoundingClientRect();
+      initialOffset = e.clientX - thumbRect.left;
+
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+
+      e.preventDefault();
+      thumb.classList.add('dragging');
+      thumb.style.background = '#333';
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    };
+
+    const handleMouseMove = (e) => {
+      if (!this.isDragging) return;
+
+      // 直接計算滑塊位置，完全跟隨滑鼠
+      const trackRect = track.getBoundingClientRect();
+      const thumbWidth = thumb.offsetWidth;
+      const trackWidth = trackRect.width;
+      
+      // 滑鼠在軌道中的位置減去初始偏移
+      const mouseX = e.clientX;
+      const trackLeft = trackRect.left;
+      const newThumbLeft = mouseX - trackLeft - initialOffset;
+      
+      // 限制範圍
+      const maxThumbLeft = trackWidth - thumbWidth;
+      const clampedLeft = Math.max(0, Math.min(newThumbLeft, maxThumbLeft));
+      
+      // 立即設置滑塊位置 - 這應該是瞬間的
+      thumb.style.left = clampedLeft + 'px';
+      
+      // 計算滾動位置
+      const ratio = maxThumbLeft > 0 ? clampedLeft / maxThumbLeft : 0;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      const newScrollLeft = ratio * maxScroll;
+      
+      // 設置滾動位置
+      container.scrollLeft = newScrollLeft;
+
+      // 更新圖片
+      const imageIndex = this.calculateImageIndex(newScrollLeft, container.scrollWidth, container.clientWidth);
+      if (imageIndex !== this.lastImageIndex && this.onImageChange) {
+        this.onImageChange(imageIndex);
+        this.lastImageIndex = imageIndex;
+      }
+    };
+
+    const handleMouseUp = () => {
+      this.isDragging = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      thumb.classList.remove('dragging');
+      thumb.style.background = '#666';
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    thumb.addEventListener('mousedown', handleMouseDown);
+    thumb.addEventListener('dragstart', (e) => e.preventDefault());
+
+    thumb.addEventListener('mouseenter', () => {
+      if (!this.isDragging) {
+        thumb.style.background = '#555';
+        document.body.style.cursor = 'grab';
+      }
+    });
+
+    thumb.addEventListener('mouseleave', () => {
+      if (!this.isDragging) {
+        thumb.style.background = '#666';
+        document.body.style.cursor = '';
+      }
+    });
+  }
+
+  handleTrackClick(e, container, thumb, track) {
+    if (e.target === thumb) return;
+
+    const trackRect = track.getBoundingClientRect();
+    const clickX = e.clientX - trackRect.left;
+    const trackWidth = track.offsetWidth;
+    const thumbWidth = thumb.offsetWidth;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+
+    // 點擊軌道時，讓滑塊中心移動到點擊位置
+    const targetThumbCenter = clickX;
+    const targetThumbLeft = targetThumbCenter - (thumbWidth / 2);
+    const maxThumbPosition = trackWidth - thumbWidth;
+    const clampedThumbLeft = Math.max(0, Math.min(targetThumbLeft, maxThumbPosition));
+    
+    const clickRatio = maxThumbPosition > 0 ? clampedThumbLeft / maxThumbPosition : 0;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    const targetScrollLeft = clickRatio * maxScrollLeft;
+
+    container.scrollTo({
+      left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
+      behavior: 'smooth'
+    });
+  }
+
+  scrollToImage(imageIndex) {
+    if (!this.thumbnailContainer || !this.thumbnails) return;
+
+    const scrollWidth = this.thumbnailContainer.scrollWidth;
+    const clientWidth = this.thumbnailContainer.clientWidth;
+    const maxScrollLeft = scrollWidth - clientWidth;
+
+    const scrollRatio = imageIndex / (this.thumbnails.length - 1);
+    const targetScrollLeft = scrollRatio * maxScrollLeft;
+
+    this.thumbnailContainer.scrollTo({
+      left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
+      behavior: 'smooth'
+    });
+
+    this.lastImageIndex = imageIndex;
+  }
+}
 
 
 export default function PidPage({ params }) {
@@ -46,7 +329,10 @@ export default function PidPage({ params }) {
     return colorMap[colorName] || '#cccccc';
   };
   const [selectedImage, setSelectedImage] = useState(0);
-  const { addToCart } = useCart();
+  // const { addToCart } = useCart();
+  // ------------------------
+  const {onAdd} = useCart();
+  // ------------------------
   const [quantity, setQuantity] = useState(1);
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,102 +394,120 @@ export default function PidPage({ params }) {
   }, [productId]);
 
 
-  useEffect(() => {
-    const checkWishlistStatus = async () => {
-      try {
-        const userId = localStorage.getItem('userId') || 1;
-        const response = await fetch(`http://localhost:3005/api/wishlist/check/${userId}/${productId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+  // useEffect(() => {
+  //   const checkWishlistStatus = async () => {
+  //     try {
+  //       const userId = localStorage.getItem('userId') || 1;
+  //       const response = await fetch(`http://localhost:3005/api/wishlist/check/${userId}/${productId}`, {
+  //         headers: {
+  //           'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //         }
+  //       });
 
-        // 檢查是否返回 JSON
-        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
-          console.warn('Wishlist API not available yet');
-          return;
-        }
+  //       // 檢查是否返回 JSON
+  //       if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+  //         console.warn('Wishlist API not available yet');
+  //         return;
+  //       }
 
-        const result = await response.json();
-        if (result.status === 'success') {
-          setIsWishlisted(result.data.isWishlisted);
-        }
-      } catch (err) {
-        console.error('Error checking wishlist status:', err);
-        // 靜默處理，不影響頁面運行
-      }
-    };
+  //       const result = await response.json();
+  //       if (result.status === 'success') {
+  //         setIsWishlisted(result.data.isWishlisted);
+  //       }
+  //     } catch (err) {
+  //       console.error('Error checking wishlist status:', err);
+  //       // 靜默處理，不影響頁面運行
+  //     }
+  //   };
 
-    if (productId) {
-      checkWishlistStatus();
-    }
-  }, [productId]);
+  //   if (productId) {
+  //     checkWishlistStatus();
+  //   }
+  // }, [productId]);
 
-  useEffect(() => {
-    if (!showWishlistModal) {
-      document.body.classList.remove('no-scroll');
-    }
-  }, [showWishlistModal]);
+  // useEffect(() => {
+  //   if (!showWishlistModal) {
+  //     document.body.classList.remove('no-scroll');
+  //   }
+  // }, [showWishlistModal]);
 
-  // 加入/移除收藏的處理函數
-  const handleWishlistClick = (targetProduct = null, event = null) => {
-    const product = targetProduct || productData;
+  // // 加入/移除收藏的處理函數
+  // const handleWishlistClick = (targetProduct = null, event = null) => {
+  //   const product = targetProduct || productData;
 
-    if (isProductInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      openWishlistModal(product, event);
-    }
-  };
+  //   if (isProductInWishlist(product.id)) {
+  //     removeFromWishlist(product.id);
+  //   } else {
+  //     openWishlistModal(product, event);
+  //   }
+  // };
 
   const handleWishlistToggle = (product, e) => {
     e.stopPropagation();
     handleWishlistClick(product);
   };
 
-  const openWishlistModal = async (product, clickEvent = null) => {
-    setCurrentWishlistProduct(product);
-    setSelectedColor(product.colors?.[0] || null);
-    setSelectedSize(product.sizes?.[0] || null);
-    setWishlistQuantity(1);
-    setShowWishlistModal(true);
-    document.body.classList.add('no-scroll');
+  // const openWishlistModal = async (product, clickEvent = null) => {
+  //   setCurrentWishlistProduct(product);
+  //   setSelectedColor(product.colors?.[0] || null);
+  //   setSelectedSize(product.sizes?.[0] || null);
+  //   setWishlistQuantity(1);
+  //   setShowWishlistModal(true);
+  //   document.body.classList.add('no-scroll');
 
-    // 如果是其他商品且缺少詳細資料，先獲取完整資料
-    if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
-      try {
-        setWishlistLoading(true);
-        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
-        const result = await response.json();
+  //   // 如果是其他商品且缺少詳細資料，先獲取完整資料
+  //   if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
+  //     try {
+  //       setWishlistLoading(true);
+  //       const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+  //       const result = await response.json();
 
-        if (result.status === 'success') {
-          product = result.data;
-          setCurrentWishlistProduct(result.data);
-          setSelectedColor(result.data.colors?.[0] || null);
-          setSelectedSize(result.data.sizes?.[0] || null);
-        }
-      } catch (err) {
-        console.error('獲取商品詳細資料失敗:', err);
-        alert('無法載入商品資料，請稍後再試');
-        return;
-      } finally {
-        setWishlistLoading(false);
-      }
-    }
+  //       if (result.status === 'success') {
+  //         product = result.data;
+  //         setCurrentWishlistProduct(result.data);
+  //         setSelectedColor(result.data.colors?.[0] || null);
+  //         setSelectedSize(result.data.sizes?.[0] || null);
+  //       }
+  //     } catch (err) {
+  //       console.error('獲取商品詳細資料失敗:', err);
+  //       alert('無法載入商品資料，請稍後再試');
+  //       return;
+  //     } finally {
+  //       setWishlistLoading(false);
+  //     }
+  //   }
 
 
-  };
+  // };
 
+
+  // useEffect(() => {
+  //   if (showWishlistModal) {
+  //     document.body.classList.add('body-no-scroll');
+  //   } else {
+  //     document.body.classList.remove('body-no-scroll');
+  //   }
+  //   return () => document.body.classList.remove('body-no-scroll');
+  // }, [showWishlistModal]);
 
   useEffect(() => {
-    if (showWishlistModal) {
-      document.body.classList.add('body-no-scroll');
-    } else {
-      document.body.classList.remove('body-no-scroll');
-    }
-    return () => document.body.classList.remove('body-no-scroll');
-  }, [showWishlistModal]);
+    let thumbnailScrollbar;
 
+    // 延遲執行以確保 DOM 元素已渲染
+    const timer = setTimeout(() => {
+      // 傳入回調函數來處理圖片切換
+      thumbnailScrollbar = new CustomThumbnailScrollbar((imageIndex) => {
+        setSelectedImage(imageIndex);
+      });
+    }, 100);
+
+    // 清理函數
+    return () => {
+      clearTimeout(timer);
+      const customScrollbars = document.querySelectorAll('.custom-scrollbar-container');
+      customScrollbars.forEach(el => el.remove());
+    };
+  }, [productData]);
 
 
   const isProductInWishlist = (targetProductId) => {
@@ -213,112 +517,112 @@ export default function PidPage({ params }) {
     return false; // 需要根據你的全域狀態管理來實現
   };
 
-  //加入收藏API
-  const addToWishlist = async () => {
-    if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
-      return;
-    }
+  // //加入收藏API
+  // const addToWishlist = async () => {
+  //   if (!selectedColor || !selectedSize) {
+  //     alert('請選擇顏色和尺寸');
+  //     return;
+  //   }
 
-    const product = currentWishlistProduct || productData;
+  //   const product = currentWishlistProduct || productData;
 
-    try {
-      setWishlistLoading(true);
-      const userId = localStorage.getItem('userId') || 1;
-      const wishlistData = {
-        userId: userId,
-        productId: product.id,
-        colorId: selectedColor.id,
-        sizeId: selectedSize.id,
-        quantity: wishlistQuantity
-      };
+  //   try {
+  //     setWishlistLoading(true);
+  //     const userId = localStorage.getItem('userId') || 1;
+  //     const wishlistData = {
+  //       userId: userId,
+  //       productId: product.id,
+  //       colorId: selectedColor.id,
+  //       sizeId: selectedSize.id,
+  //       quantity: wishlistQuantity
+  //     };
 
-      const response = await fetch('http://localhost:3005/api/wishlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(wishlistData)
-      });
+  //     const response = await fetch('http://localhost:3005/api/wishlist', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //       },
+  //       body: JSON.stringify(wishlistData)
+  //     });
 
-      // 檢查響應格式
-      if (!response.headers.get('content-type')?.includes('application/json')) {
-        throw new Error('API 端點不存在或未正確設置');
-      }
+  //     // 檢查響應格式
+  //     if (!response.headers.get('content-type')?.includes('application/json')) {
+  //       throw new Error('API 端點不存在或未正確設置');
+  //     }
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      if (result.status === 'success') {
-        if (product.id === parseInt(productId)) {
-          setIsWishlisted(true);
-        }
-        setIsWishlisted(true);
-        setShowWishlistModal(false);
-        document.body.classList.remove('no-scroll');
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #9FA79A;
-          color: white;
-          padding: 16px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          z-index: 9999;
-          font-size: 14px;
-        `;
-        notification.textContent = '已加入收藏';
-        document.body.appendChild(notification);
+  //     if (result.status === 'success') {
+  //       if (product.id === parseInt(productId)) {
+  //         setIsWishlisted(true);
+  //       }
+  //       setIsWishlisted(true);
+  //       setShowWishlistModal(false);
+  //       document.body.classList.remove('no-scroll');
+  //       const notification = document.createElement('div');
+  //       notification.style.cssText = `
+  //         position: fixed;
+  //         top: 20px;
+  //         right: 20px;
+  //         background: #9FA79A;
+  //         color: white;
+  //         padding: 16px 20px;
+  //         border-radius: 8px;
+  //         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  //         z-index: 9999;
+  //         font-size: 14px;
+  //       `;
+  //       notification.textContent = '已加入收藏';
+  //       document.body.appendChild(notification);
 
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 3000);
+  //       setTimeout(() => {
+  //         if (notification.parentNode) {
+  //           notification.parentNode.removeChild(notification);
+  //         }
+  //       }, 3000);
 
-      } else {
-        alert(result.message || '加入收藏失敗');
-      }
-    } catch (err) {
-      console.error('發生錯誤:', err);
-      alert('加入收藏時發生錯誤');
-    } finally {
-      setWishlistLoading(false);
-    }
-  };
+  //     } else {
+  //       alert(result.message || '加入收藏失敗');
+  //     }
+  //   } catch (err) {
+  //     console.error('發生錯誤:', err);
+  //     alert('加入收藏時發生錯誤');
+  //   } finally {
+  //     setWishlistLoading(false);
+  //   }
+  // };
 
-  // 移除收藏API
-  const removeFromWishlist = async (targetProductId = null) => {
-    const productIdToRemove = targetProductId || productId;
+  // // 移除收藏API
+  // const removeFromWishlist = async (targetProductId = null) => {
+  //   const productIdToRemove = targetProductId || productId;
 
-    try {
-      setWishlistLoading(true);
-      const userId = localStorage.getItem('userId') || 1;
+  //   try {
+  //     setWishlistLoading(true);
+  //     const userId = localStorage.getItem('userId') || 1;
 
-      const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productIdToRemove}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+  //     const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productIdToRemove}`, {
+  //       method: 'DELETE',
+  //       headers: {
+  //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //       }
+  //     });
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      if (result.status === 'success') {
-        setIsWishlisted(false);
-        alert('已從收藏清單移除');
-      } else {
-        alert(result.message || '移除收藏失敗');
-      }
-    } catch (err) {
-      console.error('Error removing from wishlist:', err);
-      alert('移除收藏時發生錯誤');
-    } finally {
-      setWishlistLoading(false);
-    }
-  };
+  //     if (result.status === 'success') {
+  //       setIsWishlisted(false);
+  //       alert('已從收藏清單移除');
+  //     } else {
+  //       alert(result.message || '移除收藏失敗');
+  //     }
+  //   } catch (err) {
+  //     console.error('Error removing from wishlist:', err);
+  //     alert('移除收藏時發生錯誤');
+  //   } finally {
+  //     setWishlistLoading(false);
+  //   }
+  // };
 
   // 切換展開狀態
   const toggleExpanded = (section) => {
@@ -433,6 +737,7 @@ export default function PidPage({ params }) {
     return `https://via.placeholder.com/300x200/f0f0f0/666?text=${encodeURIComponent(product.name)}`;
   };
 
+
   return (
     <div className="detail-product-page">
       {/* 麵包屑導航 */}
@@ -521,9 +826,8 @@ export default function PidPage({ params }) {
                 className="btn view-review"
                 onClick={() => {
                   setShowModal(true);
-                  document.body.style.position = 'fixed';
-                  document.body.style.width = '100%';
-                  document.body.style.overflow = 'hidden';
+                  document.body.classList.add('modal-open');
+
                 }}
               >
                 查看評論
@@ -640,7 +944,12 @@ export default function PidPage({ params }) {
                 className="add-to-cart-btn"
                 onClick={() => {
                   console.log('商品資料：', productData);
-                  addToCart(productData, quantity, selectedColor, selectedSize);
+                  // addToCart(productData, quantity, selectedColor, selectedSize);
+                  // ------------------------
+                  onAdd(productData, quantity, selectedColor, selectedSize);
+                  // 跳出訊息(呼叫吐司訊息)
+                  toast.success(`${productData.name} 已成功加入購物車！`)
+                  // ------------------------
                 }}
               >加入購物車</button>
             </div>
@@ -927,6 +1236,9 @@ export default function PidPage({ params }) {
           </div>
         </div>
       </div>
+      {/* 吐司訊息用元件(會先隱藏在這頁面內容裡不顯示*/}
+       <ToastContainer/>
+       // ------------------------
     </div>
   );
 

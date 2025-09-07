@@ -17,11 +17,16 @@
 
 }
 
+.cartAll{
+    display: flex;
+    flex-direction: column;
+}
+
 .card-left {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 40px;
 }
 
 .card-left input {
@@ -40,6 +45,7 @@
 
 .card-title {
     display: flex;
+    color:var(--black);
     width: 265px;
     height: 100%;
     flex-direction: column;
@@ -100,7 +106,7 @@
     width: 100%;
     display: flex;
     padding: 2px 1px;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
     align-self: stretch;
 }
@@ -166,9 +172,6 @@
     height: 2px;
 }
 
-.cart-line {
-    display: none;
-}
 
 .card-right {
     display: flex;
@@ -198,7 +201,7 @@
     }
 
     .card-left {
-        gap: 10px;
+        gap: 20px;
     }
 
     .card-left input[type=checkbox] {
@@ -221,12 +224,12 @@
     }
 
     .card-title h6 {
-        height: 20px;
+        height: 30px;
     }
 
     .cart-main.phone {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         height: 100%;
         gap: 5px;
     }
@@ -234,8 +237,9 @@
     .price-one {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        
     }
+
 
     .card-right {
         height: 100%;
