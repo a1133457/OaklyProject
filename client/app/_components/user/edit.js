@@ -25,7 +25,13 @@ import ButtonGroup from '@/app/_components/ButtonGroup'
 
 export default function UserEditForm() {
     // api
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+
+    // 登出按鈕
+    const onLogout = () => {
+        logout();
+    };
+
     // 狀態欄位
     const [name, setName] = useState('')
     const [birthday, setBirthday] = useState('')
@@ -34,10 +40,20 @@ export default function UserEditForm() {
     const [district, setDistrict] = useState('')
     const [addr, setAddr] = useState('')
     const [email, setEmail] = useState('')
-    const [Password, setPassword] = useState('')
-    const [Password2, setPassword2] = useState('')
+    const [password, setPassword] = useState('')
+    const [password2, setPassword2] = useState('')
     const [avatar, setAvatar] = useState(null)
+    // 新增：頭像預覽 URL（避免每次 render 都 createObjectURL）
+    const [avatarPreview, setAvatarPreview] = useState(null);
     const [errors, setErrors] = useState({})
+
+    // 接上面新增頭像
+    useEffect(() => {
+        if (!avatar) { setAvatarPreview(null); return; }
+        const url = URL.createObjectURL(avatar);
+        setAvatarPreview(url);
+        return () => URL.revokeObjectURL(url); // 清掉暫時 URL，避免記憶體洩漏
+    }, [avatar]);
 
     // 載入 user 後，填入表單
     useEffect(() => {
@@ -63,28 +79,31 @@ export default function UserEditForm() {
     // 表單送出
     // const handleSubmit = (e) => {
     //     e.preventDefault()
-    //     console.log('送出表單:', { name, birthday, phone, city, district, addr, email, pw, pw2 })
+    //     console.log('送出表單:', { name, birthday, phone, city, district, addr, email, password, password2 })
     // }
 
     const handleSubmit = (e) => {
         e.preventDefault()
         const next = {}
-        if (pw && pw !== pw2) next.pw2 = '兩次密碼不一致'
+        if (password && password !== password2) next.password2 = '兩次密碼不一致'
         setErrors(next)
         if (Object.keys(next).length) return
 
-        // TODO: 串「修改會員資料」API（如果需要上傳頭像，建議用 FormData）
-        // const form = new FormData()
-        // form.append('name', name)
-        // form.append('birthday', birthday)
-        // form.append('phone', phone)
-        // form.append('city', city)
-        // form.append('district', district)
-        // form.append('address', addr)
-        // form.append('email', email)
-        // if (pw) form.append('password', pw)
-        // if (avatar) form.append('avatar', avatar)
-        // await fetch('/api/users/profile', { method: 'PUT', body: form, headers: { Authorization: `Bearer ${token}` }})
+        // === 串接「修改會員資料」API ===
+        // 👉 請把 API 改成你後端的路由（例如 /api/users/profile 或 /api/users/:id）
+        const API = 'http://localhost:3005/api/users/profile';
+        const token = localStorage.getItem('reactLoginToken');
+
+        const form = new FormData();
+        form.append('name', name);
+        form.append('birthday', birthday);
+        form.append('phone', phone);
+        form.append('city', city);
+        form.append('district', district);
+        form.append('address', addr);
+        form.append('email', email);
+        if (password) form.append('password', password); // 有改才送
+        if (avatar) form.append('avatar', avatar);       // 有選才送
     }
 
     // 表單重設
@@ -101,6 +120,8 @@ export default function UserEditForm() {
         setPassword2('')
         setAvatar(null)
     }
+
+
 
     return (
         <>
@@ -150,11 +171,11 @@ export default function UserEditForm() {
                         <UserTextInput id="email" label="電子郵件" type="email" required
                             value={email} onChange={e => setEmail(e.target.value)} />
 
-                        <UserTextInput id="pw" label="新密碼" type="password"
-                            value={Password} onChange={e => setPassword(e.target.value)} />
+                        <UserTextInput id="password" label="新密碼" type="password"
+                            value={password} onChange={e => setPassword(e.target.value)} />
 
-                        <UserTextInput id="pw2" label="確認新密碼" type="password"
-                            value={Password2} onChange={e => setPassword2(e.target.value)} error={errors.pw2} />
+                        <UserTextInput id="password2" label="確認新密碼" type="password"
+                            value={password2} onChange={e => setPassword2(e.target.value)} error={errors.password2} />
 
                         {/* <div className="d-flex justify-content-center gap-2 mt-3 formButtons">
                                 <button type="submit" className="btn btn-success">確認修改</button> 
@@ -163,6 +184,7 @@ export default function UserEditForm() {
                         <ButtonGroup align="Center">
                             <Button type="submit" variant="primary01" size="sm">確認修改</Button>
                             <Button type="reset" variant="white" size="sm">取消</Button>
+                            <Button type="button" variant="white" size="sm" onClick={onLogout} >登出</Button>
                         </ButtonGroup>
                     </form>
 

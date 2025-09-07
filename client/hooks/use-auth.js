@@ -42,36 +42,36 @@ export function AuthProvider({ children }) {
         }
     };
 
-    // const logout = async () => {
-    //     // console.log("logout");
-    //     const API = "http://localhost:3005/api/users/logout";
-    //     const token = localStorage.getItem(appKey);
-    //     try {
-    //         if (!token) throw new Error("Token 不存在");
-    //         const res = await fetch(API, {
-    //             method: "POST",
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`,
-    //             },
-    //         });
-    //         const result = await res.json();
-    //         if (result.status == "success") {
-    //             const token = result.data;
-    //             setUser(null);
-    //             //localStorage.setItem(appKey, token);
-    //             localStorage.removeItem(appKey);
-    //         } else {
-    //             //alert(result.message)
-    //             // 接 吐司？
-    //             throw new Error(result.message);
-    //         }
-    //     } catch (error) {
-    //         console.log(`解析token失敗: ${error.message}`);
-    //         setUser(null);
-    //         localStorage.removeItem(appKey);
-    //         alert(error.message);
-    //     }
-    // };
+    const logout = async () => {
+        console.log("logout");
+        const API = "http://localhost:3005/api/users/logout";
+        const token = localStorage.getItem(appKey);
+        try {
+            if (!token) throw new Error("Token 不存在");
+            const res = await fetch(API, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const result = await res.json();
+            if (result.status == "success") {
+                const token = result.data;
+                setUser(null);
+                //localStorage.setItem(appKey, token);
+                localStorage.removeItem(appKey);
+            } else {
+                //alert(result.message)
+                // 接 吐司？
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.log(`解析token失敗: ${error.message}`);
+            setUser(null);
+            localStorage.removeItem(appKey);
+            alert(error.message);
+        }
+    };
 
     // const list = async () => {
     //     const API = "http://localhost:3005/api/users";
@@ -124,7 +124,7 @@ export function AuthProvider({ children }) {
                     localStorage.setItem(appKey, token); // 覆蓋舊的 token
                     //setIsLoading(false);
                 } else {
-                    alert(result.message);
+                    //alert(result.message);
                     //setIsLoading(false);
                     // setUser(null);
                     // localStorage.removeItem(appKey);
@@ -143,7 +143,7 @@ export function AuthProvider({ children }) {
 
 
     return (
-        <AuthContext.Provider value={{ user, login}}>
+        <AuthContext.Provider value={{ user, login, logout}}>
             {children}
         </AuthContext.Provider>
     );
