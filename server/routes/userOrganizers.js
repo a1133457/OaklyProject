@@ -3,6 +3,7 @@ import connection from "../connect.js";
 import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
 
 // 設定 multer 儲存配置
 const storage = multer.diskStorage({
@@ -75,6 +76,7 @@ router.get("/:userId/:bookingId", async (req, res) => {
       u.name as user_name,
       u.email as user_email, 
       u.phone as user_phone,
+      o.name as organizer_name,   
       o.id as organizer_id,   
       b.organizer_id as booking_organizer_id,
       b.city,
@@ -259,16 +261,30 @@ router.put(
         rawBookingId,
       ]);
 
-      // 處理要刪除的圖片
-      if (remove_images && Array.isArray(remove_images)) {
-        for (const imageUrl of remove_images) {
-          const deleteSql = `DELETE FROM booking_images WHERE booking_id = ? AND image_url = ?`;
-          await connection.execute(deleteSql, [rawBookingId, imageUrl]);
-        }
-      }
-
-      // 處理新上傳的圖片
+      // 圖片處理：如果有上傳新圖片，就完全替換舊圖片
       if (req.files && req.files.length > 0) {
+        // 先取得現有圖片資訊
+        const getImagesSql = `SELECT image_url FROM booking_images WHERE booking_id = ?`;
+        const [existingImages] = await connection.execute(getImagesSql, [rawBookingId]);
+
+        // 刪除資料庫中的舊圖片記錄
+        const deleteImagesSql = `DELETE FROM booking_images WHERE booking_id = ?`;
+        await connection.execute(deleteImagesSql, [rawBookingId]);
+
+        // 刪除實體檔案
+        for (const imageRecord of existingImages) {
+          try {
+            // 移除開頭的 / 並加上完整路徑
+            const fileName = imageRecord.image_url.replace('/uploads/booking_images/', '');
+            const filePath = `uploads/booking_images/${fileName}`;
+            fs.unlinkSync(filePath);
+            console.log(`已刪除檔案: ${filePath}`);
+          } catch (error) {
+            console.log(`刪除檔案失敗: ${imageRecord.image_url}`, error.message);
+          }
+        }
+
+        // 新增新圖片記錄
         for (const file of req.files) {
           const imageUrl = `/uploads/booking_images/${file.filename}`;
           const imageSql = `INSERT INTO booking_images (booking_id, image_url) VALUES (?, ?)`;
@@ -289,5 +305,25 @@ router.put(
     }
   }
 );
+
+//DELETE /api/user/organizers/:userId/:bookingId - (刪除) 預約資訊
+router.delete("/:userId/:bookingId", async (req, res) => {
+  try {
+    const { userId, bookingId } = req.params;
+    
+    // 先簡單回傳，確認路由可以接收到參數
+    res.status(200).json({
+      status: "success",
+      message: `收到刪除請求：用戶${userId}的預約${bookingId}`,
+    });
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: "刪除失敗",
+    });
+  }
+});
 
 export default router;

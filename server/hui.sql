@@ -133,6 +133,8 @@ INSERT INTO `user_coupons` (`id`, `user_id`, `coupon_id`, `get_at`, `used_at`, `
 (7, 3, 6, '2025-08-31 10:40:00', NULL, '2025-09-30 23:59:59', 0),  -- 已領未用 (按 coupons 表期限)
 (8, 3, 7, '2025-08-31 18:20:00', NULL, '2025-09-30 23:59:59', 0);  -- 已領未用 (按 coupons 表期限)
 
+SELECT * FROM user_coupons WHERE user_id = 1;
+SELECT * FROM coupons WHERE id IN (1, 4, 5, 8);
 ------------------------------------------------------------------------
 
 DROP TABLE `bookings`;

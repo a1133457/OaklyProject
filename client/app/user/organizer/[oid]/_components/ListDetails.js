@@ -21,6 +21,7 @@ export default function ListDetails({
       description: '我們已收到您的需求，整理師將儘快與您聯繫',
       bottomText: '',
       action: '編輯諮詢',
+      actionLink: `/user/organizer/${bookingId?.replace('#', '')}/edit`, 
     },
     2: {
       label: '已預約',
@@ -113,7 +114,7 @@ export default function ListDetails({
             <h6 className="t-primary02">{currentStatus.bottomText}</h6>
           )}
           {currentStatus.action && (
-            <LinkArrow>{currentStatus.action}</LinkArrow>
+            <LinkArrow href={currentStatus.actionLink}>{currentStatus.action}</LinkArrow>
           )}
         </div>
       </div>

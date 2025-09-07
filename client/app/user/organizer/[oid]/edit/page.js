@@ -130,6 +130,12 @@ export default function UserOrganizerEditPage() {
       return;
     }
 
+    // 檢查圖片必填
+    if (!booking.images?.length && selectedFiles.length === 0) {
+      alert("請上傳環境照片");
+      return;
+    }
+
     try {
       // 準備要提交的資料
       const submitData = {
@@ -139,30 +145,74 @@ export default function UserOrganizerEditPage() {
         organizer_id: editData.selectedOrganizers,
         service_datetime: editData.serviceDate, // 轉換格式
         note: editData.note,
+        hasNewImages: selectedFiles.length > 0,
       };
 
       console.log("準備提交的資料:", submitData);
 
       // 發送 PUT 請求到後端
-      const response = await fetch(
-        `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(submitData),
-        }
-      );
+      let response;
 
-      const result = await response.json();
+      if (selectedFiles.length > 0) {
+        // 有新圖片時用 FormData
+        const formData = new FormData();
+
+        // 加入基本資料
+        Object.keys(submitData).forEach(key => {
+          formData.append(key, submitData[key]);
+        });
+
+        // 加入圖片檔案
+        selectedFiles.forEach((file, index) => {
+          formData.append('photos', file);
+        });
+
+
+        // 加入這個來檢查 FormData 內容
+        console.log('FormData 內容:');
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ': ' + pair[1]);
+        }
+
+        response = await fetch(
+          `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+          {
+            method: "PUT",
+            body: formData, // 不要設 Content-Type，讓瀏覽器自動設定
+          }
+        );
+      } else {
+        // 沒有新圖片時用 JSON
+        response = await fetch(
+          `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(submitData),
+          }
+        );
+      }
+      // 先檢查回應內容
+      const responseText = await response.text();
+      console.log('後端回應狀態:', response.status);
+      console.log('後端回應內容:', responseText);
+
+      // 嘗試解析 JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (error) {
+        console.error('JSON 解析錯誤:', error);
+        alert('伺服器回應格式錯誤，請檢查後端API');
+        return;
+      }
 
       if (response.ok) {
         alert("預約資訊更新成功！");
-        // 可以跳轉到詳細頁或列表頁
-        // router.push(`/user/organizer/${bookingId}`);
       } else {
-        alert(`更新失敗：${result.message}`);
+        alert(`更新失敗：${result.message || '未知錯誤'}`);
       }
     } catch (error) {
       console.error("提交錯誤:", error);
@@ -363,42 +413,46 @@ export default function UserOrganizerEditPage() {
                   />
                 </div>
               </div>
-              {/* 上傳照片 */}
-              {/* <div className="row">
+              {/* 上傳照片 - 整合版 */}
+              <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03">
+                  <label className="form-label t-primary03 label700">
                     上傳整理環境照片*
                   </label>
                   <input
                     type="file"
-                    name=""
-                    id=""
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
                     accept=".png,.jpg,.jpeg"
                     multiple
-                    required
                     className="d-none"
                   />
-                  <div
-                    className={`d-flex justify-content-center align-items-center ${styles.imgAdd}`}
-                  >
-                    <div className={styles.imgAddImg}></div>
-                  </div>
-                  <p className="t-primary03 mb-xl mt-sm">
-                    可上傳 1～4 張圖片，協助我們了解您的空間狀況
-                    <br />
-                    支援格式：.jpg、.jpeg、.png，建議每張 ≤ 5MB
-                  </p>
-                </div>
-              </div> */}
-              {/* 現有照片顯示 */}
-              {booking.images && booking.images.length > 0 && (
-                <div className="row mb-3">
-                  <div className="col-12">
-                    <label className="form-label t-primary03 label700">
-                      現有環境照片
-                    </label>
-                    <div className={`d-flex flex-wrap ${styles2.imgGap}`}>
-                      {booking.images.map((imageUrl, index) => (
+                  <div className="d-flex gap-3 flex-wrap">
+                    {/* 上傳按鈕 */}
+                    <div
+                      className={`d-flex justify-content-center align-items-center ${styles.imgAdd}`}
+                      onClick={handleDivClick}
+                    >
+                      <div className={styles.imgAddImg}></div>
+                    </div>
+
+                    {/* 顯示圖片：現有圖片或新選擇的圖片 */}
+                    {selectedFiles.length > 0 ? (
+                      // 顯示新選擇的圖片
+                      selectedFiles.map((file, index) => (
+                        <div key={index}>
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`新圖片 ${index + 1}`}
+                            width={150}
+                            height={150}
+                            className={styles2.userHouseImage}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      // 顯示現有圖片
+                      booking.images && booking.images.map((imageUrl, index) => (
                         <div key={index}>
                           <img
                             src={`http://localhost:3005${imageUrl}`}
@@ -408,11 +462,23 @@ export default function UserOrganizerEditPage() {
                             className={styles2.userHouseImage}
                           />
                         </div>
-                      ))}
-                    </div>
+                      ))
+                    )}
                   </div>
+
+                  {/* 提示訊息 */}
+                  <p className="t-primary03 mb-xl mt-sm">
+                    可上傳 1～4 張圖片，協助我們了解您的空間狀況
+                    <br />
+                    支援格式：.jpg、.jpeg、.png，建議每張 ≤ 5MB
+                    {selectedFiles.length > 0 && (
+                      <span className="text-success d-block mt-1">
+                        已選擇 {selectedFiles.length} 張圖片，提交後將替換現有圖片
+                      </span>
+                    )}
+                  </p>
                 </div>
-              )}
+              </div>
               {/* 備註 */}
               <div className="row">
                 <div className="col-12">

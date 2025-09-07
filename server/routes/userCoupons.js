@@ -1,5 +1,5 @@
 import express from "express";
-import connection from "../connect.js";
+import pool from "../connect.js";
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get("/:userId", async (req, res) => {
     GROUP BY uc.id
     ORDER BY uc.status ASC`;
     
-    const [coupons] = await connection.execute(sql, [userId]);
+    const [coupons] = await pool.execute(sql, [userId]);
     res.status(200).json({
       status: "success",
       data: coupons,
