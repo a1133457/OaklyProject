@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/app/contexts/CartContext';
 
 
-const SimilarProducts = ({ currentProductId,
-    handleWishlistToggle,
-    isProductInWishlist }) => {
+const SimilarProducts = ({ currentProductId, 
+    handleWishlistToggle, 
+    isProductInWishlist  }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -193,13 +193,13 @@ const SimilarProducts = ({ currentProductId,
                             onClick={() => handleProductClick(product.id)}
                             style={{ width: `${100 / products.length}%` }}
                         >
-                            <button
-                                className={`wishlist-heart-btn ${isProductInWishlist(product.id) ? 'active' : ''}`}
-                                onClick={(e) => handleWishlistToggle(product, e)}
-                                title={isProductInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
-                            >
-                                <i className={isProductInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
-                            </button>
+                           <button
+  className={`wishlist-heart-btn ${isProductInWishlist(product.id) ? 'active' : ''}`}
+  onClick={(e) => handleWishlistToggle(product, e)}
+  title={isProductInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
+>
+  <i className={isProductInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+</button>
 
                             <div className="product-image">
                                 <img
