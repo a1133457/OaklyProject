@@ -3,6 +3,9 @@ USE okaly;
 SET FOREIGN_KEY_CHECKS = 0;
 SET FOREIGN_KEY_CHECKS = 1;
 
+DELETE FROM users 
+WHERE DATE(created_at) = '2025-09-07';
+
 
 -- 1) 基礎/父表
 
@@ -102,7 +105,7 @@ CREATE TABLE IF NOT EXISTS users (
   city       VARCHAR(50)  DEFAULT NULL,
   area       VARCHAR(50)  DEFAULT NULL,
   address    VARCHAR(255) DEFAULT NULL,
-  img        VARCHAR(255) DEFAULT NULL,
+  avatar        VARCHAR(255) DEFAULT NULL,
   level_id   INT UNSIGNED DEFAULT 1,   -- 可為 NULL；預設 1
   is_valid   TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
