@@ -115,7 +115,7 @@ INSERT INTO `users` (`name`, `birthday`, `email`, `password`, `phone`, `postcode
 ('廉淑貞', '1992-01-12', 'lian.shuzhen@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0934567890', '974', '花蓮縣', '壽豐鄉', '中山路157號', '', 1, 1),
 ('蒲文傑', '1988-04-30', 'pu.wenjie@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0945678901', '963', '台東縣', '太麻里鄉', '中山路268號', '', 2, 1);
 
-INSERT INTO `levels` (`name`) VALUES
+INSERT INTO `user_levels` (`name`) VALUES
 ('木芽會員'),
 ('原木會員'),
 ('森林會員');

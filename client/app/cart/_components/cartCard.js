@@ -3,68 +3,73 @@
 import "@/styles/cart/cartCard.css";
 import { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
+// sweetalert2 對話盒
+import Swal from "sweetalert2";
+// sweetalert2 整合 react 的函式
+import withReactContent from "sweetalert2-react-content";
+
 
 export default function CartCard({ type }) {
   const [showForm, setShowForm] = useState(false);
   const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } = useCart();
+  // 跳出確認對話盒的函式
+  const confirmAndRemove = (item) => {
+    // 先包裝給 React 用的物件
+    const MySwal = withReactContent(Swal);
+    // 官網範例(改用MySwal呼叫)
+    Swal.fire({
+      title: "確定要刪除嗎?",
+      text: `${item.name} 將會從購物車中被刪除，此操作無法復原`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "取消",
+      confirmButtonText: "確認刪除!",
+    }).then((result) => {
+      // 如果使用者按下確認按鈕後執行這裡
+      if (result.isConfirmed) {
+        // 執行刪除
+        onRemove(item.id);
+
+        // 跳出刪除成功對話盒
+        Swal.fire({
+          title: "已成功刪除",
+          text: `${item.name} 已從購物車中被刪除`,
+          icon: "success"
+        });
+      }
+    });
+  }
   if (items) {
     if (type === "order") {
       return (
         <>
           <div className="cart-card">
             {items.map((item) => (
-              <div key={item.id} className="cart-main">
-                <div className="card-left">
-                  <input type="checkbox" />
-                  <img src={`/img/${item.img}`} alt={item.name} width={150} height={150} />
-                  <div className="card-title">
-                    <h6>
-                      {item.name}
-                    </h6>
-                    <p>顏色: {item.color}</p>
-                    <p>size: {item.size}</p>
-                    <p>材質: {item.material}</p>
-                  </div>
-                </div>
-                <div className="card-right">
-                  <button onClick={() => onRemove(item.id)} className="buttonX">
-                    <i className="fa-solid fa-xmark"></i>
-                  </button>
-                  <div className="price-num">
-                    <h4>{item.price}</h4>
-                    <div className="quantity">
-                      <button onClick={() => onDecrease(item.id)} className="minus">
-                        <i className="fa-solid fa-minus"></i>
-                      </button>
-                      <div className="num">{item.count}</div>
-                      <button onClick={() => onIncrease(item.id)} className="plus">
-                        <i className="fa-solid fa-plus"></i>
-                      </button>
+              <div key={item.id} className="cardAll">
+                <div className="cart-main">
+                  <div className="card-left">
+                    <input type="checkbox" />
+                    <img src={`http://localhost:3005/uploads/${item.img}`} alt={item.name} width={150} height={150} />
+                    <div className="card-title">
+                      <h6>
+                        {item.name}
+                      </h6>
+                      <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
+                      <p>size: {item.sizes.find(s => s.id === item.sizes_id)?.size_label || '無尺寸'}</p>
+                      <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
                     </div>
                   </div>
-                </div>
-
-              </div>
-            ))}
-            <div className="cart-line"></div>
-          </div>
-          {/* 手機-------------------------- */}
-          <div className="cart-line phone"></div>
-          <div className="cart-card phone">
-            {items.map((item) => (
-              <div key={item.id} className="cart-main phone">
-                <div className="card-left">
-                  <input type="checkbox" />
-                  <img src={`/img/${item.img}`} alt={item.name} width={100} height={95} />
-                  <div className="card-title">
-                    <h6>
-                      {item.name}
-                    </h6>
-                    <p>顏色: {item.color}</p>
-                    <p>size: {item.size}</p>
-                    <p>材質: {item.material}</p>
-                    <div className="price-one">
-                      <h4>${item.price}</h4>
+                  <div className="card-right">
+                    <button onClick={() => {
+                      // sweetalert2 對話盒
+                      confirmAndRemove(item);
+                    }} className="buttonX">
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                    <div className="price-num">
+                      <h4>{item.price}</h4>
                       <div className="quantity">
                         <button onClick={() => onDecrease(item.id)} className="minus">
                           <i className="fa-solid fa-minus"></i>
@@ -76,18 +81,57 @@ export default function CartCard({ type }) {
                       </div>
                     </div>
                   </div>
+
                 </div>
-                <div className="card-right">
-                  <button className="buttonX">
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
-                  <div className="price-num">
-                    <h4>${item.price * item.count}</h4>
-                  </div>
-                </div>
+                <div className="cart-line"></div>
               </div>
             ))}
-            <div className="cart-line phone"></div>
+          </div>
+          {/* 手機-------------------------- */}
+          <div className="cart-line phone"></div>
+          <div className="cart-card phone">
+            {items.map((item) => (
+              <div key={item.id} className="cardAll">
+                <div className="cart-main phone">
+                  <div className="card-left">
+                    <input type="checkbox" />
+                    <img src={`http://localhost:3005/uploads/${item.img}`} alt={item.name} width={100} height={95} />
+                    <div className="card-title">
+                      <h6>
+                        {item.name}
+                      </h6>
+                     <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
+                      <p>size: {item.sizes.find(s => s.id === item.sizes_id)?.size_label || '無尺寸'}</p>
+                      <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
+                      <div className="price-one">
+                        <h6>${item.price}</h6>
+                        <div className="quantity">
+                          <button onClick={() => onDecrease(item.id)} className="minus">
+                            <i className="fa-solid fa-minus"></i>
+                          </button>
+                          <div className="num">{item.count}</div>
+                          <button onClick={() => onIncrease(item.id)} className="plus">
+                            <i className="fa-solid fa-plus"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-right">
+                    <button onClick={() => {
+                      // sweetalert2 對話盒
+                      confirmAndRemove(item);
+                    }} className="buttonX">
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                    <div className="price-num">
+                      <h4>${item.price * item.count}</h4>
+                    </div>
+                  </div>
+                </div>
+                <div className="cart-line phone"></div>
+              </div>
+            ))}
           </div>
         </>
       );

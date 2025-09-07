@@ -2,10 +2,15 @@
 
 import "@/styles/cart/contactPerson.css";
 import { useState } from "react";
+import EditInfo from "./editInfo";
+import { useAuth } from "@/hooks/use-auth";
 
-export default function ContactPerson({ name, phone, email, address }) {
+
+export default function ContactPerson() {
   const [showForm, setShowForm] = useState(false);
- 
+   const [isOpen, setIsOpen] = useState(false);
+
+  const { user } = useAuth();
 
   return (
     <>
@@ -16,19 +21,19 @@ export default function ContactPerson({ name, phone, email, address }) {
             <div className="details pc">
               <div className="detail-one pc">
                 <p>訂購人</p>
-                <h6>{name}</h6>
+                <h6>{user.name}</h6>
               </div>
               <div className="detail-one pc">
                 <p>手機號碼</p>
-                <h6>{phone}</h6>
+                <h6>{user.phone}</h6>
               </div>
               <div className="detail-one pc">
                 <p>Email (訂單通知、電子發票寄送)</p>
-                <h6>{email}</h6>
+                <h6>{user.email}</h6>
               </div>
               <div className="detail-one pc">
                 <p>地址</p>
-                <h6>{address}</h6>
+                <h6>{user.postcode + user.area + user.address}</h6>
               </div>
             </div>
             <button className="detail-button pc">
@@ -63,8 +68,8 @@ export default function ContactPerson({ name, phone, email, address }) {
       </div>
       {/* 手機------------------------------- */}
       <div className="contact-person phone">
-        <button className={`toggleBtn ${ showForm ? "active" : ""} phone`}
-          onClick={() => {setShowForm(!showForm)}}
+        <button className={`toggleBtn ${showForm ? "active" : ""} phone`}
+          onClick={() => { setShowForm(!showForm) }}
           id="toggleBtn"
         >
           <h4>聯絡人資訊</h4>

@@ -89,12 +89,7 @@ export default function CartDetailPage() {
       <div className="cart">
         <div className="left-side">
           <div className="cart-main-first">
-            <ContactPerson
-              name={"王大明"}
-              phone={"0909123456"}
-              email={"aa111@gmail.com"}
-              address={"320桃園市中壢區新生路二段421號"}
-            />
+            <ContactPerson/>
           </div>
           <div className="cart-main-first">
             <Delivery />

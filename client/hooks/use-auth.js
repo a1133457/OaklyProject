@@ -6,6 +6,8 @@ import { useContext, createContext, useState, useEffect } from "react";
 const AuthContext = createContext(null);
 AuthContext.displayName = "AuthContext";
 const appKey = "reactLoginToken";
+// 存 user 資料的 localStorage key
+const userKey = "userData";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -15,8 +17,9 @@ export function AuthProvider({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const loginRoute = "/user/login";
-  const protectedRoutes = ["/user"];
+  const protectedRoutes = ["/user", "/order/detail",];
 
+  // login------------------------------------
   const login = async (account, password) => {
     console.log(`在 use-auth 中, ${account}, ${password}`);
     const API = "http://localhost:3005/api/users/login";
@@ -43,6 +46,7 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // logout------------------------------------
   const logout = async () => {
     const API = "http://localhost:3005/api/users/logout";
     const token = localStorage.getItem(appKey);
@@ -72,14 +76,15 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // list------------------------------------
   const list = async () => {
     const API = "http://localhost:3005/api/users";
     try {
       const res = await fetch(API);
       const result = await res.json();
       console.log(result);
-      
-      
+
+
       if (result.status == "success") {
         setUsers(result.data);
       } else {
@@ -92,12 +97,41 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 更新訂購人跟收件人---------------------------
+  const updateUser = (newData)=>{
+    // newData 可以是 { buyer } 或 { recipient }，更新第二次會覆蓋
+    const updateUser = { ...user }; 
+
+    if(newData.buyer){
+      updateUser.buyer = newData.buyer;  
+    }else if(!updateUser.buyer){
+      // 如果 user.buyer 不存在，就用原本 user 的資料當 buyer 初始值
+      updateUser.buyer={
+        name: user.name || "",
+        phone: user.phone || "",
+        postcode: user.postcode || "",
+        city: user.city || "",
+        address: user.address || "",
+        email: user.email || ""
+      };
+    }
+
+    // 如果 newData 裡有 recipient，就更新 user.recipient
+    if(newData.recipient){
+      updateUser.recipient = newData.recipient;
+    }
+    setUser(updateUser);
+    localStorage.setItem(userKey, JSON.stringify({user: updateUser}));
+  }
+
+  // 保護頁面------------------------------------
   useEffect(() => {
     if (!isLoading && !user && protectedRoutes.includes(pathname)) {
       router.replace(loginRoute); // 導頁
     }
   }, [isLoading, user, pathname]);
 
+  // 載入頁面時------------------------------------
   useEffect(() => {
     const API = "http://localhost:3005/api/users/status";
     const token = localStorage.getItem(appKey);
@@ -134,7 +168,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading, list, users }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading, list, users, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
