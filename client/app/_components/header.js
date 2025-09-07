@@ -54,7 +54,7 @@ export default function Header() {
   };
 
 
->>>>>>> origin/lan
+// >>>>>>> origin/lan
 
   return (
     <div className="container-fluid header">
