@@ -1,7 +1,7 @@
 'use client';
 
 // import { usePathname, useRouter } from "next/navigation";
-import { useContext, createContext, useState } from "react";
+import { useContext, createContext, useState, useEffect } from "react";
 
 
 const AuthContext = createContext(null);
@@ -99,47 +99,47 @@ export function AuthProvider({ children }) {
     //     }
     //   }, [isLoading, user, pathname]);
 
-    // useEffect(() => {
-    //     const API = "http://localhost:3005/api/users/status";
-    //     const token = localStorage.getItem(appKey);
-    //     // console.log("checkToken token:", token);
+    useEffect(() => {
+        const API = "http://localhost:3005/api/users/status";
+        const token = localStorage.getItem(appKey);
+        // console.log("checkToken token:", token);
 
-    //     if (!token) {
-    //         setUser(null);
-    //         setIsLoading(false);
-    //         return;
-    //     }
-    //     const checkToken = async () => {
-    //         try {
-    //             const res = await fetch(API, {
-    //                 method: "POST",
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`,
-    //                 },
-    //             });
-    //             const result = await res.json();
-    //             if (result.status == "success") {
-    //                 const token = result.data.token; // 伺服器會回新的 30 分 token
-    //                 setUser(result.data.user);
-    //                 localStorage.setItem(appKey, token); // 覆蓋舊的 token
-    //                 setIsLoading(false);
-    //             } else {
-    //                 // alert(result.message);
-    //                 setIsLoading(false);
-    //                 // setUser(null);
-    //                 // localStorage.removeItem(appKey);
-    //                 // router.push('/auth/login');
-    //                 // 接 吐司？
-    //             }
-    //         } catch (error) {
-    //             console.log(`解析token失敗: ${error.message}`);
-    //             setUser(null);
-    //             localStorage.removeItem(appKey);
-    //             // router.push('/auth/login');
-    //         }
-    //     };
-    //     checkToken();
-    // }, []);
+        if (!token) {
+            setUser(null);
+            //setIsLoading(false);
+            return;
+        }
+        const checkToken = async () => {
+            try {
+                const res = await fetch(API, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const result = await res.json();
+                if (result.status == "success") {
+                    const token = result.data.token; // 伺服器會回新的 30 分 token
+                    setUser(result.data.user);
+                    localStorage.setItem(appKey, token); // 覆蓋舊的 token
+                    //setIsLoading(false);
+                } else {
+                    alert(result.message);
+                    //setIsLoading(false);
+                    // setUser(null);
+                    // localStorage.removeItem(appKey);
+                    // router.push('/auth/login');
+                    // 接 吐司？
+                }
+            } catch (error) {
+                console.log(`解析token失敗: ${error.message}`);
+                setUser(null);
+                localStorage.removeItem(appKey);
+                // router.push('/auth/login');
+            }
+        };
+        checkToken();
+    }, []);
 
 
     return (
