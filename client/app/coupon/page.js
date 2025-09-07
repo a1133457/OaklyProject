@@ -13,6 +13,10 @@ import MemberCard from "./_components/MemberCard";
 
 export default function CouponPage() {
   const [coupons, setCoupons] = useState([]);
+
+  const handleClaimCoupon = (couponId)=>{
+  } //要寫
+
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
@@ -26,6 +30,11 @@ export default function CouponPage() {
     };
     fetchCoupons();
   }, []);
+
+  useEffect(()=>{
+    //要寫
+  })
+
 
   return (
     <>
@@ -74,6 +83,8 @@ export default function CouponPage() {
                       ? "不限金額"
                       : `最低消費$${coupon.min_discount}`
                   }
+                  couponId={coupon.id}
+                  onClaim={handleClaimCoupon}
                 />
               ))}
             </div>

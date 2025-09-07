@@ -38,7 +38,82 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-// POST /api/user/coupons/add - 領取優惠券
+// POST /api/user/:userId/:couponId - 領取優惠券
+router.post("/:userId/:couponId", async (req, res) => {
+  try {
+    const { userId, couponId } = req.params;
+    
+    // 1. 檢查優惠券是否存在且有效
+    const [couponCheck] = await pool.execute(
+      "SELECT * FROM coupons WHERE id = ? AND is_valid = 1",
+      [couponId]
+    );
+    
+    if (couponCheck.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "優惠券不存在或已失效"
+      });
+    }
+    
+    const coupon = couponCheck[0];
+    
+    // 2. 檢查用戶是否已經領取過這張券
+    const [existingCoupon] = await pool.execute(
+      "SELECT * FROM user_coupons WHERE user_id = ? AND coupon_id = ?",
+      [userId, couponId]
+    );
+    
+    if (existingCoupon.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "您已經領取過這張優惠券"
+      });
+    }
+    
+    // 3. 計算過期時間
+    let expireAt;
+    if (coupon.valid_days) {
+      // 領取後N天有效
+      const expireDate = new Date();
+      expireDate.setDate(expireDate.getDate() + coupon.valid_days);
+      expireDate.setHours(23, 59, 59, 999); // 設定為當天最後一秒
+      expireAt = expireDate.toISOString().slice(0, 19).replace('T', ' ');
+    } else if (coupon.end_at) {
+      // 使用券的固定結束時間
+      expireAt = coupon.end_at;
+    } else {
+      return res.status(400).json({
+        status: "error",
+        message: "優惠券時間設定錯誤"
+      });
+    }
+    
+    // 4. 新增領取記錄
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    await pool.execute(
+      "INSERT INTO user_coupons (user_id, coupon_id, get_at, expire_at, status) VALUES (?, ?, ?, ?, 0)",
+      [userId, couponId, now, expireAt]
+    );
+    
+    res.status(201).json({
+      status: "success",
+      message: "優惠券領取成功",
+      data: {
+        userId: parseInt(userId),
+        couponId: parseInt(couponId),
+        expireAt: expireAt
+      }
+    });
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "領取失敗，請洽管理人員"
+    });
+  }
+});
 
 
 export default router;
