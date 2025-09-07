@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import CartCard from "./_components/cartCard";
 import Gradation from "./_components/gradation";
 import Total from "./_components/total";
@@ -43,6 +44,14 @@ export default function CartOrderPage() {
       }
     });
   }
+
+  // useEffect(() => {
+  //   return () => {
+  //     localStorage.removeItem("delivery");
+  //     localStorage.removeItem("payment");
+  //     localStorage.removeItem("invoice");
+  //   };
+  // }, []);
 
   return (
     <div className="container-fluid">

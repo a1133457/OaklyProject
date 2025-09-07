@@ -4,18 +4,23 @@ import "@/styles/cart/button.css";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 
-export default function GreenButton({ step, to, type }) {
+export default function GreenButton({ step, to, type, onClick }) {
   const router = useRouter();
   const { user } = useAuth();
 
   const goTo = () => {
-    if(type === "order"){
-      if(user){
+    if (onClick) {
+      onClick(); // 如果有傳 onClick，就執行函式
+      return;
+    }
+    if (type === "order") {
+      // if (user) {
         router.push(`${to}`);
-      }else{
-        router.push("/user/login")
-      }
-    }else{
+        router.refresh();
+      // } else {
+      //   router.push("/user/login")
+      // }
+    } else {
       router.push(`${to}`);
     }
   }

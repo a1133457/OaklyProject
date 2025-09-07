@@ -41,6 +41,8 @@ export default function CartCard({ type }) {
       }
     });
   }
+
+
   if (items) {
     if (type === "order") {
       return (
@@ -100,7 +102,7 @@ export default function CartCard({ type }) {
                       <h6>
                         {item.name}
                       </h6>
-                     <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
+                      <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
                       <p>size: {item.sizes.find(s => s.id === item.sizes_id)?.size_label || '無尺寸'}</p>
                       <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
                       <div className="price-one">
@@ -168,20 +170,21 @@ export default function CartCard({ type }) {
                   {items.map((item) => (
                     <div key={item.id} className="cart-main phone">
                       <div className="card-left">
-                        <img src={`/img/${item.img}`} alt={item.name} width={150} height={150} />
+                        <img src={`http://localhost:3005/uploads/${item.img}`} alt={item.name} width={150} height={150} />
                         <div className="card-title detail">
                           <h6>
                             {item.name}
                           </h6>
-                          <p>顏色: {item.color}</p>
-                          <p>size: {item.size}</p>
-                          <p>材質: {item.material}</p>
+                          <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
+                          <p>size: {item.sizes.find(s => s.id === item.sizes_id)?.size_label || '無尺寸'}</p>
+                          <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
+                          <p>數量: {item.count}</p>
                           <h4>${item.price * item.count}</h4>
                         </div>
                       </div>
+                      <div className="cart-line phone"></div>
                     </div>
                   ))}
-                  <div className="cart-line phone"></div>
                 </div>
 
               </>

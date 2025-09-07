@@ -59,14 +59,14 @@ export default function Header() {
               )}
             </div> */}
 
-          <Link href="/cart" className="cart-link">
+          <a href="/cart" className="cart-link">
             <i className="fa-solid fa-cart-shopping"></i>
             {/* {cartCount > 0 && (
                 <span className="cart-badge">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )} */}
-          </Link>
+          </a>
 
           <div className="user-log">
             <Link href="/register">

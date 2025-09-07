@@ -15,7 +15,7 @@ export default function Total({ type }) {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const userId = 1;
+    const userId = 1; // 之後要刪除
     const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } = useCart();
 
 
@@ -43,6 +43,32 @@ export default function Total({ type }) {
         console.log("選擇的優惠券:", coupon);
     };
 
+    const handleNext = async () => {
+        if (paymentMethod === "信用卡") {
+            const res = await fetch("api/order/add", {
+                method: "POST",
+                headers: { "content-Type": "application/json" },
+                body: JSON.stringify(orderData),
+            });
+            const data = await res.json();
+
+            // form POST 到綠界
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = data.ecpayAction;
+
+            Object.entries(data.ecpayParams).forEach(([KeyboardEvent, value]) => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            })
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
 
     if (type === "order") {
         return (
@@ -73,12 +99,12 @@ export default function Total({ type }) {
                     </div>
                 </div>
                 <div className="nextOrBack">
-                    <GreenButton step={"前往下一步"} to="/cart/detail" type="order" />
+                    <GreenButton step={"前往下一步"} to="/cart/detail" type="order"/>
                     <WhiteButton step={"繼續購物"} to="/products" />
                 </div>
                 <div className="nextOrBack-phone">
-                    <WhiteButton step={"繼續購物"} to="/products" type="order"/>
-                    <GreenButton step={"前往下一步"} to="/cart/detail" />
+                    <WhiteButton step={"繼續購物"} to="/products"/>
+                    <GreenButton step={"前往下一步"} to="/cart/detail" type="order"/>
                 </div>
             </>
         )
@@ -108,7 +134,7 @@ export default function Total({ type }) {
                     </div>
                 </div>
                 <div className="nextOrBack">
-                    <GreenButton step={"前往下一步"} to="/cart/detail" />
+                    <GreenButton step={"前往下一步"} to={handleNext} />
                     <WhiteButton step={"繼續購物"} to="/products" />
                 </div>
                 <div className="nextOrBack-phone">

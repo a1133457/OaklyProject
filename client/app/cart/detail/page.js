@@ -40,8 +40,9 @@ export default function CartDetailPage() {
   };
 
   const handleSubmit = async () => {
-    if (!name || !address || !email || !phone) {
+    if (!recipientName || !recipientPhone || !recipientPostalcode || !recipientCity || !recipientAddress) {
       toast.error("請填寫完整資料");
+      return
     }
 
     try {
@@ -56,17 +57,20 @@ export default function CartDetailPage() {
           buyer_phone: buyerPhone,
           recipient_name: recipientName,
           recipient_phone: recipientPhone,
-          postal_code: postalCode,
-          address,
+          recipient_postal_code: recipientPostalCode,
+          recipient_city: recipientCity,
+          recipient_address: recipientAddress,
           items,
         }),
       });
 
       const data = await res.json();
+
       if (data.status === "success") {
+        // 後端回傳 ecpayParams + action URL
         const form = createEcpayForm(
           data.ecpayParams,
-          "http://payment.ecpay.com.tw/Cashier/Aiocheckout/VS"
+          data.ecpayAction
         );
         form.submit();
       } else {
@@ -89,7 +93,7 @@ export default function CartDetailPage() {
       <div className="cart">
         <div className="left-side">
           <div className="cart-main-first">
-            <ContactPerson/>
+            <ContactPerson />
           </div>
           <div className="cart-main-first">
             <Delivery />
@@ -99,9 +103,10 @@ export default function CartDetailPage() {
           </div>
         </div>
         <div className="orange-side">
-          <Total type="detail" onClick={handleSubmit}/>
+          <Total type="detail" onClick={handleSubmit} />
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }

@@ -229,7 +229,7 @@
 
     .cart-main.phone {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         height: 100%;
         gap: 5px;
     }
