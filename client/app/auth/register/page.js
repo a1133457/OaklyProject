@@ -33,7 +33,7 @@ export default function RegisterPage() {
                 <form className={styles.form} onSubmit={onSubmit}>
                     <div className={styles.title}>REGISTER</div>
 
-                    <UserTextInput className="rounded-0" id="name" label="使用者名稱"
+                    <UserTextInput id="name" label="使用者名稱"
                         value={name} onChange={(e) => setName(e.target.value)} required />
 
                     <UserTextInput id="email" label="電子郵件" type="email"

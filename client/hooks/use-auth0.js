@@ -1,8 +1,7 @@
 'use client';
 
-// import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useContext, createContext, useState, useEffect } from "react";
-
 
 const AuthContext = createContext(null);
 AuthContext.displayName = "AuthContext";
@@ -10,6 +9,13 @@ const appKey = "reactLoginToken";
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    //   const router = useRouter();
+    //   const pathname = usePathname();
+    //   const loginRoute = "/user/login";
+    //   const protectedRoutes = ["/user"];
 
     const login = async (email, password) => {
         console.log(`在 use-auth 中, ${email}, ${password}`);
@@ -29,24 +35,20 @@ export function AuthProvider({ children }) {
                 const token = result.data.token;
                 setUser(result.data.user);
                 localStorage.setItem(appKey, token);
-                console.log("成功");
-                return { success: true, message: result.message };
-                
+
             } else {
-                console.log("失敗");
-                //alert(result.message);
-                return { success: false, message: result.message };
+                alert(result.message);
                 // 接 吐司？
             }
         } catch (error) {
             console.log(error);
-            return { success: false, message: "伺服器錯誤，請稍後再試" };
 
         }
-    };
 
+
+    };
     const logout = async () => {
-        console.log("logout");
+        // console.log("logout");
         const API = "http://localhost:3005/api/users/logout";
         const token = localStorage.getItem(appKey);
         try {
@@ -63,12 +65,10 @@ export function AuthProvider({ children }) {
                 setUser(null);
                 //localStorage.setItem(appKey, token);
                 localStorage.removeItem(appKey);
-                // return { success: true };
             } else {
                 //alert(result.message)
                 // 接 吐司？
-                throw new Error(result.message); //老師版
-                //return { success: false, message: result.message };
+                throw new Error(result.message);
             }
         } catch (error) {
             console.log(`解析token失敗: ${error.message}`);
@@ -78,25 +78,25 @@ export function AuthProvider({ children }) {
         }
     };
 
-    // const list = async () => {
-    //     const API = "http://localhost:3005/api/users";
-    //     try {
-    //         const res = await fetch(API);
-    //         const result = await res.json();
-    //         console.log(result);
+    const list = async () => {
+        const API = "http://localhost:3005/api/users";
+        try {
+            const res = await fetch(API);
+            const result = await res.json();
+            console.log(result);
 
 
-    //         if (result.status == "success") {
-    //             setUsers(result.data);
-    //         } else {
-    //             throw new Error(result.message);
-    //         }
-    //     } catch (error) {
-    //         console.log(`使用者列表取得: ${error.message}`);
-    //         setUsers([]);
-    //         alert(error.message);
-    //     }
-    // };
+            if (result.status == "success") {
+                setUsers(result.data);
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.log(`使用者列表取得: ${error.message}`);
+            setUsers([]);
+            alert(error.message);
+        }
+    };
 
     //   useEffect(() => {
     //     if (!isLoading && !user && protectedRoutes.includes(pathname)) {
@@ -111,7 +111,7 @@ export function AuthProvider({ children }) {
 
         if (!token) {
             setUser(null);
-            //setIsLoading(false);
+            setIsLoading(false);
             return;
         }
         const checkToken = async () => {
@@ -127,10 +127,10 @@ export function AuthProvider({ children }) {
                     const token = result.data.token; // 伺服器會回新的 30 分 token
                     setUser(result.data.user);
                     localStorage.setItem(appKey, token); // 覆蓋舊的 token
-                    //setIsLoading(false);
+                    setIsLoading(false);
                 } else {
-                    //alert(result.message);
-                    //setIsLoading(false);
+                    // alert(result.message);
+                    setIsLoading(false);
                     // setUser(null);
                     // localStorage.removeItem(appKey);
                     // router.push('/auth/login');
@@ -148,7 +148,7 @@ export function AuthProvider({ children }) {
 
 
     return (
-        <AuthContext.Provider value={{ user, login, logout}}>
+        <AuthContext.Provider value={{ user, login, logout, isLoading, list, users }}>
             {children}
         </AuthContext.Provider>
     );

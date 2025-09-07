@@ -2,6 +2,7 @@
 // import Sidebar from './_components/layout/sidebar'
 import Sidebar from './_components/sidebar'
 import styles from './user.module.css'
+import { AuthProvider } from "@/hooks/use-auth";
 
 export const metadata = {
   title: '會員中心',
@@ -12,6 +13,7 @@ export default function AdminLayout({ children }) {
   return (
     <>
       <div className={`container-fluid ${styles.userContainer}`}>
+      <AuthProvider>
         <div className={styles.layout}>
           <div className={styles.sidebarWrapper}>
             <Sidebar />
@@ -20,7 +22,9 @@ export default function AdminLayout({ children }) {
             {children}
           </div>
         </div>
+        </AuthProvider>
       </div>
+      
 
 
       {/* <div>{children}</div> */}

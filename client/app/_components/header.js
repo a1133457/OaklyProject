@@ -7,6 +7,7 @@ import "@/styles/header.css";
 import { useCart } from '@/app/contexts/CartContext';
 
 export default function Header() {
+  const { user, logout } = useAuth();
   // const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,8 +130,15 @@ export default function Header() {
 
         {/* <button className="menu-toggle">
           <i className="fa-solid fa-circle-user"></i>
-        </button>
-        <button className="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
+        </button> */}
+
+        <button
+          className="menu-toggle"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasScrolling"
+          aria-controls="offcanvasScrolling"
+        >
           <i className="fa-solid fa-bars"></i>
         </button>
 
@@ -142,6 +150,11 @@ export default function Header() {
           aria-labelledby="offcanvasScrollingLabel"
         >
           <div className="offcanvas-header">
+            <div className="offcanvas-title" id="offcanvasScrollingLabel">
+              <a href="/">
+                <img className="phoneLogo" src="/img/Oakly-green.svg" alt="Oakly首頁" />
+              </a>
+            </div>
             <button
               type="button"
               className="btn-close"
@@ -151,13 +164,82 @@ export default function Header() {
           </div>
 
           <div className="offcanvas-body">
-            <div className="mobile-menu">
-              <Link href="/products" className="mobile-menu-item">商品列表</Link>
-              <Link href="/appointment" className="mobile-menu-item">預約整理師</Link>
-              <Link href="/articles" className="mobile-menu-item">精選文章</Link>
-              <Link href="/faq" className="mobile-menu-item">常見問題</Link>
+            <div className="user-menu">
+              <div className="menu-item">
+                <i></i>
+                <a href="/products">
+                  <span>商品列表</span>
+                </a>
+              </div>
+              <div className="menu-item">
+                <i>📰</i>
+                <a href="/organizer">
+                  <span>預約整理師</span>
+                </a>
+              </div>
+              <div className="menu-item">
+                <i>📰</i>
+                <a href="/article">
+                  <span>精選文章</span>
+                </a>
+              </div>
+              <div className="menu-item">
+                <i>⚙️</i>
+                <a href="/">
+                  <span>常見問題</span>
+                </a>
+              </div>
+
+              {user ? (
+                <div className="auth-user">
+                  <div className="user-info">
+                    <img src={user.avatar || "/img/default-avatar.png"} alt="頭像" className="avatar" />
+                    <span>{user.name}</span>
+                  </div>
+                  <div className="user-submenu">
+                    <a href="/user/profile" className="menu-item">
+                      <i>👤</i>
+                      <span>個人資料</span>
+                    </a>
+                    <a href="/dashboard/order" className="menu-item">
+                      <i>📦</i>
+                      <span>我的訂單</span>
+                    </a>
+                    <a href="/dashboard/coupon" className="menu-item">
+                      <i>📦</i>
+                      <span>我的優惠券</span>
+                    </a>
+                    <a href="/dashboard/favorite" className="menu-item">
+                      <i>📦</i>
+                      <span>我的最愛</span>
+                    </a>
+                    <a href="/dashboard/bookmark" className="menu-item">
+                      <i>📦</i>
+                      <span>收藏文章</span>
+                    </a>
+                    <button onClick={logout} className="menu-item">
+                      <i>🚪</i>
+                      <span>登出</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="auth-menu">
+                  <a href="/user/register" className="menu-item">
+                    <i>📝</i>
+                    <span>註冊</span>
+                  </a>
+                  <a href="/user/login" className="menu-item">
+                    <i>🔑</i>
+                    <span>登入</span>
+                  </a>
+                </div>
+              )}
+
+         
             </div>
           </div>
+        </div>
         </div>
         </div>
       </div>
