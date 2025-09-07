@@ -104,7 +104,7 @@ INSERT INTO users (name, birthday, email, password, phone, postcode, city, area,
 ('常建志', '1990-01-07', 'chang.jianzhi@example.com', 'chang7', '0934556789', '253', '新北市', '石門區', '尖鹿路44號', NULL, 2, 1),
 ('樂美玲', '1988-05-24', 'le2.meiling@example.com', 'le524', '0945667890', '207', '基隆市', '中山區', '中山一路222號', NULL, 1, 1);
 
-INSERT INTO `levels` (`name`) VALUES
+INSERT INTO `user_levels` (`name`) VALUES
 ('木芽會員'),
 ('原木會員'),
 ('森林會員');

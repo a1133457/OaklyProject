@@ -5,8 +5,11 @@ import "@/styles/products/pid.css";
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
-import { useCart } from '@/app/contexts/CartContext.js';
+// import { useCart } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
+import {useCart} from '@/hooks/use-cart';
+// 導入吐司訊息用方法+元件
+import { toast, ToastContainer } from 'react-toastify';
 
 
 
@@ -46,7 +49,10 @@ export default function PidPage({ params }) {
     return colorMap[colorName] || '#cccccc';
   };
   const [selectedImage, setSelectedImage] = useState(0);
-  const { addToCart } = useCart();
+  // const { addToCart } = useCart();
+  // ------------------------
+  const {onAdd} = useCart();
+  // ------------------------
   const [quantity, setQuantity] = useState(1);
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,101 +114,101 @@ export default function PidPage({ params }) {
   }, [productId]);
 
 
-  useEffect(() => {
-    const checkWishlistStatus = async () => {
-      try {
-        const userId = localStorage.getItem('userId') || 1;
-        const response = await fetch(`http://localhost:3005/api/wishlist/check/${userId}/${productId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+  // useEffect(() => {
+  //   const checkWishlistStatus = async () => {
+  //     try {
+  //       const userId = localStorage.getItem('userId') || 1;
+  //       const response = await fetch(`http://localhost:3005/api/wishlist/check/${userId}/${productId}`, {
+  //         headers: {
+  //           'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //         }
+  //       });
 
-        // 檢查是否返回 JSON
-        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
-          console.warn('Wishlist API not available yet');
-          return;
-        }
+  //       // 檢查是否返回 JSON
+  //       if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+  //         console.warn('Wishlist API not available yet');
+  //         return;
+  //       }
 
-        const result = await response.json();
-        if (result.status === 'success') {
-          setIsWishlisted(result.data.isWishlisted);
-        }
-      } catch (err) {
-        console.error('Error checking wishlist status:', err);
-        // 靜默處理，不影響頁面運行
-      }
-    };
+  //       const result = await response.json();
+  //       if (result.status === 'success') {
+  //         setIsWishlisted(result.data.isWishlisted);
+  //       }
+  //     } catch (err) {
+  //       console.error('Error checking wishlist status:', err);
+  //       // 靜默處理，不影響頁面運行
+  //     }
+  //   };
 
-    if (productId) {
-      checkWishlistStatus();
-    }
-  }, [productId]);
+  //   if (productId) {
+  //     checkWishlistStatus();
+  //   }
+  // }, [productId]);
 
-  useEffect(() => {
-    if (!showWishlistModal) {
-      document.body.classList.remove('no-scroll');
-    }
-  }, [showWishlistModal]);
+  // useEffect(() => {
+  //   if (!showWishlistModal) {
+  //     document.body.classList.remove('no-scroll');
+  //   }
+  // }, [showWishlistModal]);
 
-  // 加入/移除收藏的處理函數
-  const handleWishlistClick = (targetProduct = null, event = null) => {
-    const product = targetProduct || productData;
+  // // 加入/移除收藏的處理函數
+  // const handleWishlistClick = (targetProduct = null, event = null) => {
+  //   const product = targetProduct || productData;
 
-    if (isProductInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      openWishlistModal(product, event);
-    }
-  };
+  //   if (isProductInWishlist(product.id)) {
+  //     removeFromWishlist(product.id);
+  //   } else {
+  //     openWishlistModal(product, event);
+  //   }
+  // };
 
   const handleWishlistToggle = (product, e) => {
     e.stopPropagation();
     handleWishlistClick(product);
   };
 
-  const openWishlistModal = async (product, clickEvent = null) => {
-    setCurrentWishlistProduct(product);
-    setSelectedColor(product.colors?.[0] || null);
-    setSelectedSize(product.sizes?.[0] || null);
-    setWishlistQuantity(1);
-    setShowWishlistModal(true);
-    document.body.classList.add('no-scroll');
+  // const openWishlistModal = async (product, clickEvent = null) => {
+  //   setCurrentWishlistProduct(product);
+  //   setSelectedColor(product.colors?.[0] || null);
+  //   setSelectedSize(product.sizes?.[0] || null);
+  //   setWishlistQuantity(1);
+  //   setShowWishlistModal(true);
+  //   document.body.classList.add('no-scroll');
 
-    // 如果是其他商品且缺少詳細資料，先獲取完整資料
-    if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
-      try {
-        setWishlistLoading(true);
-        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
-        const result = await response.json();
+  //   // 如果是其他商品且缺少詳細資料，先獲取完整資料
+  //   if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
+  //     try {
+  //       setWishlistLoading(true);
+  //       const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+  //       const result = await response.json();
 
-        if (result.status === 'success') {
-          product = result.data;
-          setCurrentWishlistProduct(result.data);
-          setSelectedColor(result.data.colors?.[0] || null);
-          setSelectedSize(result.data.sizes?.[0] || null);
-        }
-      } catch (err) {
-        console.error('獲取商品詳細資料失敗:', err);
-        alert('無法載入商品資料，請稍後再試');
-        return;
-      } finally {
-        setWishlistLoading(false);
-      }
-    }
-
-
-  };
+  //       if (result.status === 'success') {
+  //         product = result.data;
+  //         setCurrentWishlistProduct(result.data);
+  //         setSelectedColor(result.data.colors?.[0] || null);
+  //         setSelectedSize(result.data.sizes?.[0] || null);
+  //       }
+  //     } catch (err) {
+  //       console.error('獲取商品詳細資料失敗:', err);
+  //       alert('無法載入商品資料，請稍後再試');
+  //       return;
+  //     } finally {
+  //       setWishlistLoading(false);
+  //     }
+  //   }
 
 
-  useEffect(() => {
-    if (showWishlistModal) {
-      document.body.classList.add('body-no-scroll');
-    } else {
-      document.body.classList.remove('body-no-scroll');
-    }
-    return () => document.body.classList.remove('body-no-scroll');
-  }, [showWishlistModal]);
+  // };
+
+
+  // useEffect(() => {
+  //   if (showWishlistModal) {
+  //     document.body.classList.add('body-no-scroll');
+  //   } else {
+  //     document.body.classList.remove('body-no-scroll');
+  //   }
+  //   return () => document.body.classList.remove('body-no-scroll');
+  // }, [showWishlistModal]);
 
 
 
@@ -213,112 +219,112 @@ export default function PidPage({ params }) {
     return false; // 需要根據你的全域狀態管理來實現
   };
 
-  //加入收藏API
-  const addToWishlist = async () => {
-    if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
-      return;
-    }
+  // //加入收藏API
+  // const addToWishlist = async () => {
+  //   if (!selectedColor || !selectedSize) {
+  //     alert('請選擇顏色和尺寸');
+  //     return;
+  //   }
 
-    const product = currentWishlistProduct || productData;
+  //   const product = currentWishlistProduct || productData;
 
-    try {
-      setWishlistLoading(true);
-      const userId = localStorage.getItem('userId') || 1;
-      const wishlistData = {
-        userId: userId,
-        productId: product.id,
-        colorId: selectedColor.id,
-        sizeId: selectedSize.id,
-        quantity: wishlistQuantity
-      };
+  //   try {
+  //     setWishlistLoading(true);
+  //     const userId = localStorage.getItem('userId') || 1;
+  //     const wishlistData = {
+  //       userId: userId,
+  //       productId: product.id,
+  //       colorId: selectedColor.id,
+  //       sizeId: selectedSize.id,
+  //       quantity: wishlistQuantity
+  //     };
 
-      const response = await fetch('http://localhost:3005/api/wishlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(wishlistData)
-      });
+  //     const response = await fetch('http://localhost:3005/api/wishlist', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //       },
+  //       body: JSON.stringify(wishlistData)
+  //     });
 
-      // 檢查響應格式
-      if (!response.headers.get('content-type')?.includes('application/json')) {
-        throw new Error('API 端點不存在或未正確設置');
-      }
+  //     // 檢查響應格式
+  //     if (!response.headers.get('content-type')?.includes('application/json')) {
+  //       throw new Error('API 端點不存在或未正確設置');
+  //     }
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      if (result.status === 'success') {
-        if (product.id === parseInt(productId)) {
-          setIsWishlisted(true);
-        }
-        setIsWishlisted(true);
-        setShowWishlistModal(false);
-        document.body.classList.remove('no-scroll');
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #9FA79A;
-          color: white;
-          padding: 16px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          z-index: 9999;
-          font-size: 14px;
-        `;
-        notification.textContent = '已加入收藏';
-        document.body.appendChild(notification);
+  //     if (result.status === 'success') {
+  //       if (product.id === parseInt(productId)) {
+  //         setIsWishlisted(true);
+  //       }
+  //       setIsWishlisted(true);
+  //       setShowWishlistModal(false);
+  //       document.body.classList.remove('no-scroll');
+  //       const notification = document.createElement('div');
+  //       notification.style.cssText = `
+  //         position: fixed;
+  //         top: 20px;
+  //         right: 20px;
+  //         background: #9FA79A;
+  //         color: white;
+  //         padding: 16px 20px;
+  //         border-radius: 8px;
+  //         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  //         z-index: 9999;
+  //         font-size: 14px;
+  //       `;
+  //       notification.textContent = '已加入收藏';
+  //       document.body.appendChild(notification);
 
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 3000);
+  //       setTimeout(() => {
+  //         if (notification.parentNode) {
+  //           notification.parentNode.removeChild(notification);
+  //         }
+  //       }, 3000);
 
-      } else {
-        alert(result.message || '加入收藏失敗');
-      }
-    } catch (err) {
-      console.error('發生錯誤:', err);
-      alert('加入收藏時發生錯誤');
-    } finally {
-      setWishlistLoading(false);
-    }
-  };
+  //     } else {
+  //       alert(result.message || '加入收藏失敗');
+  //     }
+  //   } catch (err) {
+  //     console.error('發生錯誤:', err);
+  //     alert('加入收藏時發生錯誤');
+  //   } finally {
+  //     setWishlistLoading(false);
+  //   }
+  // };
 
-  // 移除收藏API
-  const removeFromWishlist = async (targetProductId = null) => {
-    const productIdToRemove = targetProductId || productId;
+  // // 移除收藏API
+  // const removeFromWishlist = async (targetProductId = null) => {
+  //   const productIdToRemove = targetProductId || productId;
 
-    try {
-      setWishlistLoading(true);
-      const userId = localStorage.getItem('userId') || 1;
+  //   try {
+  //     setWishlistLoading(true);
+  //     const userId = localStorage.getItem('userId') || 1;
 
-      const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productIdToRemove}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+  //     const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productIdToRemove}`, {
+  //       method: 'DELETE',
+  //       headers: {
+  //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //       }
+  //     });
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      if (result.status === 'success') {
-        setIsWishlisted(false);
-        alert('已從收藏清單移除');
-      } else {
-        alert(result.message || '移除收藏失敗');
-      }
-    } catch (err) {
-      console.error('Error removing from wishlist:', err);
-      alert('移除收藏時發生錯誤');
-    } finally {
-      setWishlistLoading(false);
-    }
-  };
+  //     if (result.status === 'success') {
+  //       setIsWishlisted(false);
+  //       alert('已從收藏清單移除');
+  //     } else {
+  //       alert(result.message || '移除收藏失敗');
+  //     }
+  //   } catch (err) {
+  //     console.error('Error removing from wishlist:', err);
+  //     alert('移除收藏時發生錯誤');
+  //   } finally {
+  //     setWishlistLoading(false);
+  //   }
+  // };
 
   // 切換展開狀態
   const toggleExpanded = (section) => {
@@ -640,7 +646,12 @@ export default function PidPage({ params }) {
                 className="add-to-cart-btn"
                 onClick={() => {
                   console.log('商品資料：', productData);
-                  addToCart(productData, quantity, selectedColor, selectedSize);
+                  // addToCart(productData, quantity, selectedColor, selectedSize);
+                  // ------------------------
+                  onAdd(productData, quantity, selectedColor, selectedSize);
+                  // 跳出訊息(呼叫吐司訊息)
+                  toast.success(`${productData.name} 已成功加入購物車！`)
+                  // ------------------------
                 }}
               >加入購物車</button>
             </div>
@@ -927,6 +938,9 @@ export default function PidPage({ params }) {
           </div>
         </div>
       </div>
+      {/* 吐司訊息用元件(會先隱藏在這頁面內容裡不顯示*/}
+       <ToastContainer/>
+       // ------------------------
     </div>
   );
 

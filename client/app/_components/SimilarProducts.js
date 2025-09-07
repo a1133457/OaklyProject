@@ -10,7 +10,7 @@ const SimilarProducts = ({ currentProductId,
     const [currentIndex, setCurrentIndex] = useState(0);
     const [failedImages, setFailedImages] = useState(new Set());
     const carouselRef = useRef(null);
-    const { addToCart } = useCart();
+    // const { addToCart } = useCart();
 
 
     // 未來的願望清單 API 調用函數

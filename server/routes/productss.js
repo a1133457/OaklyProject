@@ -167,7 +167,7 @@ router.get("/:id", async (req, res) => {
         d.name as designer_name,
         pi.img
       FROM products p
-      LEFT JOIN designers d ON p.designer_id = d.id
+      LEFT JOIN designers d ON p.designers_id = d.id
       LEFT JOIN product_img pi ON p.id = pi.product_id
       WHERE p.id = ?
       LIMIT 1

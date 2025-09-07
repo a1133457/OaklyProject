@@ -120,11 +120,11 @@ INSERT INTO materials (material_name) VALUES
 SELECT * FROM product_img WHERE product_id = 1;
 -- - **商品與材質關聯表（多對多）
 CREATE TABLE materials_list (
-product_id INT,
+product_id INT UNSIGNED,
 materials_id INT,
 PRIMARY KEY (product_id, materials_id),
 FOREIGN KEY (product_id) REFERENCES products(id),
-FOREIGN KEY (materials_id) REFERENCES products(id));
+FOREIGN KEY (materials_id) REFERENCES materials(id));
     
 INSERT INTO materials_list (product_id, materials_id) VALUES
     (1, 1),

@@ -8,22 +8,13 @@
   box-shadow: 10px 10px 35px 0 rgba(0, 0, 0, 0.25);
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .frame {
-  display: flex;
+  flex: auto;
+  width: 1098px;
   align-items: center;
-}
-
-.frame img {
-  height: 40px;
+  gap: var(--gap-gap-xxl, 60px);
+  display: flex;
+  flex-direction: row;
 }
 
 .menu {
@@ -32,13 +23,17 @@
   gap: 30px;
 }
 
-.nav-items {
-  text-decoration: none;
-  color: #333;
+.menu-toggle {
+  display: none;
 }
 
-.nav-items h6 {
-  margin: 0;
+.nav-items {
+  display: flex;
+  align-items: center;
+  height: 77px;
+  padding-right: 5px;
+  color: var(--color-gray-700);
+  text-decoration: none;
 }
 
 .user-log a {
@@ -61,14 +56,16 @@
 }
 
 .cart-icon {
-  font-size: 18px;
+  width: 20px;
+  height: 20px;
+  aspect-ratio: 1/1;
 }
 
 .cart-badge {
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: #DBA783;
+  background-color: #dba783;
   color: white;
   border-radius: 50%;
   width: 20px;
@@ -125,21 +122,18 @@
   border-radius: 50px;
   font-size: 14px;
   outline: none;
-  border:none;
+  border: none;
   background-color: #ededed;
-  border:2px solid #fff;
-
-  
+  border: 2px solid #fff;
 }
 .search-input:hover {
   background: #c0c0c0;
-  border:2px solid #fff;
+  border: 2px solid #fff;
 }
 .search-input:focus {
-  border:2px solid #8b8b8b;
+  border: 2px solid #8b8b8b;
   background-color: #fff;
 }
-
 
 .search-results {
   position: absolute;
@@ -200,7 +194,7 @@
 
 .search-result-price {
   font-size: 12px;
-  color: #DBA783;
+  color: #dba783;
   font-weight: 600;
 }
 
@@ -212,7 +206,7 @@
 }
 
 .search-footer a {
-  color: #DBA783;
+  color: #dba783;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -240,11 +234,11 @@
 }
 
 .menu-toggle:hover {
-  color: #DBA783;
+  color: #dba783;
 }
 
 /* 響應式設計 */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .menu {
     display: none;
   }
@@ -257,12 +251,9 @@
     display: none;
   }
 
-  .icon-group {
-    gap: 15px;
-  }
-}
+} */
 
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
   .header {
     padding: 8px 15px;
   }
@@ -275,12 +266,9 @@
     width: 200px;
   }
 
-  .icon-group {
-    gap: 10px;
-  }
-}
+} */
 
-@media (max-width : 430px) {
+/* @media (max-width : 430px) {
   .container-fluid.header {
     padding: 8px 24px;
     height: 61px;
@@ -303,10 +291,7 @@
   .icon-group {
     gap: 20px !important;
   }
-}
-
-
-
+} */
 
 .search-icon {
   display: flex;
@@ -317,9 +302,11 @@
   aspect-ratio: 1/1;
 }
 
+.phone-leftLogo {
+  display: none;
+}
 
-
-.phoneLogo{
+.phoneLogo {
   display: none;
 }
 
@@ -365,6 +352,10 @@
     justify-content: space-between;
   }
 
+  .phone-leftLogo{
+    display: block;
+  }
+
   .side-right {
     display: flex;
     flex-direction: row;
@@ -393,7 +384,8 @@
     padding: 15px 20px;
   }
 
-  .offcanvas-header img {
+  .phoneLogo {
+    display: block;
     max-width: 150px;
   }
 

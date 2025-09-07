@@ -25,7 +25,7 @@
   z-index: 1000;
 }
 .my-coupon-line {
-  margin-top: 10px;
+  margin: 20px 0;
   width: 920px;
   height: 1px;
   background-color: var(--color-gray-400);
