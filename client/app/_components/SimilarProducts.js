@@ -1,12 +1,56 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useCart } from '@/app/contexts/CartContext';
 
-const SimilarProducts = ({ currentProductId }) => {
+
+const SimilarProducts = ({ currentProductId,
+    handleWishlistToggle,
+    isProductInWishlist }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [failedImages, setFailedImages] = useState(new Set());
     const carouselRef = useRef(null);
+    const { addToCart } = useCart();
 
+
+    // 未來的願望清單 API 調用函數
+    /*
+    const syncWishlistToServer = async (action, product) => {
+        try {
+            const userId = getCurrentUserId(); // 需要實作用戶認證
+            if (!userId) return;
+            
+            const response = await fetch('/api/wishlist', {
+                method: action === 'add' ? 'POST' : 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    productId: product.id,
+                    productData: product
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('API 調用失敗');
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('同步願望清單失敗:', error);
+        }
+    };
+    */
+
+
+
+    // 處理加入購物車
+    const handleAddToCart = (product, event) => {
+        event.stopPropagation();
+        addToCart(product, 1);
+    };
 
     const handleImageError = (e, productId) => {
         e.target.src = "/img/lan/nana.webp";
@@ -149,12 +193,28 @@ const SimilarProducts = ({ currentProductId }) => {
                             onClick={() => handleProductClick(product.id)}
                             style={{ width: `${100 / products.length}%` }}
                         >
+                            <button
+                                className={`wishlist-heart-btn ${isProductInWishlist(product.id) ? 'active' : ''}`}
+                                onClick={(e) => handleWishlistToggle(product, e)}
+                                title={isProductInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
+                            >
+                                <i className={isProductInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+                            </button>
+
                             <div className="product-image">
                                 <img
                                     src={getProductImage(product)}
                                     alt={product.name}
                                     onError={(e) => handleImageError(e, product.id)}
                                 />
+                                <div className="product-actions">
+                                    <button
+                                        className="action-btn add-to-cart-action"
+                                        onClick={(e) => handleAddToCart(product, e)}
+                                    >
+                                        加入購物車
+                                    </button>
+                                </div>
                             </div>
                             <div className="product-info">
                                 <div className="product-info">

@@ -112,6 +112,9 @@
   @media (min-width: 1200px) {
     padding-bottom: 36px;
   }
+  &:hover{
+    color: var(--primary-05);
+  }
 }
 
 .memberArea {

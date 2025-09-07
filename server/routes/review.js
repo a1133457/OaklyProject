@@ -1,460 +1,259 @@
-import express from "express";
-import multer from "multer";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import mysql from "mysql2/promise";
-import connection from "../connect.js";
+import express from 'express';
+import db from '../connect.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const upload = multer();
-const secretKey = process.env.JWT_SECRET_KEY;
 const router = express.Router();
 
-// route(s) 路由規則(們)
-// routers (路由物件器)
-// 獲取所有使用者
-router.get("/", async (req, res) => {
-  try {
-    const sql = "SELECT * FROM `users`;";
-    let [users] = await connection.execute(sql);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// 確保上傳目錄存在
+const uploadDir = path.join(__dirname, '../public/uploads/reviews');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+// 設定 multer 存儲
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // 生成唯一檔名: 時間戳-隨機數-原檔名
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'review-' + uniqueSuffix + ext);
+  }
+});
 
-    res.status(200).json({
-      status: "success",
-      data: users,
-      message: "已 獲取所有使用者",
+// 檔案過濾器
+const fileFilter = (req, file, cb) => {
+  // 只允許圖片類型
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('只允許上傳圖片檔案'), false);
+  }
+};
+
+// multer 設定
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB 限制
+    files: 5 // 最多 5 張圖片
+  }
+});
+
+// 圖片上傳 API
+router.post('/upload/review-images', upload.array('images', 5), (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: '沒有上傳任何檔案'
+      });
+    }
+
+    // 回傳圖片 URLs
+    const imageUrls = req.files.map(file => {
+      return '/uploads/reviews/' + file.filename;
     });
+
+    res.json({
+      status: 'success',
+      message: '圖片上傳成功',
+      imageUrls: imageUrls
+    });
+
   } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 401;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
+    console.error('圖片上傳錯誤:', error);
+    res.status(500).json({
+      status: 'error',
+      message: '圖片上傳失敗'
     });
   }
 });
 
-// 搜尋使用者
-router.get("/search", (req, res) => {
-  // 網址參數(查詢參數)會被整理到 req 中的 query 裡
-  const key = req.query.key;
-  res.status(200).json({
-    status: "success",
-    data: { key },
-    message: "搜尋使用者 成功",
+
+router.get('/products/:productId/reviews', async (req, res) => {
+  const { productId } = req.params;
+  const { sortBy = 'newest', limit = 50, offset = 0 } = req.query;
+
+  try {
+    // 排序選項對應的 SQL
+    const sortOptions = {
+      'newest': 'created_at DESC',           // 最新優先
+      'oldest': 'created_at ASC',            // 最舊優先
+      'highest_rating': 'rating DESC',       // 評分高到低
+      'lowest_rating': 'rating ASC'          // 評分低到高
+    };
+
+    // 驗證排序參數
+    const orderBy = sortOptions[sortBy] || sortOptions['newest'];
+
+    // 基本查詢 SQL
+    let sql = `
+      SELECT id, user_name, email, rating, comment, avatar, reviews_img, created_at,
+             DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as formatted_date
+      FROM reviews 
+      WHERE product_id = ? 
+      ORDER BY ${orderBy}
+    `;
+
+    // 如果有分頁參數，加上 LIMIT 和 OFFSET
+    if (limit && offset !== undefined) {
+      sql += ` LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
+    }
+
+    const [reviews] = await db.execute(sql, [productId]);
+
+    // 另外查詢總數量 (用於分頁)
+    const [countResult] = await db.execute(
+      'SELECT COUNT(*) as total FROM reviews WHERE product_id = ?',
+      [productId]
+    );
+
+    // 計算評分統計
+    const [statsResult] = await db.execute(`
+      SELECT 
+        AVG(rating) as average_rating,
+        COUNT(*) as total_reviews,
+        SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_stars,
+        SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_stars,
+        SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_stars,
+        SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_stars,
+        SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star
+      FROM reviews 
+      WHERE product_id = ?
+    `, [productId]);
+
+    res.json({
+      status: 'success',
+      data: {
+        reviews: reviews,
+        pagination: {
+          total: countResult[0].total,
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          hasMore: (parseInt(offset) + parseInt(limit)) < countResult[0].total
+        },
+        statistics: {
+          averageRating: parseFloat(statsResult[0].average_rating).toFixed(1),
+          totalReviews: statsResult[0].total_reviews,
+          ratingDistribution: {
+            5: statsResult[0].five_stars,
+            4: statsResult[0].four_stars,
+            3: statsResult[0].three_stars,
+            2: statsResult[0].two_stars,
+            1: statsResult[0].one_star
+          }
+        },
+        sortBy: sortBy
+      }
+    });
+  } catch (err) {
+    console.error('獲取評論失敗:', err);
+    res.status(500).json({ status: 'error', message: '獲取評論失敗' });
+  }
+});
+
+// 獲取所有排序選項 (前端可以用來產生下拉選單)
+router.get('/reviews/sort-options', (req, res) => {
+  res.json({
+    status: 'success',
+    data: {
+      sortOptions: [
+        { value: 'newest', label: '最新評論',},
+        { value: 'oldest', label: '最早評論', },
+        { value: 'highest_rating', label: '評分：高到低'},
+        { value: 'lowest_rating', label: '評分：低到高' }
+      ]
+    }
   });
 });
 
-// 獲取特定 ID 的使用者
-router.get("/:id", async (req, res) => {
-  // 路由參數
-  try {
-    const account = req.params.id;
-    if (!account) {
-      const err = new Error("請提供使用者 ID");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
+router.post('/reviews', async (req, res) => {
+  console.log('req.body 存在嗎?', !!req.body);
+  console.log('req.body 內容:', req.body);
+  console.log('req.body 類型:', typeof req.body);
 
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `account` = ?;";
-    let user = await connection
-      .execute(sqlCheck1, [account])
-      .then(([result]) => {
-        return result[0];
+  if (!req.body) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'req.body is undefined'
+    });
+  }
+
+  try {
+    const { user_id, user_name, email, rating, comment, product_id, avatar, reviews_img } = req.body;
+
+    if (!user_id || !user_name || !email || !rating || !comment || !product_id) {
+      return res.status(400).json({
+        status: 'error',
+        message: '缺少必要欄位'
       });
-    if (!user) {
-      const err = new Error("找不到使用者");
-      err.code = 404;
-      err.status = "fail";
-      throw err;
     }
 
-    const { id, password, ...data } = user;
+    const sql = `
+      INSERT INTO reviews (user_id, user_name, email, rating, comment, product_id, avatar, reviews_img)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    res.status(200).json({
-      status: "success",
-      data,
-      message: "查詢成功",
+
+
+    const [result] = await db.query(sql, [
+      user_id,
+      user_name,
+      email,
+      rating,
+      comment,
+      product_id,
+      avatar,
+      reviews_img || null // 如果沒有圖片就存 null
+
+    ]);
+
+    res.json({
+      status: 'success',
+      message: '評論新增成功',
+      insertId: result.insertId,
+      data: { user_id, user_name, email, rating, comment, product_id, avatar, reviews_img }
     });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 401;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
+  } catch (err) {
+    console.error('新增評論失敗:', err);
+    res.status(500).json({
+      status: 'error',
+      message: '伺服器錯誤，新增評論失敗',
+      error: err.message
     });
   }
 });
 
-// 新增一個使用者
-router.post("/", upload.none(), async (req, res) => {
-  try {
-    // 取得表單中的欄位內容
-    const { account, password, mail } = req.body;
-
-    // 檢查必填
-    if (!account || !password || !mail) {
-      // 設定 Error 物件
-      const err = new Error("請提供完整的使用者資訊"); // Error 物件只能在小括號中自訂錯誤訊息
-      err.code = 400; // 利用物件的自訂屬性把 HTTP 狀態碼帶到 catch
-      err.status = "fail"; // 利用物件的自訂屬性把status字串帶到 catch
-      throw err;
-    }
-
-    // 檢查 account 有沒有使用過
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `account` = ?;";
-    let user = await connection
-      .execute(sqlCheck1, [account])
-      .then(([result]) => {
-        return result[0];
+// 處理 multer 錯誤的中間件
+router.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        status: 'error',
+        message: '檔案大小超過限制 (5MB)'
       });
-    if (user) {
-      const err = new Error("提供的註冊內容已被使用1");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
     }
-
-    // 檢查 mail 有沒有使用過
-    const sqlCheck2 = "SELECT * FROM `users` WHERE `mail` = ?;";
-    user = await connection.execute(sqlCheck2, [mail]).then(([result]) => {
-      return result[0];
-    });
-    if (user) {
-      const err = new Error("提供的註冊內容已被使用2");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-
-    // 從 randomuser.me 取得一個使用者圖片
-    const head = await getRandomAvatar();
-    // 把密碼加密
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 建立 SQL 語法
-    const sql =
-      "INSERT INTO `users` (account, password, mail, head) VALUES (?, ?, ?, ?);";
-    await connection.execute(sql, [account, hashedPassword, mail, head]);
-
-    res.status(201).json({
-      status: "success",
-      data: {},
-      message: "新增一個使用者 成功",
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 500;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "註冊失敗，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
-  }
-});
-
-// 更新(特定 ID 的)使用者
-router.put("/:id", checkToken, upload.none(), async (req, res) => {
-  try {
-    // 取得表單中的欄位內容
-    const id = req.params.id;
-    const { password, head } = req.body;
-
-    // 檢查至少要有一個欄位有資料
-    if (!password && !head) {
-      const err = new Error("請提至少提供一個要更新的資料");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-    let updateFields = []; // 用陣列來記錄要更新的欄位
-    let values = []; // 用陣列來記錄要更新的欄位的值
-
-    if (password) {
-      // 如果有 password 這個欄位
-      const hashedPassword = await bcrypt.hash(password, 10); // 加密
-      updateFields.push("password = ?"); // 欄位部份的 SQL
-      values.push(hashedPassword); // 問號對應的值
-    }
-    if (head) {
-      // 如果有 head 這個欄位
-      updateFields.push("head = ?"); // 欄位部份的 SQL
-      values.push(head); // 問號對應的值
-    }
-
-    values.push(id); // SQL 的最後有用 id 來查詢
-
-    console.log(updateFields);
-    console.log(values);
-
-    const sql = `UPDATE users SET ${updateFields.join(", ")} WHERE account = ?`;
-    const [result] = await connection.execute(sql, values);
-    console.log(result);
-    if (!result.affectedRows || result.affectedRows != 0) {
-      const err = new Error("更新失敗，請洽管理人員");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-
-    res.status(200).json({
-      status: "success",
-      message: "使用者資料更新成功",
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 500;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "註冊失敗，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
-  }
-});
-
-// 刪除(特定 ID 的)使用者
-router.delete("/:account", checkToken, async (req, res) => {
-  try {
-    const { account } = req.params;
-
-    if (req.decoded.account !== account) {
-      // 檢查是不是本人
-      const err = new Error("你沒有權限刪除此帳號");
-      err.code = 403;
-      err.status = "fail";
-      throw err;
-    }
-
-    const result = await connection.execute(
-      "DELETE FROM users WHERE account = ?",
-      [account]
-    );
-    console.log(result);
-    if (!result.affectedRows || result.affectedRows != 0) {
-      const err = new Error("刪除失敗，請洽管理人員");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-
-    res.status(200).json({
-      status: "success",
-      message: "帳號已成功註銷",
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 500;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "註冊失敗，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
-  }
-});
-
-// 使用者登入
-router.post("/login", upload.none(), async (req, res) => {
-  try {
-    const { account, password } = req.body;
-
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `account` = ?;";
-    let user = await connection
-      .execute(sqlCheck1, [account])
-      .then(([result]) => {
-        return result[0];
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        status: 'error',
+        message: '檔案數量超過限制 (最多5張)'
       });
-
-    if (!user) {
-      const err = new Error("帳號或密碼錯誤1");
-      err.code = 400;
-      err.status = "error";
-      throw err;
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      const err = new Error("帳號或密碼錯誤2");
-      err.code = 400;
-      err.status = "error";
-      throw err;
-    }
-
-    const token = jwt.sign(
-      {
-        account: user.account,
-        mail: user.mail,
-        head: user.head,
-      },
-      secretKey,
-      { expiresIn: "30m" }
-    );
-
-    const newUser = {
-      account: user.account,
-      mail: user.mail,
-      head: user.head,
-    }
-    
-    res.status(200).json({
-      status: "success",
-      message: "登入成功",
-      data: {token, user: newUser},
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 400;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "登入失敗，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
   }
+
+  res.status(400).json({
+    status: 'error',
+    message: error.message || '上傳錯誤'
+  });
 });
 
-// 使用者登出
-router.post("/logout", checkToken, async (req, res) => {
-  try {
-    const { account } = req.decoded;
-
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `account` = ?;";
-    let user = await connection
-      .execute(sqlCheck1, [account])
-      .then(([result]) => {
-        return result[0];
-      });
-    if (!user) {
-      const err = new Error("登出失敗");
-      err.code = 401;
-      err.status = "error";
-      throw err;
-    }
-
-    const token = jwt.sign(
-      {
-        message: "過期的token",
-      },
-      secretKey,
-      { expiresIn: "-10s" }
-    );
-    res.status(200).json({
-      status: "success",
-      message: "登出成功",
-      data: token,
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 400;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "登出失敗，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
-  }
-});
-
-// 檢查登入狀態
-router.post("/status", checkToken, async (req, res) => {
-  try {
-    const { account } = req.decoded;
-
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `account` = ?;";
-    let user = await connection
-      .execute(sqlCheck1, [account])
-      .then(([result]) => {
-        return result[0];
-      });
-    if (!user) {
-      const err = new Error("請登入");
-      err.code = 401;
-      err.status = "error";
-      throw err;
-    }
-
-    const token = jwt.sign(
-      {
-        account: user.account,
-        mail: user.mail,
-        head: user.head,
-      },
-      secretKey,
-      { expiresIn: "30m" }
-    );
-
-    const newUser = {
-      account: user.account,
-      mail: user.mail,
-      head: user.head,
-    };
-
-    res.status(200).json({
-      status: "success",
-      message: "處於登入狀態",
-      data: {token, user: newUser},
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 401;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
-    res.status(statusCode).json({
-      status: statusText,
-      message,
-    });
-  }
-});
-
-function checkToken(req, res, next) {
-  let token = req.get("Authorization");
-  if (token && token.includes("Bearer ")) {
-    token = token.slice(7);
-    jwt.verify(token, secretKey, (error, decoded) => {
-      if (error) {
-        console.log(error);
-        res.status(401).json({
-          status: "error",
-          message: "登入驗證失效，請重新登入",
-        });
-        return;
-      }
-      req.decoded = decoded;
-      next();
-    });
-  } else {
-    res.status(401).json({
-      status: "error",
-      message: "無登入驗證資料，請重新登入",
-    });
-  }
-}
-
-async function getRandomAvatar() {
-  const API = "https://randomuser.me/api";
-  try {
-    const response = await fetch(API);
-    if (!response.ok)
-      throw new Error(`${response.status}: ${response.statusText}`);
-    const result = await response.json();
-    return result.results[0].picture.large;
-  } catch (error) {
-    console.log("getRandomAvatar", error.message);
-    return null;
-  }
-}
 
 export default router;
