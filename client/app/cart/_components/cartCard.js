@@ -175,11 +175,16 @@ export default function CartCard({ type }) {
                           <h6>
                             {item.name}
                           </h6>
-                          <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
-                          <p>size: {item.sizes.find(s => s.id === item.sizes_id)?.size_label || '無尺寸'}</p>
-                          <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
-                          <p>數量: {item.count}</p>
-                          <h4>${item.price * item.count}</h4>
+                          <div>
+                            <p>顏色: {item.colors.find(c => c.id === item.colors_id)?.color_name || '無顏色'}</p>
+                            <p>size: {item.sizes.find(s => s.id === item.sizes_id)?.size_label || '無尺寸'}</p>
+                            <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
+                            <p>數量: {item.count}</p>
+                          </div>
+                          <div className="totalPrice">
+                            <h6>小計</h6>
+                            <h3>${item.price * item.count}</h3>
+                          </div>
                         </div>
                       </div>
                       <div className="cart-line phone"></div>

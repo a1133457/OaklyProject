@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
-import { useCart } from '@/app/contexts/CartContext';
+// import { useCart } from '@/app/contexts/CartContext';
 
 
 
@@ -34,7 +34,7 @@ const MainProduct = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [wishlistQuantity, setWishlistQuantity] = useState(1);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
-  const { addToCart } = useCart();
+  // const { addToCart } = useCart();
 
   // 新增分類資料映射
   const categoryData = {

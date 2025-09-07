@@ -36,7 +36,7 @@
   text-decoration: none;
 }
 
-.user-log a {
+.user-log h6 {
   color: var(--color-gray-700);
   text-decoration: none;
 }
@@ -46,6 +46,17 @@
   align-items: center;
   gap: 20px;
 }
+
+.icon-group button {
+  border: none;
+  background-color: #fff;
+  color: var(--color-gray-700)
+}
+
+.icon-group a {
+  color: var(--color-gray-700)
+}
+
 
 /* 購物車樣式 */
 .cart-link {
@@ -126,10 +137,12 @@
   background-color: #ededed;
   border: 2px solid #fff;
 }
+
 .search-input:hover {
   background: #c0c0c0;
   border: 2px solid #fff;
 }
+
 .search-input:focus {
   border: 2px solid #8b8b8b;
   background-color: #fff;
@@ -316,6 +329,7 @@
   align-items: center;
   gap: 20px;
 }
+
 /* .btn-close{
     color: var(--color-gray-900);
 } */
@@ -352,7 +366,7 @@
     justify-content: space-between;
   }
 
-  .phone-leftLogo{
+  .phone-leftLogo {
     display: block;
   }
 

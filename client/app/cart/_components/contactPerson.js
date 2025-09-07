@@ -14,9 +14,9 @@ export default function ContactPerson() {
   const [buyer, setBuyer] = useState({
     name: user?.name || "",
     phone: user?.phone || "",
-    email: user?.phone || "",
-    address: user?.postalcode + user?.city + user?.address || "",
-  })
+    email: user?.email || "",
+    address: `${user?.postcode || ""}${user?.city || ""}${user?.area || ""}${user?.address || ""}`,
+  });
   const [recipient, setRecipient] = useState({
     name: "",
     phone: "",
@@ -25,35 +25,42 @@ export default function ContactPerson() {
   })
 
   useEffect(() => {
-    if (user?.buyer) {
-      setBuyer({
-        name: user.buyer.name || "",
-        phone: user.buyer.phone || "",
-        email: user.buyer.phone || "",
-        address: user.buyer.postalcode + user.buyer.city + user.buyer.address || "",
-      })
-      if (user.recipient) {
-        setRecipient({
-          name: user.recipient.name || "",
-          phone: user.recipient.phone || "",
-          email: user.recipient.phone || "",
-          address: user.recipient.postalcode + user.recipient.city + user.recipient.address || "",
-        })
-      }
-    }
-  }, [user])
-  
-  const handleSamePerson = (e)=>{
-    if(e.target.checked){
-      setRecipient({
-        name: user.buyer.name,
-        phone: user.buyer.phone,
-        address: user.buyer.postalcode + user.buyer.city + user.buyer.address,
-    })
-  }
-}
+    const savedBuyer = JSON.parse(localStorage.getItem("buyer"));
+    const savedRecipient = JSON.parse(localStorage.getItem("recipient"));
 
-  
+    if (savedBuyer) setBuyer(savedBuyer);
+    if (savedRecipient) setRecipient(savedRecipient);
+
+    // 如果有 useAuth 的 user 資料，也可以更新
+    if (user) {
+      setBuyer({
+        name: user.name || "",
+        phone: user.phone || "",
+        email: user.email || "",
+        address: `${user.postcode || ""}${user.city || ""}${user.area || ""}${user.address || ""}`,
+      });
+    }
+  }, [user]);
+
+
+  const handleSamePerson = (e) => {
+    if (e.target.checked) {
+      setRecipient({
+        name: buyer.name || "",
+        phone: buyer.phone || "",
+        address: buyer.address || "",
+      });
+    } else {
+      setRecipient({
+        name: "",
+        phone: "",
+        address: "",
+      })
+    }
+  }
+
+
+
 
   return (
     <>
@@ -64,26 +71,26 @@ export default function ContactPerson() {
             <div className="details pc">
               <div className="detail-one pc">
                 <p>訂購人</p>
-                <h6>{buyer.name}</h6>
+                <h6>{buyer?.name}</h6>
               </div>
               <div className="detail-one pc">
                 <p>手機號碼</p>
-                <h6>{buyer.phone}</h6>
+                <h6>{buyer?.phone}</h6>
               </div>
               <div className="detail-one pc">
                 <p>Email (訂單通知、電子發票寄送)</p>
-                <h6>{buyer.email}</h6>
+                <h6>{buyer?.email}</h6>
               </div>
               {/* <div className="detail-one pc">
                 <p>地址</p>
                 <h6>{user.postcode + user.area + user.address}</h6>
               </div> */}
             </div>
-            <button className="detail-button pc" onClick={() =>{ setIsOpen(!isOpen);}}>
+            <button className="detail-button pc" onClick={() => { setIsOpen(!isOpen); }}>
               <p>編輯</p>
             </button>
-               {isOpen && (
-              <EditInfo type={buyer} onClose={() => setIsOpen(false)}/>
+            {isOpen && (
+              <EditInfo type={buyer} onClose={() => setIsOpen(false)} />
             )}
           </div>
           <div className="contact-line pc"></div>
@@ -95,22 +102,22 @@ export default function ContactPerson() {
               </div>
               <div className="detail-one pc">
                 <p>訂購人</p>
-                <h6>{recipient.name}</h6>
+                <h6>{recipient?.name || ""}</h6>
               </div>
               <div className="detail-one pc">
                 <p>手機號碼</p>
-                <h6>{recipient.phone}</h6>
+                <h6>{recipient?.phone || ""}</h6>
               </div>
               <div className="detail-one pc">
                 <p>地址</p>
-                <h6>{recipient.address}</h6>
+                <h6>{recipient?.address || ""}</h6>
               </div>
             </div>
             <button className="detail-button pc" onClick={() => setIsOpen(!isOpen)}>
               <p>編輯</p>
             </button>
             {isOpen && (
-              <EditInfo type={recipient} onClose={() => setIsOpen(false)}/>
+              <EditInfo type={recipient} onClose={() => setIsOpen(false)} />
             )}
           </div>
         </div>
