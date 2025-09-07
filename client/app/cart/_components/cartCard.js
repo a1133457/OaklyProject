@@ -155,8 +155,8 @@ export default function CartCard({ type }) {
                   </div>
                 </div>
                 <div className="card-right">
-                  <h3>${item.price * item.count}</h3>
-                  <div className="quantity">數量: {item.count}</div>
+                  <h3>${item.price * item.quantity}</h3>
+                  <div className="quantity">數量: {item.quantity}</div>
                 </div>
               </div>
             ))}

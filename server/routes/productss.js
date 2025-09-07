@@ -81,7 +81,7 @@ router.get("/search", async (req, res) => {
   if (isNaN(limit) || limit < 1) limit = 10;
 
   try {
-    // 🔥 直接使用現有的 getProductsFromDB 函數
+    // 直接使用現有的 getProductsFromDB 函數
     const allProducts = await getProductsFromDB();
     
     const productMap = new Map();
@@ -98,7 +98,7 @@ router.get("/search", async (req, res) => {
 
     const productsWithImages = Array.from(productMap.values());
     
-    // 🔥 搜尋篩選
+    //搜尋篩選
     const filteredProducts = productsWithImages.filter(product => {
       // ID 搜尋
       if (/^\d+$/.test(q)) {

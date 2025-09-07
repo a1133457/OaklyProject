@@ -28,12 +28,11 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 處理搜尋按鈕點擊 - 防止震動
+  // 處理搜尋按鈕點擊
   const handleSearchToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsSearchOpen(prev => !prev);
-
   };
 
   // 處理輸入框焦點
@@ -45,11 +44,9 @@ export default function Header() {
     setIsInputFocused(false);
   };
 
-
   // 處理 Enter 鍵搜尋
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
-      // 修正：導航到搜尋結果頁面
       window.location.href = `/products/search?q=${encodeURIComponent(searchQuery)}`;
       setIsSearchOpen(false);
       setIsInputFocused(false);
@@ -57,13 +54,15 @@ export default function Header() {
   };
 
 
+>>>>>>> origin/lan
 
   return (
     <div className="container-fluid header">
       <div className="frame">
-        <Link href="/" alt="">
+        <Link href="/">
           <img src="/img/Oakly-green.svg" alt="Oakly首頁" />
         </Link>
+        
         <div className="menu">
           <Link className="nav-items" href="/products">
             <h6>商品列表</h6>
