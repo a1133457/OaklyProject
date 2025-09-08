@@ -26,13 +26,15 @@ import ButtonGroup from '@/app/_components/ButtonGroup'
 
 export default function UserEditForm() {
     // api
+    const router = useRouter();
     const { user, logout } = useAuth();
 
     // 登出按鈕
-    const onLogout = () => {
-        logout();
+    // const onLogout = () => {
+    //     logout();
      
-    };
+    // };
+
 
     // 狀態欄位
     const [name, setName] = useState('')
@@ -186,7 +188,7 @@ export default function UserEditForm() {
                         <ButtonGroup align="Center">
                             <Button type="submit" variant="primary01" size="sm">確認修改</Button>
                             <Button type="reset" variant="white" size="sm">取消</Button>
-                            <Button type="button" variant="white" size="sm" onClick={onLogout} >登出</Button>
+                            {/* <Button type="button" variant="white" size="sm" onClick={logout} >登出</Button> */}
                         </ButtonGroup>
                     </form>
 

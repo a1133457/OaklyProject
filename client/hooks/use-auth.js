@@ -15,8 +15,7 @@ export function AuthProvider({ children }) {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [item, setItem] = useState([]);
-
-    // const router = useRouter();
+    const router = useRouter();
     // const pathname = usePathname();
     // const loginRoute = "/auth/login";
     // const protectedRoutes = ["/user", "/order/detail",];
@@ -117,7 +116,7 @@ export function AuthProvider({ children }) {
                 setUser(null);
                 //localStorage.setItem(appKey, token);
                 localStorage.removeItem(appKey);
-                localStorage.removeItem(user);
+                localStorage.removeItem(userKey);
                 router.push("/");
                 // return { success: true };
             } else {
