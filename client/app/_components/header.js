@@ -73,6 +73,8 @@ export default function Header() {
   };
 
 
+// >>>>>>> origin/lan
+
   return (
     <div className="container-fluid header">
       <div className="frame">
@@ -266,7 +268,7 @@ export default function Header() {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
   );
 }
