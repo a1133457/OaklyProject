@@ -8,6 +8,7 @@ import styles from "@/styles/userCoupon/userCoupon.module.css";
 import TabItem from "@/app/_components/TabItem";
 // 自訂組件 (專用)
 import "@/styles/btnReset/btnReset.css";
+import CartCoupon from "./_components/CartCoupon";
 import CanUseCoupon from "./_components/CanUseCoupon";
 import UsedCoupon from "./_components/UsedCoupon";
 import Link from "next/link";
@@ -76,7 +77,7 @@ export default function UserCouponPage() {
                     }
                     costCate2={coupon.discount_type === 1 ? "" : " 折"}
                   />
-                ))}
+                ))}            
             {activeTab === "used" &&
               userCoupons
                 .filter((coupon) => coupon.status === 1)
