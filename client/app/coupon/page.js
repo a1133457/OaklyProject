@@ -10,12 +10,28 @@ import GreenBorderButton from "@/app/_components/GreenBorderButton";
 import QuizBox from "./_components/QuizBox";
 import CouponCard from "./_components/CouponCard";
 import MemberCard from "./_components/MemberCard";
+import { useRouter } from "next/navigation";
 
 export default function CouponPage() {
+  const router = useRouter()
   const [coupons, setCoupons] = useState([]);
 
+
   const handleClaimCoupon = async (couponId) => {
-    const userId = 1;
+    // 領取時的登入檢查
+    const token = localStorage.getItem('reactLoginToken')
+    const userStr = localStorage.getItem('user')
+
+    //沒登入的跳轉
+    if(!token || !userStr){
+      alert('請先登入')
+      router.push('/auth/login')
+      return
+    }
+    
+    const user = JSON.parse(userStr)
+    const userId = user.id;
+
     try {
       const result = await fetch(
         `http://localhost:3005/api/user/coupons/${userId}/${couponId}`,
