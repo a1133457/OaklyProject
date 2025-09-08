@@ -1,10 +1,26 @@
 "use client";
 
 import "@/styles/cart/delivery.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Delivery() {
   const [showForm, setShowForm] = useState(false);
+  // 先讀 localStorage，初始值如果沒存過就空字串
+  const [selectedDelivery, setSelectedDelivery] = useState("");
+
+  // 在瀏覽器渲染後再讀取 localStorage
+  useEffect(() => {
+    const savedDelivery = localStorage.getItem("delivery");
+    if (savedDelivery) {
+      setSelectedDelivery(savedDelivery);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedDelivery) {
+      localStorage.setItem("delivery", selectedDelivery);
+    }
+  }, [selectedDelivery]);
 
   return (
     <>
@@ -15,8 +31,10 @@ export default function Delivery() {
             <input
               className="form-check-input pc"
               type="radio"
-              name="radioDefault"
+              name="delivery"
               id="radioDefault1"
+              checked={selectedDelivery === "宅配"}
+              onChange={() => setSelectedDelivery("宅配")}
             />
             <label className="form-check-label pc" htmlFor="radioDefault1">
               <h6>宅配</h6>
@@ -29,8 +47,10 @@ export default function Delivery() {
             <input
               className="form-check-input pc"
               type="radio"
-              name="radioDefault"
+              name="delivery"
               id="radioDefault2"
+              checked={selectedDelivery === "超商自取"}
+              onChange={() => setSelectedDelivery("超商自取")}
             />
             <label className="form-check-label pc" htmlFor="radioDefault2">
               <h6>超商自取</h6>
@@ -46,7 +66,7 @@ export default function Delivery() {
       {/* 手機------------------------------------- */}
       <div className="delivery phone">
         <button
-          className={`toggleBtn ${ showForm ? "active" : ""} phone`}
+          className={`toggleBtn ${showForm ? "active" : ""} phone`}
           onClick={() => {
             setShowForm(!showForm);
           }}
@@ -62,8 +82,10 @@ export default function Delivery() {
                   <input
                     className="form-check-input phone"
                     type="radio"
-                    name="radioDefault"
+                    name="delivery"
                     id="radioDefault1"
+                    checked={selectedDelivery === "宅配"}
+                    onChange={() => setSelectedDelivery("宅配")}
                   />
                   <label
                     className="form-check-label phone"
@@ -79,8 +101,10 @@ export default function Delivery() {
                   <input
                     className="form-check-input phone"
                     type="radio"
-                    name="radioDefault"
+                    name="delivery"
                     id="radioDefault2"
+                    checked={selectedDelivery === "超商自取"}
+                    onChange={() => setSelectedDelivery("超商自取")}
                   />
                   <label
                     className="form-check-label phone"

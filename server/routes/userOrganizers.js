@@ -3,6 +3,7 @@ import connection from "../connect.js";
 import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
 
 // 設定 multer 儲存配置
 const storage = multer.diskStorage({
@@ -75,7 +76,9 @@ router.get("/:userId/:bookingId", async (req, res) => {
       u.name as user_name,
       u.email as user_email, 
       u.phone as user_phone,
-      o.name as organizer_name,
+      o.name as organizer_name,   
+      o.id as organizer_id,   
+      b.organizer_id as booking_organizer_id,
       b.city,
       b.district, 
       b.address,
@@ -258,16 +261,30 @@ router.put(
         rawBookingId,
       ]);
 
-      // 處理要刪除的圖片
-      if (remove_images && Array.isArray(remove_images)) {
-        for (const imageUrl of remove_images) {
-          const deleteSql = `DELETE FROM booking_images WHERE booking_id = ? AND image_url = ?`;
-          await connection.execute(deleteSql, [rawBookingId, imageUrl]);
-        }
-      }
-
-      // 處理新上傳的圖片
+      // 圖片處理：如果有上傳新圖片，就完全替換舊圖片
       if (req.files && req.files.length > 0) {
+        // 先取得現有圖片資訊
+        const getImagesSql = `SELECT image_url FROM booking_images WHERE booking_id = ?`;
+        const [existingImages] = await connection.execute(getImagesSql, [rawBookingId]);
+
+        // 刪除資料庫中的舊圖片記錄
+        const deleteImagesSql = `DELETE FROM booking_images WHERE booking_id = ?`;
+        await connection.execute(deleteImagesSql, [rawBookingId]);
+
+        // 刪除實體檔案
+        for (const imageRecord of existingImages) {
+          try {
+            // 移除開頭的 / 並加上完整路徑
+            const fileName = imageRecord.image_url.replace('/uploads/booking_images/', '');
+            const filePath = `uploads/booking_images/${fileName}`;
+            fs.unlinkSync(filePath);
+            console.log(`已刪除檔案: ${filePath}`);
+          } catch (error) {
+            console.log(`刪除檔案失敗: ${imageRecord.image_url}`, error.message);
+          }
+        }
+
+        // 新增新圖片記錄
         for (const file of req.files) {
           const imageUrl = `/uploads/booking_images/${file.filename}`;
           const imageSql = `INSERT INTO booking_images (booking_id, image_url) VALUES (?, ?)`;
@@ -288,5 +305,61 @@ router.put(
     }
   }
 );
+
+//DELETE /api/user/organizers/:userId/:bookingId - (取消) 預約資訊
+router.delete("/:userId/:bookingId", async (req, res) => {
+  try {
+    const { userId, bookingId } = req.params;
+
+    // 步驟1: 檢查預約是否存在且屬於該用戶
+    const checkSql = `
+      SELECT id, status 
+      FROM bookings 
+      WHERE user_id = ? AND LPAD(id, 7, '0') = ? AND is_valid = 1`;
+
+    const [existingBooking] = await connection.execute(checkSql, [
+      userId,
+      bookingId,
+    ]);
+
+    if (existingBooking.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "找不到該預約資訊或無權限取消",
+      });
+    }
+
+    const booking = existingBooking[0];
+    const rawBookingId = booking.id;
+
+    // 步驟2: 檢查預約狀態是否可取消
+    if (booking.status === 3 || booking.status === 4) {
+      return res.status(400).json({
+        status: "error",
+        message: "此預約狀態無法取消",
+      });
+    }
+
+    // 步驟3: 更新狀態為已取消 (4)
+    const cancelSql = `
+      UPDATE bookings 
+      SET status = 4 
+      WHERE id = ?`;
+
+    await connection.execute(cancelSql, [rawBookingId]);
+
+    res.status(200).json({
+      status: "success",
+      message: "預約取消成功",
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "取消失敗，請洽管理人員",
+    });
+  }
+});
 
 export default router;
