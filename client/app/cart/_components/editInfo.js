@@ -7,34 +7,53 @@ import "@/styles/cart/editInfo.css";
 export default function EditInfo({ type, onClose }) {
     // 抓會員資料 + 更新函式
     const { user, updateUser } = useAuth();
-    const [formData, setFormData] = useState({ name: "", phone: "", postalCode: "", city: "", address: "", email: "" });
+    const [formData, setFormData] = useState({ name: "", phone: "", postcode: "", city: "", address: "", email: "" });
 
 
     useEffect(() => {
         if (!user) return;
+
+        // 除錯：檢查 user 資料
+        console.log("user 資料:", user);
+        console.log("user.buyer:", user.buyer);
+        console.log("user.recipient:", user.recipient);
+
         if (type === "buyer") {
-            setFormData({
+            const buyerData = {
                 name: user.buyer?.name || user.name || "",
                 phone: user.buyer?.phone || user.phone || "",
-                postalCode: user.buyer?.postalCode || user.postalCode || "",
+                postcode: user.buyer?.postcode || user.postcode || "",
                 city: user.buyer?.city || user.city || "",
                 address: user.buyer?.address || user.address || "",
                 email: user.buyer?.email || user.email || "",
-            });
-        } else {
-            setFormData({
+            }
+            console.log("buyer formData:", newFormData);
+            setFormData(buyerData);
+
+        } else if (type === "recipient") {
+            const recipientData = {
                 name: user.recipient?.name || "",
                 phone: user.recipient?.phone || "",
-                postalCode: user.recipient?.postalCode || "",
+                postcode: user.recipient?.postcode || "",
                 city: user.recipient?.city || "",
                 address: user.recipient?.address || "",
                 email: user.recipient?.email || "",
-            });
+            }
+            console.log("recipient formData:", newFormData);
+            setFormData(recipientData);
         }
     }, [user, type]);
 
     // 沒有抓到 user 資料
-    if (!user && type === "buyer") return null;
+    if (!user) {
+        return (
+            <div className="overlay">
+                <div className="list">
+                    <div>載入中...</div>
+                </div>
+            </div>
+        );
+    }
 
     const handleSave = () => {
         // 更新 user 資料
@@ -128,7 +147,7 @@ export default function EditInfo({ type, onClose }) {
 
         )
 
-    } else {
+    } else if (type === "recipient") {
         return (
 
             <div className="overlay">
