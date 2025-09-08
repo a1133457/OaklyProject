@@ -11,47 +11,45 @@ export default function Header() {
   const { user, logout, isLoading } = useAuth();
   // const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   // if (isLoading) return null; // 或 loading skeleton
   const router = useRouter();
 
-  // const handleLogout = async () => {
-  //   try {
-  //     await fetch("http://localhost:3005/api/users/logout", {
-  //       method: "POST",
-  //       credentials: "include",
-  //       headers: {
-  //         "Authorization": `Bearer ${localStorage.getItem("token")}`,
-  //       }
-  //     });
-  //     router.push("/user/login");
-  //   } catch (err) {
-  //     console.error("登出失敗", err);
-  //   }
-  // };
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) {
+      router.push("/");
+      router.refresh();
+    } else {
+      alert(result.message || "登出失敗");
+    }
+  };
 
   const searchInputRef = useRef(null);
 
   // 點擊外部關閉搜尋
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target)
+      ) {
         setIsSearchOpen(false);
         setIsInputFocused(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // 處理搜尋按鈕點擊
   const handleSearchToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsSearchOpen(prev => !prev);
+    setIsSearchOpen((prev) => !prev);
   };
 
   // 處理輸入框焦點
@@ -65,13 +63,14 @@ export default function Header() {
 
   // 處理 Enter 鍵搜尋
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      window.location.href = `/products/search?q=${encodeURIComponent(searchQuery)}`;
+    if (e.key === "Enter" && searchQuery.trim()) {
+      window.location.href = `/products/search?q=${encodeURIComponent(
+        searchQuery
+      )}`;
       setIsSearchOpen(false);
       setIsInputFocused(false);
     }
   };
-
 
   return (
     <div className="container-fluid header">
@@ -98,7 +97,11 @@ export default function Header() {
 
       <div className="icon-group">
         <Link href="/" alt="">
-          <img className="phone-leftLogo" src="/img/Oakly-green.svg" alt="Oakly首頁" />
+          <img
+            className="phone-leftLogo"
+            src="/img/Oakly-green.svg"
+            alt="Oakly首頁"
+          />
         </Link>
         <div className="side-right">
           {/* 搜尋功能
@@ -137,16 +140,16 @@ export default function Header() {
               <button>
                 <i className="fa-solid fa-circle-user"></i>
               </button>
-              <button onClick={logout}>
+              <button onClick={handleLogout}>
                 <h6>登出</h6>
               </button>
             </div>
           ) : (
             <div className="user-log">
-              <a href="/user/register">
+              <a href="/auth/register">
                 <h6>註冊</h6>
               </a>
-              <a href="/user">
+              <a href="/auth/login">
                 <h6>登入</h6>
               </a>
             </div>
@@ -244,7 +247,7 @@ export default function Header() {
                         <i>📦</i>
                         <span>收藏文章</span>
                       </a>
-                      <button onClick={logout} className="menu-item">
+                      <button onClick={handleLogout} className="menu-item">
                         <i>🚪</i>
                         <span>登出</span>
                       </button>
@@ -252,11 +255,11 @@ export default function Header() {
                   </div>
                 ) : (
                   <div className="auth-menu">
-                    <a href="/user/register" className="menu-item">
+                    <a href="/auth/register" className="menu-item">
                       <i>📝</i>
                       <span>註冊</span>
                     </a>
-                    <a href="/user" className="menu-item">
+                    <a href="/auth/login" className="menu-item">
                       <i>🔑</i>
                       <span>登入</span>
                     </a>

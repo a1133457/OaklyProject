@@ -5,43 +5,44 @@ import { useEffect, useState } from "react";
 import EditInfo from "./editInfo";
 import { useAuth } from "@/hooks/use-auth";
 
-
 export default function ContactPerson() {
   const [showForm, setShowForm] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState("");
   const { user } = useAuth();
   const [buyer, setBuyer] = useState({
     name: user?.name || "",
     phone: user?.phone || "",
     email: user?.email || "",
-    address: `${user?.postcode || ""}${user?.city || ""}${user?.area || ""}${user?.address || ""}`,
+    address: `${user?.postcode || ""}${user?.city || ""}${user?.area || ""}${
+      user?.address || ""
+    }`,
   });
   const [recipient, setRecipient] = useState({
     name: "",
     phone: "",
     email: "",
     address: "",
-  })
+  });
 
   useEffect(() => {
-    const savedBuyer = JSON.parse(localStorage.getItem("buyer"));
-    const savedRecipient = JSON.parse(localStorage.getItem("recipient"));
-
-    if (savedBuyer) setBuyer(savedBuyer);
-    if (savedRecipient) setRecipient(savedRecipient);
-
     // 如果有 useAuth 的 user 資料，也可以更新
     if (user) {
       setBuyer({
         name: user.name || "",
         phone: user.phone || "",
         email: user.email || "",
-        address: `${user.postcode || ""}${user.city || ""}${user.area || ""}${user.address || ""}`,
+        address: `${user.postcode || ""}${user.city || ""}${user.area || ""}${
+          user.address || ""
+        }`,
+      });
+      setRecipient({
+        name: user.recipient?.name || "",
+        phone: user.recipient?.phone || "",
+        email: user.recipient?.email || "",
+        address: user.recipient?.address || "",
       });
     }
   }, [user]);
-
 
   const handleSamePerson = (e) => {
     if (e.target.checked) {
@@ -55,12 +56,29 @@ export default function ContactPerson() {
         name: "",
         phone: "",
         address: "",
-      })
+      });
     }
-  }
+    // 重新載入最新的 user 資料
+    if (user) {
+      setBuyer({
+        name: user.buyer?.name || user.name || "",
+        phone: user.buyer?.phone || user.phone || "",
+        email: user.buyer?.email || user.email || "",
+        address:
+          user.buyer?.address ||
+          `${user.postcode || ""}${user.city || ""}${user.area || ""}${
+            user.address || ""
+          }`,
+      });
 
-
-
+      setRecipient({
+        name: user.recipient?.name || "",
+        phone: user.recipient?.phone || "",
+        email: user.recipient?.email || "",
+        address: user.recipient?.address || "",
+      });
+    }
+  };
 
   return (
     <>
@@ -86,11 +104,16 @@ export default function ContactPerson() {
                 <h6>{user.postcode + user.area + user.address}</h6>
               </div> */}
             </div>
-            <button className="detail-button pc" onClick={() => { setIsOpen(!isOpen); }}>
+            <button
+              className="detail-button pc"
+              onClick={() => {
+                setIsOpen(!isOpen);
+              }}
+            >
               <p>編輯</p>
             </button>
             {isOpen && (
-              <EditInfo type={buyer} onClose={() => setIsOpen(false)} />
+              <EditInfo type="buyer" onClose={() => setIsOpen(false)} />
             )}
           </div>
           <div className="contact-line pc"></div>
@@ -113,19 +136,25 @@ export default function ContactPerson() {
                 <h6>{recipient?.address || ""}</h6>
               </div>
             </div>
-            <button className="detail-button pc" onClick={() => setIsOpen(!isOpen)}>
+            <button
+              className="detail-button pc"
+              onClick={() => setIsOpen(!isOpen)}
+            >
               <p>編輯</p>
             </button>
             {isOpen && (
-              <EditInfo type={recipient} onClose={() => setIsOpen(false)} />
+              <EditInfo type="recipient" onClose={() => setIsOpen(false)} />
             )}
           </div>
         </div>
       </div>
       {/* 手機------------------------------- */}
       <div className="contact-person phone">
-        <button className={`toggleBtn ${showForm ? "active" : ""} phone`}
-          onClick={() => { setShowForm(!showForm) }}
+        <button
+          className={`toggleBtn ${showForm ? "active" : ""} phone`}
+          onClick={() => {
+            setShowForm(!showForm);
+          }}
           id="toggleBtn"
         >
           <h4>聯絡人資訊</h4>

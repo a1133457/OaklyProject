@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useContext, createContext, useState, useEffect } from "react";
-
 
 const AuthContext = createContext(null);
 AuthContext.displayName = "AuthContext";
@@ -19,7 +18,7 @@ export function AuthProvider({ children }) {
   // const router = useRouter();
   // const pathname = usePathname();
   const loginRoute = "/user/login";
-  const protectedRoutes = ["/user", "/order/detail",];
+  const protectedRoutes = ["/user", "/order/detail"];
 
   // login------------------------------------
   const login = async (email, password) => {
@@ -45,7 +44,6 @@ export function AuthProvider({ children }) {
         localStorage.setItem(userKey, JSON.stringify(user));
         console.log("成功");
         return { success: true, message: result.message };
-
       } else {
         console.log("失敗");
         //alert(result.message);
@@ -55,7 +53,6 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.log(error);
       return { success: false, message: "伺服器錯誤，請稍後再試" };
-
     }
   };
 
@@ -63,6 +60,8 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     console.log("logout");
     const API = "http://localhost:3005/api/users/logout";
+    const appKey = "reactLoginToken";
+    const userKey = "user";
     const token = localStorage.getItem(appKey);
     try {
       if (!token) throw new Error("Token 不存在");
@@ -78,9 +77,8 @@ export function AuthProvider({ children }) {
         setUser(null);
         //localStorage.setItem(appKey, token);
         localStorage.removeItem(appKey);
-        localStorage.removeItem(user);
-        router.push("/");
-        // return { success: true };
+        localStorage.removeItem(userKey);
+        return { success: true };
       } else {
         //alert(result.message)
         // 接 吐司？
@@ -101,7 +99,6 @@ export function AuthProvider({ children }) {
       const res = await fetch(API);
       const result = await res.json();
       console.log(result);
-
 
       if (result.status == "success") {
         setUsers(result.data);
@@ -130,7 +127,7 @@ export function AuthProvider({ children }) {
         postcode: user.postcode || "",
         city: user.city || "",
         address: user.address || "",
-        email: user.email || ""
+        email: user.email || "",
       };
     }
 
@@ -140,7 +137,7 @@ export function AuthProvider({ children }) {
     }
     setUser(updateUser);
     localStorage.setItem(userKey, JSON.stringify({ user: updateUser }));
-  }
+  };
 
   // 保護頁面------------------------------------
   // useEffect(() => {
@@ -191,9 +188,10 @@ export function AuthProvider({ children }) {
     checkToken();
   }, []);
 
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading, list, users, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isLoading, list, users, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

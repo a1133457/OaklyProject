@@ -27,7 +27,7 @@ export function CartProvider({ children }) {
       // v 代表陣列中物件值 例如: {id: 0, name: '小熊餅乾', count: 1}
       if (v.id === itemId) {
         // 如果比對出 id 是 itemId 的話，把 count 屬性值 +1 (用展開運算子(淺拷貝)+屬性值覆蓋)
-        return { ...v, count: v.count + 1 };
+        return { ...v, quantity: v.quantity + 1 };
       } else {
         return v;
       }
@@ -43,7 +43,7 @@ export function CartProvider({ children }) {
       // 如果比對出 id = cartItemId 的成員，進行展開物件並遞減 count 的值
       // v代表陣列中物件值 例如: {id: 0, name: '小熊餅乾', count: 1 }
       if (v.id === itemId) {
-        return { ...v, count: v.count - 1 };
+        return { ...v, quantity: v.quantity - 1 };
       } else {
         return v;
       }
@@ -64,7 +64,7 @@ export function CartProvider({ children }) {
     } else {
       // 如果沒找到 -> 做新加入
       // 先寫出要新增的物件值，因為商品(product)和購物車項目(cartItem)間差了一個數量(count)屬性，預設為 1
-      const newItem = { ...product, count: 1 };
+      const newItem = { ...product, quantity: 1 };
       // 1 // 2
       const nextItems = [newItem, ...items]
       // 3
@@ -85,8 +85,8 @@ export function CartProvider({ children }) {
 
   // 使用陣列的迭代方法 reduce(累加/歸納)
   // 計算總數量 (reduce 是陣列累加/歸納的迭代方式)
-  const totalQty = items.reduce((acc, v) => acc + v.count, 0);
-  const totalAmount = items.reduce((acc, v) => acc + v.count * v.price, 0);
+  const totalQty = items.reduce((acc, v) => acc + v.quantity, 0);
+  const totalAmount = items.reduce((acc, v) => acc + v.quantity * v.price, 0);
 
   // 統一的 localStorage 同步化處理
   useEffect(() => {
