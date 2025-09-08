@@ -16,8 +16,8 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState([]);
 
-  const router = useRouter();
-  const pathname = usePathname();
+  // const router = useRouter();
+  // const pathname = usePathname();
   const loginRoute = "/user/login";
   const protectedRoutes = ["/user", "/order/detail",];
 
@@ -143,11 +143,11 @@ export function AuthProvider({ children }) {
   }
 
   // 保護頁面------------------------------------
-  useEffect(() => {
-    if (!isLoading && !user && protectedRoutes.includes(pathname)) {
-      router.replace(loginRoute); // 導頁
-    }
-  }, [isLoading, user, pathname]);
+  // useEffect(() => {
+  //   if (!isLoading && !user && protectedRoutes.includes(pathname)) {
+  //     router.replace(loginRoute); // 導頁
+  //   }
+  // }, [isLoading, user, pathname]);
 
   useEffect(() => {
     const API = "http://localhost:3005/api/users/status";

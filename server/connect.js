@@ -30,7 +30,7 @@ const pool = mysql.createPool({
 //   connectionLimit: 10,
 //   queueLimit: 0,})
 
-// 欣錞
+//欣錞
 // const pool = mysql.createPool({
 //   host: "localhost",
 //   user: "root",

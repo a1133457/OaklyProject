@@ -47,14 +47,13 @@ app.use("/api/organizers", organizersRouter);
 app.use("/api/user/organizers", userOrganizersRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/coupons", couponRouter);
+app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
 // app.use("/api/cart", cartRouter);
-app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 
 
-// app.use("/api/coupon", coupon);
 
 
 app.listen(3005, ()=>{

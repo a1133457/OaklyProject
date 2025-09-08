@@ -54,9 +54,9 @@ CREATE TABLE user_coupons (
   expire_at DATETIME,
   status TINYINT(1) DEFAULT 0,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (coupon_id) REFERENCES coupons(id)
+  FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+  UNIQUE KEY unique_user_coupon (user_id, coupon_id)  -- 9/7新增
 );
-
 
 
 
