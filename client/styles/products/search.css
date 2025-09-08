@@ -89,8 +89,7 @@ body {
   letter-spacing: 1px;
   word-wrap: break-word;
   text-decoration: none;
-
-  & span {
+  & span{
     color: white;
     font-size: 12px;
     font-family: Noto Sans TC;
@@ -636,10 +635,10 @@ span {
 
 .image {
   position: relative;
-  overflow: visible;
+  overflow: visible; 
   padding-top: 40px;
-}
 
+}
 
 
 .image img {
@@ -651,8 +650,7 @@ span {
   background-position: center;
   background-repeat: no-repeat;
   transition: all 0.3s ease;
-
-
+  
 
 }
 
@@ -680,31 +678,29 @@ span {
   align-items: center;
   gap: 8px;
   position: relative;
-  z-index: 1;
-
+  z-index: 1; 
+  
 }
 
 .products-grid.list .product-actions {
-  position: static !important;
-  transform: none !important;
-  opacity: 1 !important;
+  position: static !important;  
+  transform: none !important;  
+  opacity: 1 !important;      
   visibility: visible !important;
-  background: transparent !important;
-  padding: 0 !important;
+  background: transparent !important; 
+  padding: 0 !important;    
   width: auto !important;
   height: auto !important;
   display: flex !important;
-  align-self: center !important;
-  margin-left: auto !important;
-  /* 推到最右邊 */
-  transition: none !important;
-  /* 移除動畫效果 */
+  align-self:center !important;
+  margin-left: auto !important; /* 推到最右邊 */
+  transition: none !important; /* 移除動畫效果 */
 }
 
 
 
 .products-grid.list .productcard:hover .product-actions {
-  transform: none;
+  transform: none;  
 }
 
 .products-grid.list .action-btn {
@@ -714,13 +710,13 @@ span {
   border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
-  width: auto;
+  width: auto;       
   max-width: none;
-
+  
 }
 
 .products-grid.list .productcard:hover .info {
-  opacity: 1;
+  opacity: 1;       
 }
 
 .name {
@@ -808,12 +804,12 @@ span {
 /* 愛心按鈕樣式 - hover 時才出現 */
 .wishlist-heart-btn {
   position: absolute;
-  top: 0px;
+  top: 8px;
   right: 0px;
   width: 36px;
   height: 36px;
   border: none;
-  background: none;
+  background:none;
   color: #6A6A6A;
   cursor: pointer;
   display: flex;
@@ -821,7 +817,7 @@ span {
   justify-content: center;
   font-size: 16px;
   z-index: 3;
-
+  
   /* 初始隱藏 */
   opacity: 0;
   visibility: hidden;
@@ -838,7 +834,7 @@ span {
 
 /* 愛心按鈕本身的 hover 效果 */
 .wishlist-heart-btn:hover {
-  background: white;
+  background: rgba(255, 255, 255, 1);
   color: #DBA783;
   transform: scale(1.1);
 }
@@ -869,7 +865,7 @@ span {
   right: 0;
   background: #719A8B;
   padding: 10px;
-  transform: translateY(100%);
+  transform: translateY(100%); 
   transition: all 0.3s ease;
   display: flex;
   gap: 8px;
@@ -883,14 +879,13 @@ span {
 }
 
 .productcard:hover .product-actions {
-  transform: translateY(0);
-  /* 改這行：向上移動按鈕高度的距離 */
+  transform: translateY(0);  /* 改這行：向上移動按鈕高度的距離 */
   opacity: 1;
   visibility: visible;
 }
 
 .productcard:hover .info {
-  opacity: 0;
+  opacity: 0; 
 }
 
 /* Grid 模式：確保購物車按鈕只在 hover 時顯示 */
@@ -915,13 +910,11 @@ span {
 }
 
 .products-grid:not(.list) .productcard:hover .product-actions {
-  display: flex !important;
-  /* hover 時才顯示 */
+  display: flex !important; /* hover 時才顯示 */
   transform: translateY(0) !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
-
 /* 收藏彈窗樣式 */
 .no-scroll {
   overflow: hidden !important;
@@ -1113,7 +1106,6 @@ span {
 .wishlist-modal-footer {
   text-align: center;
 }
-
 .cart-modal-backdrop {
   position: fixed;
   top: 0;
@@ -1205,8 +1197,7 @@ span {
   flex-wrap: wrap;
 }
 
-.cart-color-option,
-.cart-size-option {
+.cart-color-option, .cart-size-option {
   padding: 8px 12px;
   border: 1px solid #ededed;
   border-radius: 6px;
@@ -1229,8 +1220,7 @@ span {
   border: 1px solid #ddd;
 }
 
-.cart-color-option.selected,
-.cart-size-option.selected {
+.cart-color-option.selected, .cart-size-option.selected {
   border-color: #719A8B;
   background-color: #f8f9fa;
 }
@@ -1299,8 +1289,6 @@ span {
 .cart-modal-footer {
   text-align: center;
 }
-
-
 /* 響應式設計 */
 @media (max-width: 1200px) {
   .content-wrapper {
@@ -1520,7 +1508,10 @@ span {
   }
 
   .image {
+    width: 100%;
     height: auto;
+    aspect-ratio: 1 / 1;
+    /* 正方形比例 */
     margin-bottom: 8px;
   }
 
@@ -1538,7 +1529,6 @@ span {
     margin: 0px auto;
     overflow: visible;
   }
-
   .products-grid.list {
     grid-template-columns: 1fr;
   }
@@ -1613,8 +1603,7 @@ span {
   border-bottom: 1px solid #EDEDED;
 
 }
-
-.products-grid.list .image img {
+.products-grid.list .image img{
   margin: 20px 40px 80px 0px;
 }
 
@@ -1623,6 +1612,7 @@ span {
 .products-grid.list .info {
   align-items: flex-start;
   text-align: left;
+
 }
 
 .products-grid.list .name,
@@ -1635,6 +1625,11 @@ span {
   position: relative;
 }
 
+
+.image {
+  position: relative;
+  overflow: none;
+}
 
 .productcard .badge-new {
   display: inline-block;

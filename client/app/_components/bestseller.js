@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/app/contexts/CartContext';
 
 
-const SimilarProducts = ({ currentProductId, 
+const bestseller = ({ currentProductId, 
     handleWishlistToggle, 
-    isProductInWishlist ,
-    addToCart,        
-  handleCartClick  
+    isProductInWishlist,
+    addToCart,      
+    handleCartClick 
 }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -157,7 +157,7 @@ const SimilarProducts = ({ currentProductId,
     return (
         <div className="similar-products">
             <div className="section-header">
-                <span className="section-title">類似商品</span>
+                <span className="section-title">推薦商品</span>
                 <div className="carousel-controls">
                     <button
                         className={`nav-btn prev-btn ${currentIndex === 0 ? 'disabled' : ''}`}
@@ -215,8 +215,7 @@ const SimilarProducts = ({ currentProductId,
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleCartClick && handleCartClick(product, e);
-                                          }}
-                                        >
+                                          }}>
                                         加入購物車
                                     </button>
                                 </div>
@@ -264,4 +263,4 @@ const getProductImage = (product) => {
     return `https://via.placeholder.com/300x200/f0f0f0/666?text=${encodeURIComponent(product.name)}`;
 };
 
-export default SimilarProducts;
+export default bestseller;

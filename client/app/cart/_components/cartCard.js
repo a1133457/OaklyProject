@@ -2,7 +2,10 @@
 
 import "@/styles/cart/cartCard.css";
 import { useState } from "react";
-import { useCart } from "@/hooks/use-cart";
+// import { useCart } from "@/hooks/use-cart";
+//使用這行商品頁加入購物車才會導至購物車頁
+import { useCart } from '@/app/contexts/CartContext';
+
 
 export default function CartCard({ type }) {
   const [showForm, setShowForm] = useState(false);

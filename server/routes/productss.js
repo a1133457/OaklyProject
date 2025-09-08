@@ -145,6 +145,47 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.get('/latest', async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+
+    // 修正欄位名稱，並加入圖片查詢
+    const query = `
+      SELECT 
+        p.*,
+        pi.img
+      FROM products p
+      LEFT JOIN product_img pi ON p.id = pi.product_id
+      ORDER BY p.create_at DESC 
+      LIMIT ?
+    `;
+
+    const [products] = await db.execute(query, [parseInt(limit)]);
+
+    const productMap = new Map();
+    products.forEach(item => {
+      if (!productMap.has(item.id)) {
+        productMap.set(item.id, {
+          ...item,
+          images: item.img ? [`/uploads/${item.img}`] : []
+        });
+      } else if (item.img) {
+        productMap.get(item.id).images.push(`/uploads/${item.img}`);
+      }
+    });
+
+    const productsWithImages = Array.from(productMap.values());
+
+    res.json(productsWithImages);
+
+  } catch (error) {
+    console.error('獲取最新商品失敗:', error);
+    res.status(500).json({
+      status: 'error',
+      message: '獲取最新商品失敗'
+    });
+  }
+});
 
 
 //  獲取產品詳細資料
@@ -167,7 +208,7 @@ router.get("/:id", async (req, res) => {
         d.name as designer_name,
         pi.img
       FROM products p
-      LEFT JOIN designers d ON p.designer_id = d.id
+      LEFT JOIN designers d ON p.designers_id = d.id
       LEFT JOIN product_img pi ON p.id = pi.product_id
       WHERE p.id = ?
       LIMIT 1
@@ -316,6 +357,8 @@ router.get("/:id", async (req, res) => {
 //     res.status(500).send('伺服器錯誤');
 //   }
 // });
+
+
 
 
 

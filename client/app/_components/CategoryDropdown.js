@@ -5,7 +5,7 @@ import Link from 'next/link';
 const CategoryDropdown = () => {
   const categories = {
     '客廳': {
-      categoryLink: '/products?category=客廳', 
+      categoryLink: '/products?category=客廳', // 用 category_name
       items: [
         { name: '邊桌', searchParam: '邊桌' },
         { name: '單椅/單人沙發', searchParam: '單椅' },
