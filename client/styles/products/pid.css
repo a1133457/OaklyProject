@@ -39,10 +39,6 @@ body {
     width: 100%;
     box-sizing: border-box;
     overflow: visible;
-    overflow: hidden;
-
-
-
 }
 
 /* 頂部標題欄 */
@@ -354,7 +350,7 @@ body {
 /* 覆蓋原有的縮圖容器樣式 */
 .thumbnail-images {
     display: flex !important;
-    gap: 15px !important;
+    gap: 4px !important;
     width: 500px !important;
     max-width: 500px !important;
     overflow-x: auto !important;
@@ -454,7 +450,7 @@ body {
     height: 100% !important;
     object-fit: cover !important;
     display: block !important;
-    padding: 2px;
+    padding: 12px;
 }
 
 /* 右側產品資訊區域 */
@@ -1264,7 +1260,7 @@ body.modal-open {
     left: 0;
     right: 0;
     background: #719A8B;
-    padding: 20px 10px;
+    height: 60px;
     transform: translateY(100%);
     transition: all 0.3s ease;
     display: flex;
@@ -1274,8 +1270,6 @@ body.modal-open {
     visibility: hidden;
     justify-content: center;
     align-items: center;
-
-
 }
 
 .product-card:hover .product-actions {
@@ -1288,8 +1282,9 @@ body.modal-open {
     border: none;
     outline: none;
     background-color: #719A8B;
+    line-height: 1.5;
     color: white;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     word-wrap: break-word;
 }
@@ -2068,7 +2063,95 @@ body.modal-open {
 .wishlist-submit-btn:disabled:hover {
     background-color: #ededed;
 }
-
+/* 修正 RecentViewedProducts 的按鈕位置 */
+.recent-product-card {
+    position: relative;
+    overflow: visible; /* 確保按鈕可以顯示 */
+  }
+  
+  .recent-product-card .product-image {
+    position: relative;
+  }
+  
+  /* 收藏按鈕 - 右上角 */
+  .recent-product-card .product-heart-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #6A6A6A;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 4;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  /* hover 時顯示收藏按鈕 */
+  .recent-product-card:hover .product-heart-icon {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .recent-product-card .product-heart-icon:hover {
+    background: rgba(255, 255, 255, 1);
+    color: #DBA783;
+    transform: scale(1.1);
+  }
+  
+  .recent-product-card .product-heart-icon.wishlisted {
+    color: #DBA783;
+    background: rgba(255, 255, 255, 1);
+  }
+  
+  /* 購物車按鈕 - 底部 */
+  .recent-product-card .product-add-to-cart-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #719A8B;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+    z-index: 3;
+    height: 60px;
+  }
+  
+  /* hover 時滑出購物車按鈕 */
+  .recent-product-card:hover .product-add-to-cart-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .recent-product-card .product-add-to-cart-btn:hover {
+    background: #719A8B;
+  }
+  
+  /* 確保產品資訊區域不被按鈕遮擋 */
+  .recent-product-card .product-info {
+    position: relative;
+    z-index: 1;
+    background: white;
+    padding: 8px;
+    margin-top: 8px;
+  }
 /* 響應式設計 */
 @media (max-width: 1200px) {
     .showcase-container {

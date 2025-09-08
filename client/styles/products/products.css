@@ -613,8 +613,8 @@ span {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 100px;
-  margin-bottom: 40px;
+  gap: 120px;
+  margin-bottom: 80px;
 }
 
 .products-grid.list {
@@ -628,7 +628,6 @@ span {
   flex-direction: column;
   justify-content: top;
   align-items: center;
-  height: 433px;
 }
 
 
@@ -643,6 +642,8 @@ span {
   background-position: center;
   background-repeat: no-repeat;
   transition: all 0.3s ease;
+  
+
 }
 
 .image:hover img {
@@ -668,6 +669,47 @@ span {
   justify-content: center;
   align-items: center;
   gap: 8px;
+  position: relative;
+  z-index: 1; 
+  
+}
+
+.products-grid.list .product-actions {
+  position: static !important;  
+  transform: none !important;  
+  opacity: 1 !important;      
+  visibility: visible !important;
+  background: transparent !important; 
+  padding: 0 !important;    
+  width: auto !important;
+  height: auto !important;
+  display: flex !important;
+  align-self:center !important;
+  margin-left: auto !important; /* 推到最右邊 */
+  transition: none !important; /* 移除動畫效果 */
+  margin-top: 60px;
+}
+
+
+
+.products-grid.list .productcard:hover .product-actions {
+  transform: none;  
+}
+
+.products-grid.list .action-btn {
+  background-color: #719A8B;
+  color: white;
+  padding: 8px 32px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  width: auto;       
+  max-width: none;
+  
+}
+
+.products-grid.list .productcard:hover .info {
+  opacity: 1;       
 }
 
 .name {
@@ -747,9 +789,12 @@ span {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  max-width: 180px;
 }
 
-/* 愛心按鈕樣式 */
+/* 愛心按鈕樣式 - hover 時才出現 */
 .wishlist-heart-btn {
   position: absolute;
   top: 8px;
@@ -766,16 +811,29 @@ span {
   justify-content: center;
   font-size: 16px;
   z-index: 3;
+  
+  /* 初始隱藏 */
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* hover 商品卡片時顯示愛心按鈕 */
+.productcard:hover .wishlist-heart-btn {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+/* 愛心按鈕本身的 hover 效果 */
 .wishlist-heart-btn:hover {
   background: rgba(255, 255, 255, 1);
   color: #DBA783;
   transform: scale(1.1);
 }
 
+/* 已收藏狀態 */
 .wishlist-heart-btn.active {
   background: #DBA783;
   color: white;
@@ -783,6 +841,14 @@ span {
 
 .wishlist-heart-btn.active:hover {
   background: #CD8A5B;
+  transform: scale(1.1);
+}
+
+/* 確保 hover 商品時，已收藏狀態的愛心也正確顯示 */
+.productcard:hover .wishlist-heart-btn.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
 }
 
 /* hover 時顯示的操作按鈕 */
@@ -793,27 +859,61 @@ span {
   right: 0;
   background: #719A8B;
   padding: 10px;
-  transform: translateY(100%);
+  transform: translateY(100%); 
   transition: all 0.3s ease;
   display: flex;
   gap: 8px;
-  z-index: 2;
-  opacity: 0;
-  visibility: hidden;
+  z-index: 3;
+  opacity: 1;
+  visibility: visible;
+  justify-content: center;
+  align-items: center;
+  height: 56px;
+  width: 100%;
 }
 
 .productcard:hover .product-actions {
-  transform: translateY(0);
+  transform: translateY(0);  /* 改這行：向上移動按鈕高度的距離 */
   opacity: 1;
   visibility: visible;
 }
 
+.productcard:hover .info {
+  opacity: 0; 
+}
+
+/* Grid 模式：確保購物車按鈕只在 hover 時顯示 */
+.products-grid:not(.list) .product-actions {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #719A8B !important;
+  padding: 10px !important;
+  transform: translateY(100%) !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  gap: 8px !important;
+  z-index: 3 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  justify-content: center !important;
+  align-items: center !important;
+  height: 56px !important;
+  width: 100% !important;
+}
+
+.products-grid:not(.list) .productcard:hover .product-actions {
+  display: flex !important; /* hover 時才顯示 */
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
 /* 收藏彈窗樣式 */
 .no-scroll {
   overflow: hidden !important;
 }
 
-/* 收藏彈窗樣式 */
 .wishlist-modal-backdrop {
   position: fixed;
   top: 0;
@@ -822,31 +922,24 @@ span {
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 9998;
-  overflow: hidden;
 }
 
 .wishlist-modal-container {
   position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 9999;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
 }
 
 .wishlist-modal-content {
   background: white;
-  border-radius: 2px;
+  border-radius: 8px;
   width: 800px;
-  max-width: 100vw;
-  max-height: fit-content;
-  overflow: hidden;
-  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-
-
 }
 
 .wishlist-modal-close {
@@ -863,11 +956,10 @@ span {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6a6a6a;
 }
 
 .wishlist-modal-header {
-  padding: 30px 30px 20px 30px;
+  padding: 30px;
   text-align: center;
   border-bottom: 1px solid #eee;
 }
@@ -880,28 +972,116 @@ span {
 }
 
 .wishlist-modal-body {
-  padding: 20px 40px;
+  padding: 30px;
   display: flex;
   gap: 24px;
-  align-items: center;
-  justify-content: center;
-  border: hidden;
-}
-
-.wishlist-product-image {
-  flex-shrink: 0;
 }
 
 .wishlist-product-image img {
   width: 280px;
   height: 280px;
   object-fit: cover;
-  border-radius: 2px;
-  border: 1px solid #ededed;
+  border-radius: 8px;
 }
 
 .wishlist-form-content {
   flex: 1;
+}
+
+.wishlist-form-group {
+  margin-bottom: 20px;
+}
+
+.wishlist-form-label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #6A6A6A;
+}
+
+.wishlist-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wishlist-color-option,
+.wishlist-size-option {
+  padding: 8px 12px;
+  border: 1px solid #ededed;
+  border-radius: 6px;
+  cursor: pointer;
+  /* background-color: white; */
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #8B8B8B;
+}
+
+.wishlist-color-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wishlist-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+}
+
+.wishlist-color-option.selected,
+.wishlist-size-option.selected {
+  border-color: #719A8B;
+  background-color: #f8f9fa;
+}
+
+.wishlist-quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wishlist-quantity-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wishlist-quantity-display {
+  min-width: 40px;
+  text-align: center;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.wishlist-submit-btn {
+  background-color: #719A8B;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.wishlist-submit-btn:hover {
+  background-color: #5d8570;
+}
+
+.wishlist-submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .wishlist-product-name {
@@ -918,137 +1098,10 @@ span {
   font-weight: 700;
 }
 
-.wishlist-form-group {
-  margin-bottom: 20px;
-}
-
-.wishlist-form-label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #494949;
-  font-size: 14px;
-}
-
-.wishlist-options {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.wishlist-color-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid #ededed;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: white;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  color: #6A6A6A
-}
-
-.wishlist-color-option:hover {
-  background-color: #f8f9fa;
-}
-
-.wishlist-color-option.selected {
-  border: 2px solid #83937A;
-}
-
-.wishlist-color-dot {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #ededed;
-  border-radius: 50%;
-}
-
-.wishlist-size-option {
-  padding: 8px 12px;
-  border: 1px solid #ededed;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: white;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  color: #8B8B8B;
-}
-
-.wishlist-size-option:hover {
-  background-color: #f8f9fa;
-}
-
-.wishlist-size-option.selected {
-  border: 2px solid #83937A;
-  background-color: #f8f9fa;
-}
-
-.wishlist-quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.wishlist-quantity-btn {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #ededed;
-  background-color: white;
-  cursor: pointer;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
-.wishlist-quantity-btn:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.wishlist-quantity-display {
-  min-width: 40px;
-  text-align: center;
-  padding: 6px 12px;
-  border: 1px solid #ededed;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #8B8B8B;
-}
-
 .wishlist-modal-footer {
   text-align: center;
 }
 
-.wishlist-submit-btn {
-  background-color: #83937A;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 2px;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-size: 16px;
-  font-weight: 500;
-  width: 100%;
-}
-
-.wishlist-submit-btn:hover {
-  background-color: #6f8268;
-}
-
-.wishlist-submit-btn:disabled {
-  background-color: #ededed;
-  cursor: not-allowed;
-  color: #8B8B8B;
-}
-
-.wishlist-submit-btn:disabled:hover {
-  background-color: #ededed;
-}
 /* 響應式設計 */
 @media (max-width: 1200px) {
   .content-wrapper {
@@ -1292,36 +1345,39 @@ span {
 
   .products-grid.list {
     grid-template-columns: 1fr;
-    /* 一列一張卡 */
-    row-gap: 24px;
   }
 }
 
 /* list 模式：圖片與文字橫向排列 */
 .products-grid.list {
   grid-template-columns: 1fr;
-  /* 一列一張卡 */
-  row-gap: 24px;
+  gap: 64px;
 }
 
+
+
+/* list 模式：購物車按鈕在右側與商品資訊同行 */
 .products-grid.list .productcard {
-  display: flex;
-  flex-direction: row;
-  /* 橫向 */
-  align-items: center;
-  gap: 24px;
-  height: auto;
-  padding-bottom: 60px;
-}
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  overflow: visible;
 
+}
+.products-grid.list .image img{
+  margin-bottom: 0;
+  margin-right: 20px;
+  margin: 60px 40px 0px 0px;
+}
 
 
 
 .products-grid.list .info {
   align-items: flex-start;
-  /* 文字靠左 */
   text-align: left;
-  gap: 8px;
+  margin-top: 60px
+
 }
 
 .products-grid.list .name,
@@ -1334,6 +1390,7 @@ span {
   position: relative;
 }
 
+
 .image {
   position: relative;
   overflow: none;
@@ -1345,9 +1402,7 @@ span {
   justify-content: center;
   align-content: center;
   align-self: flex-start;
-  /* 只讓徽章靠左，其他內容不受影響 */
   margin-bottom: 8px;
-  /* 徽章與圖片的間距 */
   width: 44px;
   height: 44px;
   background: #DBA783;

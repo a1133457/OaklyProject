@@ -36,6 +36,21 @@ const MainProduct = () => {
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
   // const { addToCart } = useCart();
 
+  const getImageUrl = (product) => {
+    if (!product || !product.images || product.images.length === 0) {
+      return '/img/lan/placeholder.jpg';
+    }
+    
+    const firstImage = product.images[0];
+    if (typeof firstImage === 'string') {
+      return `http://localhost:3005${firstImage}`;
+    } else if (firstImage && firstImage.url) {
+      return `http://localhost:3005${firstImage.url}`;
+    }
+    
+    return '/img/lan/placeholder.jpeg';
+  };
+
   // 新增分類資料映射
   const categoryData = {
     '': {
@@ -85,9 +100,8 @@ const MainProduct = () => {
     '衣櫃': '臥室',
     // 兒童房分類
     '桌椅組': '兒童房',
-    '衣櫃': '兒童房', // 兒童房的衣櫃/衣架
-    '床架': '兒童房', // 兒童房的床架
-    '收納櫃': '兒童房', // 兒童房的收納櫃
+    '衣櫃': '兒童房',
+    '收納櫃': '兒童房',
     // 收納用品分類
     '收納盒': '收納用品',
     '收納箱': '收納用品'
@@ -465,8 +479,8 @@ const MainProduct = () => {
     e.stopPropagation();
     e.preventDefault();
 
-  console.log('handleWishlistToggle 被調用', product.id);
-  console.log('isWishlisted 狀態:', isWishlisted[product.id]);
+    console.log('handleWishlistToggle 被調用', product.id);
+    console.log('isWishlisted 狀態:', isWishlisted[product.id]);
 
     if (isWishlisted[product.id]) {
       await removeFromWishlist(product.id);
@@ -477,7 +491,7 @@ const MainProduct = () => {
 
   const openWishlistModal = async (product) => {
     console.log('openWishlistModal 被調用', product);
-    setCurrentWishlistProduct(product);
+    console.log('product.images:', product.images); // 添加這行調試    setCurrentWishlistProduct(product);
     setSelectedColor(product.colors?.[0] || null);
     setSelectedSize(product.sizes?.[0] || null);
     setWishlistQuantity(1);
@@ -493,6 +507,8 @@ const MainProduct = () => {
         const result = await response.json();
         if (result.status === 'success') {
           console.log('獲取到完整商品資料:', result.data);
+          console.log('完整商品的圖片資料:', result.data.images); // 添加這行
+
 
           setCurrentWishlistProduct(result.data);
           setSelectedColor(result.data.colors?.[0] || null);
@@ -699,7 +715,8 @@ const MainProduct = () => {
               <div className="megamenu-column">
                 <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '臥室')}>
                   臥室
-                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
                   床架
                 </a>
                 <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床邊桌')}>
@@ -978,7 +995,7 @@ const MainProduct = () => {
               </div>
               {/* 商品網格 */}
 
-              <div className={`products-grid ${viewMode}`}>
+              <div className={`products-grid ${viewMode}`} key={viewMode}>
                 {currentProducts.map((product) => (
                   <div key={product.id}
                     className="productcard"
@@ -986,14 +1003,24 @@ const MainProduct = () => {
                     style={{ cursor: 'pointer' }}>
                     <span className="badge-new">新品</span>
                     <div className="image">
-                      {product.images.length > 0 && (
+                      {product.images && product.images.length > 0 ? (
                         <img
-                          src={`http://localhost:3005${product.images[0]}`}
-                          alt={product.name}
-                          style={{ maxWidth: "200px" }}
+                        src={getImageUrl(product)}
+                        alt={product.name}
+                          style={{ maxWidth: "200px" ,}}
+                          onError={(e) => {
+                            console.log('圖片載入失敗:', e.target.src);
+                            e.target.src = '/img/lan/placeholder.jpeg';
+                          }}
                         />
+                      ) : (
+                        <div className="no-image-placeholder">
+                          <span>暫無圖片</span>
+                        </div>
+                        
                       )}
                     </div>
+                  
                     <div className="info" onClick={() => handleProductClick(product.id)}>
                       <h3 className="name">{product.name}</h3>
                       <p className="price">NT$ {product.price}</p>
@@ -1012,8 +1039,7 @@ const MainProduct = () => {
                     {/* 右上角愛心按鈕 */}
                     <button
                       className={`wishlist-heart-btn ${isWishlisted[product.id] ? 'active' : ''}`}
-                      
-                      onClick={(e) =>{
+                      onClick={(e) => {
                         handleWishlistToggle(product, e);
                       }}
                     >
@@ -1063,11 +1089,12 @@ const MainProduct = () => {
                       <div className="wishlist-modal-body">
                         <div className="wishlist-product-image">
                           <img
-                            src={currentWishlistProduct ?
-                              `http://localhost:3005${currentWishlistProduct.images?.[0] || ''}` :
-                              ''
-                            }
+                             src={getImageUrl(currentWishlistProduct)}
                             alt={currentWishlistProduct?.name || ''}
+                            onError={(e) => {
+                              console.log('彈窗圖片載入失敗:', e.target.src);
+                              e.target.src = '/img/lan/placeholder.jpeg';
+                            }}
                           />
                         </div>
                         <div className="wishlist-form-content">
@@ -1078,7 +1105,7 @@ const MainProduct = () => {
                           <div className="wishlist-form-group">
                             <label className="wishlist-form-label">選擇顏色</label>
                             <div className="wishlist-options">
-                            {Array.isArray(currentWishlistProduct?.colors) && currentWishlistProduct.colors.map((color) => (
+                              {Array.isArray(currentWishlistProduct?.colors) && currentWishlistProduct.colors.map((color) => (
                                 <div
                                   key={color.id}
                                   onClick={() => setSelectedColor(color)}
@@ -1098,7 +1125,7 @@ const MainProduct = () => {
                           <div className="wishlist-form-group">
                             <label className="wishlist-form-label">選擇尺寸</label>
                             <div className="wishlist-options">
-                            {Array.isArray(currentWishlistProduct?.sizes) && currentWishlistProduct.sizes.map((size) => (
+                              {Array.isArray(currentWishlistProduct?.sizes) && currentWishlistProduct.sizes.map((size) => (
                                 <div
                                   key={size.id}
                                   onClick={() => setSelectedSize(size)}
@@ -1106,39 +1133,39 @@ const MainProduct = () => {
                                 >
                                   {size.size_label}
                                 </div>
-                              ))}  
+                              ))}
                             </div>
                           </div>
-                               {/* 數量選擇 */}
-                               <div className="wishlist-form-group">
-                                <label className="wishlist-form-label">數量</label>
-                                <div className="wishlist-quantity-controls">
-                                  <button
-                                    onClick={() => setWishlistQuantity(Math.max(1, wishlistQuantity - 1))}
-                                    disabled={wishlistQuantity <= 1}
-                                    className="wishlist-quantity-btn"
-                                  >
-                                    -
-                                  </button>
-                                  <span className="wishlist-quantity-display">{wishlistQuantity}</span>
-                                  <button
-                                    onClick={() => setWishlistQuantity(wishlistQuantity + 1)}
-                                    className="wishlist-quantity-btn"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
+                          {/* 數量選擇 */}
+                          <div className="wishlist-form-group">
+                            <label className="wishlist-form-label">數量</label>
+                            <div className="wishlist-quantity-controls">
+                              <button
+                                onClick={() => setWishlistQuantity(Math.max(1, wishlistQuantity - 1))}
+                                disabled={wishlistQuantity <= 1}
+                                className="wishlist-quantity-btn"
+                              >
+                                -
+                              </button>
+                              <span className="wishlist-quantity-display">{wishlistQuantity}</span>
+                              <button
+                                onClick={() => setWishlistQuantity(wishlistQuantity + 1)}
+                                className="wishlist-quantity-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
 
-                              <div className="wishlist-modal-footer">
-                                <button
-                                  onClick={addToWishlist}
-                                  disabled={!selectedColor || !selectedSize}
-                                  className="wishlist-submit-btn"
-                                >
-                                  加入收藏
-                                </button>
-                              </div>
+                          <div className="wishlist-modal-footer">
+                            <button
+                              onClick={addToWishlist}
+                              disabled={!selectedColor || !selectedSize}
+                              className="wishlist-submit-btn"
+                            >
+                              加入收藏
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
