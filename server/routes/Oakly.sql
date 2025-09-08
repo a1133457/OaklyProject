@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- );
 
 -- 會員等級
+DROP TABLE user_levels;
 CREATE TABLE IF NOT EXISTS user_levels (
   id   INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(20) DEFAULT NULL,
@@ -1465,7 +1466,7 @@ INSERT INTO `sizes` (`id`, `size_label`) VALUES
 (10, '180x60x75台尺');
 
 -- --------------------------------------------------------
-INSERT INTO `stocks` (`id`, `color_id`, `size_id`, `amount`) VALUES
+INSERT INTO `stock` (`id`, `color_id`, `size_id`, `amount`) VALUES
 (1, 1, 1, 20),
 (1, 2, 2, 15),
 (1, 3, 3, 10),

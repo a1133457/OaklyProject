@@ -13,14 +13,15 @@ router.get("/:userId", async (req, res) => {
       uc.expire_at,      
       c.name,
       c.discount,
+      c.discount_type,
       c.min_discount,
       c.start_at,
       c.end_at,
-      GROUP_CONCAT(pc.name) as category_names
+      GROUP_CONCAT(pc.category_name) as category_names
     FROM user_coupons uc
     JOIN coupons c ON uc.coupon_id = c.id
     LEFT JOIN coupon_categories cc ON c.id = cc.coupon_id
-    LEFT JOIN products_category pc ON cc.category_id = pc.id
+    LEFT JOIN products_category pc ON cc.category_id = pc.category_id
     WHERE uc.user_id = ? AND uc.status IN (0, 1)
     GROUP BY uc.id
     ORDER BY uc.status ASC`;
@@ -92,6 +93,12 @@ router.post("/:userId/:couponId", async (req, res) => {
     // 4. 新增領取記錄 (get_at 也要用台灣時間)
     const taipeiNow = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
     const now = taipeiNow.toISOString().slice(0, 19).replace("T", " ");
+
+    // 實際插入資料庫
+    await pool.execute(
+      "INSERT INTO user_coupons (user_id, coupon_id, get_at, expire_at, status) VALUES (?, ?, ?, ?, 0)",
+      [userId, couponId, now, expireAt]
+    );
 
     res.status(201).json({
       status: "success",

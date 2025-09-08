@@ -148,7 +148,7 @@ export default function Header() {
               <a href="/user/register">
                 <h6>註冊</h6>
               </a>
-              <a href="/user">
+              <a href="/auth/login">
                 <h6>登入</h6>
               </a>
             </div>
@@ -258,7 +258,7 @@ export default function Header() {
                       <i>📝</i>
                       <span>註冊</span>
                     </a>
-                    <a href="/user" className="menu-item">
+                    <a href="/auth/login" className="menu-item">
                       <i>🔑</i>
                       <span>登入</span>
                     </a>

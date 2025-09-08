@@ -98,7 +98,7 @@ INSERT INTO `coupon_categories` (`id`, `coupon_id`, `category_id`) VALUES
 
 
 -- 3.coupon_levels 會員優惠 假資料
-INSERT INTO `coupon_level` (`id`, `coupon_id`, `levels_id`) VALUES
+INSERT INTO `coupon_level` (`id`, `coupon_id`, `level_id`) VALUES
 -- 三張券都適用所有會員等級
 (1, 1, 1), (2, 1, 2), (3, 1, 3),
 (4, 2, 1), (5, 2, 2), (6, 2, 3),

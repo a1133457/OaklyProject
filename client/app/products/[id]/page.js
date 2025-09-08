@@ -7,13 +7,10 @@ import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
 // import { useCart } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
-<<<<<<< HEAD
 import {useCart} from '@/hooks/use-cart';
 // 導入吐司訊息用方法+元件
 import { toast, ToastContainer } from 'react-toastify';
 
-=======
->>>>>>> origin/lan
 // 跟隨指針移動的滾動條類別
 class CustomThumbnailScrollbar {
   constructor(onImageChange) {
