@@ -65,8 +65,8 @@ export default function UserCouponPage() {
                     }
                     name={coupon.name}
                     smallCost={`滿 $${coupon.min_discount} 使用`}
-                    date={`${coupon.start_at.split("T")[0]} – ${
-                      coupon.end_at.split("T")[0]
+                    date={`${coupon.get_at.split("T")[0]} – ${
+                      coupon.expire_at.split("T")[0]
                     }`}
                     costCate="$ "
                     cost={parseInt(coupon.discount)}
