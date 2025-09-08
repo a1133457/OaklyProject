@@ -95,7 +95,7 @@ export default function Total({ type }) {
                     </div>
                     <div className="total phone">
                         <h3>總金額</h3>
-                        <h3>$12,000</h3>
+                        <h3>{totalAmount}</h3>
                     </div>
                 </div>
                 <div className="nextOrBack">
@@ -126,7 +126,7 @@ export default function Total({ type }) {
                     <div className="t-line"></div>
                     <div className="total">
                         <h6>總金額</h6>
-                        <h6>{totalAmount}</h6>
+                        <h4>{totalAmount}</h4>
                     </div>
                     <div className="total phone">
                         <h6>總金額</h6>

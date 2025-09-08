@@ -18,10 +18,10 @@ router.get("/", async (req, res) => {
     let [users] = await pool.execute(sql);
 
     res.status(200).json({
-    status: "success",
-    data: users,
-    message: "已 獲取所有使用者"
-  });
+      status: "success",
+      data: users,
+      message: "已 獲取所有使用者"
+    });
   } catch (error) {
     // 捕獲錯誤
     console.log(error);
@@ -53,10 +53,10 @@ router.get("/:id", async (req, res) => {
 
   try {
     const email = req.params.id;
-    if(!email){
-      const err = new Error("請提供使用者 ID"); 
-      err.code = 400; 
-      err.status = "fail"; 
+    if (!email) {
+      const err = new Error("請提供使用者 ID");
+      err.code = 400;
+      err.status = "fail";
       throw err;
     }
     const sqlCheck1 = "SELECT * FROM `users` WHERE `name` = ?;";
@@ -64,21 +64,21 @@ router.get("/:id", async (req, res) => {
       return result[0];
     });
     if (!user) {
-      const err = new Error("找不到使用者"); 
-      err.code = 404; 
-      err.status = "fail"; 
+      const err = new Error("找不到使用者");
+      err.code = 404;
+      err.status = "fail";
       throw err;
     }
 
     // 剩餘參數 （不顯示出來的資料）
-    const {id , password, is_valid, created_at, updated_at, ...data} = user;
+    const { id, password, is_valid, created_at, updated_at, ...data } = user;
 
 
     res.status(200).json({
-    status: "success",
-    data,
-    message: "查詢成功"
-  });
+      status: "success",
+      data,
+      message: "查詢成功"
+    });
   } catch (error) {
     // 捕獲錯誤
     console.log(error);
@@ -201,8 +201,8 @@ router.post("/login", upload.none(), async (req, res) => {
     }
 
     // 測試完要改回來
-    const isMatch = await bcrypt.compare(password, user.password);
-    //const isMatch = password === user.password;
+    // const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;
@@ -211,23 +211,35 @@ router.post("/login", upload.none(), async (req, res) => {
     }
 
     const token = jwt.sign({
+      id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
+      postcode: user.postcode,
+      city: user.city,
+      area: user.area,
+      address: user.address,
       avatar: user.avatar,
     },
       secretKey,
       { expiresIn: "30m" }
     );
     const newUser = {
+      id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
+      postcode: user.postcode,
+      city: user.city,
+      area: user.area,
+      address: user.address,
       avatar: user.avatar,
-    } 
+    }
 
     res.status(200).json({
       status: "success",
       message: "登入成功",
-      data: {token, user: newUser},
+      data: { token, user: newUser },
     });
   } catch (error) {
     // 捕獲錯誤
@@ -289,14 +301,14 @@ router.post("/status", checkToken, async (req, res) => {
 
     const sqlCheck1 = "SELECT * FROM `users` WHERE `email` = ?;";
     let user = await pool
-    .execute(sqlCheck1, [email])
-    .then(([result]) => {
-      return result[0];
-    });
+      .execute(sqlCheck1, [email])
+      .then(([result]) => {
+        return result[0];
+      });
 
     if (!user) {
       const err = new Error("請登入");
-      err.code = 401; 
+      err.code = 401;
       err.status = "error";
       throw err;
     }
@@ -306,8 +318,8 @@ router.post("/status", checkToken, async (req, res) => {
       email: user.email,
       avatar: user.avatar,
     },
-    secretKey, 
-    { expiresIn: "30m" });
+      secretKey,
+      { expiresIn: "30m" });
 
     const newUser = {
       name: user.name,
@@ -318,7 +330,7 @@ router.post("/status", checkToken, async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "處於登入狀態",
-      data: {token, user: newUser},
+      data: { token, user: newUser },
     });
   } catch (error) {
     // 捕獲錯誤

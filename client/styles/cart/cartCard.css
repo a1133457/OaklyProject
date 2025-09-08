@@ -17,7 +17,7 @@
 
 }
 
-.cartAll{
+.cartAll {
     display: flex;
     flex-direction: column;
 }
@@ -45,7 +45,7 @@
 
 .card-title {
     display: flex;
-    color:var(--black);
+    color: var(--black);
     width: 265px;
     height: 100%;
     flex-direction: column;
@@ -96,7 +96,7 @@
     align-self: stretch;
 }
 
-.cart-main-first .price-num h4{
+.cart-main-first .price-num h4 {
     border-bottom: none;
 }
 
@@ -220,7 +220,20 @@
 
     .card-title.detail {
         width: 285px;
+        display: flex;
+        flex-direction: column;
+    }
 
+    .totalPrice {
+        align-self: flex-end;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .totalPrice h3 {
+        color: var(--primary-05);
     }
 
     .card-title h6 {
@@ -237,7 +250,7 @@
     .price-one {
         display: flex;
         flex-direction: column;
-        
+
     }
 
 

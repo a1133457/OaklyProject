@@ -14,12 +14,12 @@ export default function GreenButton({ step, to, type, onClick }) {
       return;
     }
     if (type === "order") {
-      // if (user) {
+      if (user) {
         router.push(`${to}`);
         router.refresh();
-      // } else {
-      //   router.push("/user/login")
-      // }
+      } else {
+        router.push("/user/login")
+      }
     } else {
       router.push(`${to}`);
     }

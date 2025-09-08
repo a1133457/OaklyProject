@@ -2,16 +2,35 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import "@/styles/header.css";
-import { useCart } from "@/app/contexts/CartContext";
+// import { useCart } from "@/app/contexts/CartContext";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   // const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
+
+  // if (isLoading) return null; // 或 loading skeleton
+  const router = useRouter();
+
+  // const handleLogout = async () => {
+  //   try {
+  //     await fetch("http://localhost:3005/api/users/logout", {
+  //       method: "POST",
+  //       credentials: "include",
+  //       headers: {
+  //         "Authorization": `Bearer ${localStorage.getItem("token")}`,
+  //       }
+  //     });
+  //     router.push("/user/login");
+  //   } catch (err) {
+  //     console.error("登出失敗", err);
+  //   }
+  // };
 
   const searchInputRef = useRef(null);
 
@@ -54,15 +73,13 @@ export default function Header() {
   };
 
 
-// >>>>>>> origin/lan
-
   return (
     <div className="container-fluid header">
       <div className="frame">
         <Link href="/">
           <img src="/img/Oakly-green.svg" alt="Oakly首頁" />
         </Link>
-        
+
         <div className="menu">
           <Link className="nav-items" href="/products">
             <h6>商品列表</h6>
@@ -115,20 +132,25 @@ export default function Header() {
                 </span>
               )} */}
           </a>
-
-          <div className="user-log">
-            <Link href="/register">
-              <h6>註冊</h6>
-            </Link>
-            <Link href="/login">
-              <h6>登入</h6>
-            </Link>
-          </div>
-
-          {/* <button className="menu-toggle">
-          <i className="fa-solid fa-circle-user"></i>
-        </button> */}
-
+          {user ? (
+            <div className="user-log">
+              <button>
+                <i className="fa-solid fa-circle-user"></i>
+              </button>
+              <button onClick={logout}>
+                <h6>登出</h6>
+              </button>
+            </div>
+          ) : (
+            <div className="user-log">
+              <a href="/user/register">
+                <h6>註冊</h6>
+              </a>
+              <a href="/user">
+                <h6>登入</h6>
+              </a>
+            </div>
+          )}
           <button
             className="menu-toggle"
             type="button"
@@ -139,7 +161,7 @@ export default function Header() {
             <i className="fa-solid fa-bars"></i>
           </button>
 
-          {/* sidebar */}
+          {/* 手機 ------------------------------ */}
           <div
             className="offcanvas offcanvas-end sidebar"
             tabIndex="-1"
@@ -234,7 +256,7 @@ export default function Header() {
                       <i>📝</i>
                       <span>註冊</span>
                     </a>
-                    <a href="/user/login" className="menu-item">
+                    <a href="/user" className="menu-item">
                       <i>🔑</i>
                       <span>登入</span>
                     </a>
@@ -244,7 +266,7 @@ export default function Header() {
             </div>
           </div>
         </div>
-        </div>
       </div>
+    </div>
   );
 }

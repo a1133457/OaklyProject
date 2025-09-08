@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/use-auth'
 // import Sidebar from '../_components/sidebar'
 // import HeaderImg from '../_components/HeaderImg'
 import styles from '@/app/user/user.module.css'
+import { useRouter } from 'next/navigation'
 
 // 共用元件
 import UserTextInput from '@/app/_components/UserTextInput'
@@ -30,6 +31,7 @@ export default function UserEditForm() {
     // 登出按鈕
     const onLogout = () => {
         logout();
+     
     };
 
     // 狀態欄位
