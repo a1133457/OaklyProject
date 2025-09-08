@@ -7,10 +7,13 @@ import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
 // import { useCart } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
+<<<<<<< HEAD
 import {useCart} from '@/hooks/use-cart';
 // 導入吐司訊息用方法+元件
 import { toast, ToastContainer } from 'react-toastify';
 
+=======
+>>>>>>> origin/lan
 // 跟隨指針移動的滾動條類別
 class CustomThumbnailScrollbar {
   constructor(onImageChange) {
@@ -40,6 +43,17 @@ class CustomThumbnailScrollbar {
 
     this.thumbnails = Array.from(thumbnails);
     this.thumbnailContainer = thumbnailContainer;
+    // 智能判斷縮圖佈局 - 使用 !important 強制覆蓋
+    const thumbnailCount = this.thumbnails.length;
+    if (thumbnailCount <= 5) {
+      // 縮圖少時，強制置中
+      thumbnailContainer.style.setProperty('justify-content', 'center', 'important');
+      thumbnailContainer.style.setProperty('display', 'flex', 'important');
+    } else {
+      // 縮圖多時，從左開始排列
+      thumbnailContainer.style.setProperty('justify-content', 'flex-start', 'important');
+      thumbnailContainer.style.setProperty('display', 'flex', 'important');
+    }
 
     const existingScrollbar = document.querySelector('.custom-scrollbar-container');
     if (existingScrollbar) {
@@ -59,10 +73,10 @@ class CustomThumbnailScrollbar {
     container.className = 'custom-scrollbar-container';
     container.style.cssText = `
       position: relative;
-      width: 500px;
-      max-width: 500px;
+      width: 500px
+      max-width: 500px
       height: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     `;
 
     const track = document.createElement('div');
@@ -88,8 +102,6 @@ class CustomThumbnailScrollbar {
       border-radius: 2px;
       cursor: pointer;
       z-index: 11;
-      min-width: 30px;
-      max-width: 50px;
     `;
 
     container.appendChild(track);
@@ -97,7 +109,6 @@ class CustomThumbnailScrollbar {
 
     return container;
   }
-
   calculateImageIndex(scrollLeft, scrollWidth, clientWidth) {
     if (!this.thumbnails || this.thumbnails.length === 0) return 0;
 
@@ -145,20 +156,45 @@ class CustomThumbnailScrollbar {
 
     if (!thumb || !track) return;
 
+    scrollbarContainer.style.display = 'block';
+
+    const trackWidth = track.offsetWidth;
+    const thumbnailCount = this.thumbnails.length;
+
+    // 計算每個縮圖在軌道上的寬度
+    const thumbnailWidth = trackWidth / thumbnailCount;
+
+    // 滑塊長度設為多個縮圖寬度
+    let thumbWidth;
+    if (thumbnailCount <= 1) {
+      thumbWidth = trackWidth; // 單張圖片佔滿
+    } else if (thumbnailCount <= 3) {
+      thumbWidth = thumbnailWidth * 0.8; // 覆蓋2.5個縮圖寬度
+    } else if (thumbnailCount <= 5) {
+      thumbWidth = thumbnailWidth * 0.6; // 覆蓋2個縮圖寬度
+    } else {
+      thumbWidth = thumbnailWidth * 0.7; // 覆蓋1.5個縮圖寬度
+    }
+
     const scrollLeft = container.scrollLeft;
     const scrollWidth = container.scrollWidth;
     const clientWidth = container.clientWidth;
 
-    if (scrollWidth <= clientWidth) {
-      scrollbarContainer.style.display = 'none';
+    // 少張縮圖時的特殊處理
+    if (thumbnailCount <= 5 || scrollWidth <= clientWidth) {
+      thumb.style.width = thumbWidth + 'px';
+
+      const currentImageIndex = this.lastImageIndex >= 0 ? this.lastImageIndex : 0;
+
+      // 滑塊左邊緣對齊到當前縮圖的左邊緣
+      const thumbLeft = currentImageIndex * thumbnailWidth;
+      const maxLeft = trackWidth - thumbWidth;
+
+      thumb.style.left = Math.max(0, Math.min(thumbLeft, maxLeft)) + 'px';
       return;
-    } else {
-      scrollbarContainer.style.display = 'block';
     }
 
-    const trackWidth = track.offsetWidth;
-    const thumbWidth = Math.max(30, Math.min(50, trackWidth / this.thumbnails.length * 2));
-
+    // 多張圖片的正常滾動計算
     const maxThumbPosition = trackWidth - thumbWidth;
     const scrollRatio = scrollLeft / (scrollWidth - clientWidth);
     const thumbPosition = scrollRatio * maxThumbPosition;
@@ -172,7 +208,7 @@ class CustomThumbnailScrollbar {
 
     const handleMouseDown = (e) => {
       this.isDragging = true;
-      
+
       // 記錄滑鼠點擊滑塊時的偏移量
       const thumbRect = thumb.getBoundingClientRect();
       initialOffset = e.clientX - thumbRect.left;
@@ -190,32 +226,39 @@ class CustomThumbnailScrollbar {
     const handleMouseMove = (e) => {
       if (!this.isDragging) return;
 
-      // 直接計算滑塊位置，完全跟隨滑鼠
       const trackRect = track.getBoundingClientRect();
       const thumbWidth = thumb.offsetWidth;
       const trackWidth = trackRect.width;
-      
-      // 滑鼠在軌道中的位置減去初始偏移
       const mouseX = e.clientX;
       const trackLeft = trackRect.left;
       const newThumbLeft = mouseX - trackLeft - initialOffset;
-      
-      // 限制範圍
       const maxThumbLeft = trackWidth - thumbWidth;
       const clampedLeft = Math.max(0, Math.min(newThumbLeft, maxThumbLeft));
-      
-      // 立即設置滑塊位置 - 這應該是瞬間的
+
       thumb.style.left = clampedLeft + 'px';
-      
-      // 計算滾動位置
+
+      const thumbnailCount = this.thumbnails.length;
+
+      // 少張縮圖時直接計算圖片索引
+      if (thumbnailCount <= 5) {
+        const dragRatio = maxThumbLeft > 0 ? clampedLeft / maxThumbLeft : 0;
+        const imageIndex = Math.round(dragRatio * (thumbnailCount - 1));
+        const clampedIndex = Math.max(0, Math.min(imageIndex, thumbnailCount - 1));
+
+        if (clampedIndex !== this.lastImageIndex && this.onImageChange) {
+          this.onImageChange(clampedIndex);
+          this.lastImageIndex = clampedIndex;
+        }
+        return;
+      }
+
+      // 多張圖片的原有邏輯
       const ratio = maxThumbLeft > 0 ? clampedLeft / maxThumbLeft : 0;
       const maxScroll = container.scrollWidth - container.clientWidth;
       const newScrollLeft = ratio * maxScroll;
-      
-      // 設置滾動位置
+
       container.scrollLeft = newScrollLeft;
 
-      // 更新圖片
       const imageIndex = this.calculateImageIndex(newScrollLeft, container.scrollWidth, container.clientWidth);
       if (imageIndex !== this.lastImageIndex && this.onImageChange) {
         this.onImageChange(imageIndex);
@@ -257,16 +300,34 @@ class CustomThumbnailScrollbar {
     const trackRect = track.getBoundingClientRect();
     const clickX = e.clientX - trackRect.left;
     const trackWidth = track.offsetWidth;
+    const thumbnailCount = this.thumbnails.length;
+
+    // 少張縮圖時直接根據點擊位置計算圖片索引
+    if (thumbnailCount <= 5) {
+      const clickRatio = clickX / trackWidth;
+      const targetImageIndex = Math.round(clickRatio * (thumbnailCount - 1));
+      const clampedIndex = Math.max(0, Math.min(targetImageIndex, thumbnailCount - 1));
+
+      if (this.onImageChange) {
+        this.onImageChange(clampedIndex);
+        this.lastImageIndex = clampedIndex;
+      }
+
+      // 更新滑塊位置
+      this.updateScrollbar(container, track.parentElement);
+      return;
+    }
+
+    // 多張圖片的原有邏輯
     const thumbWidth = thumb.offsetWidth;
     const scrollWidth = container.scrollWidth;
     const clientWidth = container.clientWidth;
 
-    // 點擊軌道時，讓滑塊中心移動到點擊位置
     const targetThumbCenter = clickX;
     const targetThumbLeft = targetThumbCenter - (thumbWidth / 2);
     const maxThumbPosition = trackWidth - thumbWidth;
     const clampedThumbLeft = Math.max(0, Math.min(targetThumbLeft, maxThumbPosition));
-    
+
     const clickRatio = maxThumbPosition > 0 ? clampedThumbLeft / maxThumbPosition : 0;
     const maxScrollLeft = scrollWidth - clientWidth;
     const targetScrollLeft = clickRatio * maxScrollLeft;
@@ -295,7 +356,6 @@ class CustomThumbnailScrollbar {
     this.lastImageIndex = imageIndex;
   }
 }
-
 
 export default function PidPage({ params }) {
   const getColorCode = (colorName) => {
@@ -493,15 +553,12 @@ export default function PidPage({ params }) {
   useEffect(() => {
     let thumbnailScrollbar;
 
-    // 延遲執行以確保 DOM 元素已渲染
     const timer = setTimeout(() => {
-      // 傳入回調函數來處理圖片切換
       thumbnailScrollbar = new CustomThumbnailScrollbar((imageIndex) => {
         setSelectedImage(imageIndex);
       });
     }, 100);
 
-    // 清理函數
     return () => {
       clearTimeout(timer);
       const customScrollbars = document.querySelectorAll('.custom-scrollbar-container');
@@ -797,7 +854,7 @@ export default function PidPage({ params }) {
           <div className="pid-info">
             <div className="pid-name">{productData.name}</div>
             <div className="express">
-              {productData.category_name || '邊桌'}, {productData.colors?.[0]?.color_name || '白色'}, {productData.sizes?.[0]?.size_label || '71x50 公分'}
+              {productData.colors?.[0]?.color_name || '白色'}, {productData.sizes?.[0]?.size_label || '71x50 公分'}
             </div>
             <div className="product-price">NT$ {productData.price?.toLocaleString()}</div>
 
@@ -1086,7 +1143,8 @@ export default function PidPage({ params }) {
 
         <SimilarProducts currentProductId={parseInt(productId)}
           handleWishlistToggle={handleWishlistToggle}
-          isProductInWishlist={isProductInWishlist} />
+          isProductInWishlist={isProductInWishlist}
+          addToCart={addToCart}/>
 
 
         <RandomShowcaseSection />
@@ -1094,12 +1152,17 @@ export default function PidPage({ params }) {
 
         <SimilarProducts currentProductId={parseInt(productId)}
           handleWishlistToggle={handleWishlistToggle}
-          isProductInWishlist={isProductInWishlist} />
+          isProductInWishlist={isProductInWishlist} 
+          addToCart={addToCart}
+          />
 
         <RecentViewedProducts
           className="middle-content"
           currentProductId={productId}
           maxItems={8}
+          handleWishlistToggle={handleWishlistToggle}
+          isProductInWishlist={isProductInWishlist}
+          addToCart={addToCart}
         />
       </div>
 
