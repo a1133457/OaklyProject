@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
 
     //   const router = useRouter();
     //   const pathname = usePathname();
-    //   const loginRoute = "/user/login";
+    //   const loginRoute = "/auth/login";
     //   const protectedRoutes = ["/user"];
 
     const login = async (email, password) => {
@@ -78,25 +78,25 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const list = async () => {
-        const API = "http://localhost:3005/api/users";
-        try {
-            const res = await fetch(API);
-            const result = await res.json();
-            console.log(result);
+    // const list = async () => {
+    //     const API = "http://localhost:3005/api/users";
+    //     try {
+    //         const res = await fetch(API);
+    //         const result = await res.json();
+    //         console.log(result);
 
 
-            if (result.status == "success") {
-                setUsers(result.data);
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.log(`使用者列表取得: ${error.message}`);
-            setUsers([]);
-            alert(error.message);
-        }
-    };
+    //         if (result.status == "success") {
+    //             setUsers(result.data);
+    //         } else {
+    //             throw new Error(result.message);
+    //         }
+    //     } catch (error) {
+    //         console.log(`使用者列表取得: ${error.message}`);
+    //         setUsers([]);
+    //         alert(error.message);
+    //     }
+    // };
 
     //   useEffect(() => {
     //     if (!isLoading && !user && protectedRoutes.includes(pathname)) {

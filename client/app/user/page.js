@@ -24,7 +24,7 @@ export default function UserPage(props) {
     <div>
       <h1>會員主頁</h1>
       
-      {/* {user ?  <Edit /> : <Login /> } */}
+      {user ?  <Edit /> : <Login /> }
       <Link className='btn btn-primary me-1 mb-1' href="/auth/login"> 登入</Link>
       <Link className='btn btn-primary me-1 mb-1' href="/register">註冊(C)</Link>
       <Link className='btn btn-primary me-1 mb-1' href="/user"> 使用者列表頁(R)</Link>

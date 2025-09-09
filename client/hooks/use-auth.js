@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useContext, createContext, useState, useEffect } from "react";
-
 
 const AuthContext = createContext(null);
 AuthContext.displayName = "AuthContext";
@@ -15,11 +14,49 @@ export function AuthProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState([]);
+  const router = useRouter();
 
-  // const router = useRouter();
-  // const pathname = usePathname();
-  const loginRoute = "/user/login";
-  const protectedRoutes = ["/user", "/order/detail",];
+  // register------------------------------------
+  const register = async (name, email, password) => {
+    // 前端基本驗證（和登入一樣走 FormData，維持一致）
+    // const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    // if (!name || !email || !password) {
+    //   return { success: false, message: "請填寫完整資料" };
+    // }
+    // if (!emailOK) {
+    //   return { success: false, message: "Email 格式不正確" };
+    // }
+    // if (password.length < 6) {
+    //   return { success: false, message: "密碼至少需 6 碼" };
+    // }
+
+    const API = "http://localhost:3005/api/users";
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("password", password);
+
+    try {
+      const res = await fetch(API, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+
+      // 後端成功：{ status: "success", message: "註冊成功" }
+      if (result.status === "success") {
+        return { success: true, message: result.message || "註冊成功" };
+      } else {
+        return {
+          success: false,
+          message: result.message || "註冊失敗，請稍後再試",
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      return { success: false, message: "伺服器錯誤，請稍後再試" };
+    }
+  };
 
   // login------------------------------------
   const login = async (email, password) => {
@@ -45,7 +82,6 @@ export function AuthProvider({ children }) {
         localStorage.setItem(userKey, JSON.stringify(user));
         console.log("成功");
         return { success: true, message: result.message };
-
       } else {
         console.log("失敗");
         //alert(result.message);
@@ -55,7 +91,6 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.log(error);
       return { success: false, message: "伺服器錯誤，請稍後再試" };
-
     }
   };
 
@@ -63,6 +98,8 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     console.log("logout");
     const API = "http://localhost:3005/api/users/logout";
+    const appKey = "reactLoginToken";
+    const userKey = "user";
     const token = localStorage.getItem(appKey);
     try {
       if (!token) throw new Error("Token 不存在");
@@ -78,7 +115,7 @@ export function AuthProvider({ children }) {
         setUser(null);
         //localStorage.setItem(appKey, token);
         localStorage.removeItem(appKey);
-        localStorage.removeItem(user);
+        localStorage.removeItem(userKey);
         router.push("/");
         // return { success: true };
       } else {
@@ -101,7 +138,6 @@ export function AuthProvider({ children }) {
       const res = await fetch(API);
       const result = await res.json();
       console.log(result);
-
 
       if (result.status == "success") {
         setUsers(result.data);
@@ -130,7 +166,7 @@ export function AuthProvider({ children }) {
         postcode: user.postcode || "",
         city: user.city || "",
         address: user.address || "",
-        email: user.email || ""
+        email: user.email || "",
       };
     }
 
@@ -140,15 +176,16 @@ export function AuthProvider({ children }) {
     }
     setUser(updateUser);
     localStorage.setItem(userKey, JSON.stringify({ user: updateUser }));
-  }
+  };
 
   // 保護頁面------------------------------------
   // useEffect(() => {
-  //   if (!isLoading && !user && protectedRoutes.includes(pathname)) {
-  //     router.replace(loginRoute); // 導頁
-  //   }
+  //     if (!isLoading && !user && protectedRoutes.includes(pathname)) {
+  //         router.replace(loginRoute); // 導頁
+  //     }
   // }, [isLoading, user, pathname]);
 
+  // status------------------------------------
   useEffect(() => {
     const API = "http://localhost:3005/api/users/status";
     const token = localStorage.getItem(appKey);
@@ -191,9 +228,10 @@ export function AuthProvider({ children }) {
     checkToken();
   }, []);
 
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading, list, users, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isLoading, list, users, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

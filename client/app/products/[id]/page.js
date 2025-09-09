@@ -7,14 +7,11 @@ import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
-// import { useCart } from '@/app/contexts/CartContext.js';
-import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
-
-
-
-import { useCart } from '@/hooks/use-cart';
+// import { cartContext } from '@/app/contexts/CartContext.js';
+import CategoryDropdown from "@/app/_components/CategoryDropdown.js";
+import { useCart } from "@/hooks/use-cart";
 // 導入吐司訊息用方法+元件
-import { toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from "react-toastify";
 
 // 跟隨指針移動的滾動條類別
 class CustomThumbnailScrollbar {
@@ -29,18 +26,20 @@ class CustomThumbnailScrollbar {
   }
 
   init() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setupScrollbar());
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () =>
+        this.setupScrollbar()
+      );
     } else {
       this.setupScrollbar();
     }
   }
 
   setupScrollbar() {
-    const thumbnailContainer = document.querySelector('.thumbnail-images');
+    const thumbnailContainer = document.querySelector(".thumbnail-images");
     if (!thumbnailContainer) return;
 
-    const thumbnails = thumbnailContainer.querySelectorAll('.thumbnail');
+    const thumbnails = thumbnailContainer.querySelectorAll(".thumbnail");
     if (thumbnails.length <= 1) return;
 
     this.thumbnails = Array.from(thumbnails);
@@ -49,30 +48,43 @@ class CustomThumbnailScrollbar {
     const thumbnailCount = this.thumbnails.length;
     if (thumbnailCount <= 5) {
       // 縮圖少時，強制置中
-      thumbnailContainer.style.setProperty('justify-content', 'center', 'important');
-      thumbnailContainer.style.setProperty('display', 'flex', 'important');
+      thumbnailContainer.style.setProperty(
+        "justify-content",
+        "center",
+        "important"
+      );
+      thumbnailContainer.style.setProperty("display", "flex", "important");
     } else {
       // 縮圖多時，從左開始排列
-      thumbnailContainer.style.setProperty('justify-content', 'flex-start', 'important');
-      thumbnailContainer.style.setProperty('display', 'flex', 'important');
+      thumbnailContainer.style.setProperty(
+        "justify-content",
+        "flex-start",
+        "important"
+      );
+      thumbnailContainer.style.setProperty("display", "flex", "important");
     }
 
-    const existingScrollbar = document.querySelector('.custom-scrollbar-container');
+    const existingScrollbar = document.querySelector(
+      ".custom-scrollbar-container"
+    );
     if (existingScrollbar) {
       existingScrollbar.remove();
     }
 
     const scrollbarContainer = this.createScrollbarContainer();
-    thumbnailContainer.parentNode.insertBefore(scrollbarContainer, thumbnailContainer);
-    thumbnailContainer.style.marginTop = '10px';
+    thumbnailContainer.parentNode.insertBefore(
+      scrollbarContainer,
+      thumbnailContainer
+    );
+    thumbnailContainer.style.marginTop = "10px";
 
     this.setupScrollEvents(thumbnailContainer, scrollbarContainer);
     this.updateScrollbar(thumbnailContainer, scrollbarContainer);
   }
 
   createScrollbarContainer() {
-    const container = document.createElement('div');
-    container.className = 'custom-scrollbar-container';
+    const container = document.createElement("div");
+    container.className = "custom-scrollbar-container";
     container.style.cssText = `
       position: relative;
       width: 500px
@@ -81,8 +93,8 @@ class CustomThumbnailScrollbar {
       margin-bottom: 4px;
     `;
 
-    const track = document.createElement('div');
-    track.className = 'custom-scrollbar-track';
+    const track = document.createElement("div");
+    track.className = "custom-scrollbar-track";
     track.style.cssText = `
       position: absolute;
       top: 0;
@@ -94,8 +106,8 @@ class CustomThumbnailScrollbar {
       z-index: 10;
     `;
 
-    const thumb = document.createElement('div');
-    thumb.className = 'custom-scrollbar-thumb';
+    const thumb = document.createElement("div");
+    thumb.className = "custom-scrollbar-thumb";
     thumb.style.cssText = `
       position: absolute;
       top: 0;
@@ -118,17 +130,19 @@ class CustomThumbnailScrollbar {
     if (maxScrollLeft <= 0) return 0;
 
     const scrollPercentage = scrollLeft / maxScrollLeft;
-    const imageIndex = Math.round(scrollPercentage * (this.thumbnails.length - 1));
+    const imageIndex = Math.round(
+      scrollPercentage * (this.thumbnails.length - 1)
+    );
 
     return Math.max(0, Math.min(imageIndex, this.thumbnails.length - 1));
   }
 
   setupScrollEvents(container, scrollbarContainer) {
-    const thumb = scrollbarContainer.querySelector('.custom-scrollbar-thumb');
-    const track = scrollbarContainer.querySelector('.custom-scrollbar-track');
+    const thumb = scrollbarContainer.querySelector(".custom-scrollbar-thumb");
+    const track = scrollbarContainer.querySelector(".custom-scrollbar-track");
 
     // 只在非拖拽時更新滾動條
-    container.addEventListener('scroll', () => {
+    container.addEventListener("scroll", () => {
       if (!this.isDragging) {
         this.updateScrollbar(container, scrollbarContainer);
 
@@ -147,18 +161,18 @@ class CustomThumbnailScrollbar {
 
     this.setupDragEvents(container, thumb, track);
 
-    track.addEventListener('click', (e) => {
+    track.addEventListener("click", (e) => {
       this.handleTrackClick(e, container, thumb, track);
     });
   }
 
   updateScrollbar(container, scrollbarContainer) {
-    const thumb = scrollbarContainer.querySelector('.custom-scrollbar-thumb');
-    const track = scrollbarContainer.querySelector('.custom-scrollbar-track');
+    const thumb = scrollbarContainer.querySelector(".custom-scrollbar-thumb");
+    const track = scrollbarContainer.querySelector(".custom-scrollbar-track");
 
     if (!thumb || !track) return;
 
-    scrollbarContainer.style.display = 'block';
+    scrollbarContainer.style.display = "block";
 
     const trackWidth = track.offsetWidth;
     const thumbnailCount = this.thumbnails.length;
@@ -184,15 +198,16 @@ class CustomThumbnailScrollbar {
 
     // 少張縮圖時的特殊處理
     if (thumbnailCount <= 5 || scrollWidth <= clientWidth) {
-      thumb.style.width = thumbWidth + 'px';
+      thumb.style.width = thumbWidth + "px";
 
-      const currentImageIndex = this.lastImageIndex >= 0 ? this.lastImageIndex : 0;
+      const currentImageIndex =
+        this.lastImageIndex >= 0 ? this.lastImageIndex : 0;
 
       // 滑塊左邊緣對齊到當前縮圖的左邊緣
       const thumbLeft = currentImageIndex * thumbnailWidth;
       const maxLeft = trackWidth - thumbWidth;
 
-      thumb.style.left = Math.max(0, Math.min(thumbLeft, maxLeft)) + 'px';
+      thumb.style.left = Math.max(0, Math.min(thumbLeft, maxLeft)) + "px";
       return;
     }
 
@@ -201,8 +216,9 @@ class CustomThumbnailScrollbar {
     const scrollRatio = scrollLeft / (scrollWidth - clientWidth);
     const thumbPosition = scrollRatio * maxThumbPosition;
 
-    thumb.style.width = thumbWidth + 'px';
-    thumb.style.left = Math.max(0, Math.min(thumbPosition, maxThumbPosition)) + 'px';
+    thumb.style.width = thumbWidth + "px";
+    thumb.style.left =
+      Math.max(0, Math.min(thumbPosition, maxThumbPosition)) + "px";
   }
 
   setupDragEvents(container, thumb, track) {
@@ -215,14 +231,14 @@ class CustomThumbnailScrollbar {
       const thumbRect = thumb.getBoundingClientRect();
       initialOffset = e.clientX - thumbRect.left;
 
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
 
       e.preventDefault();
-      thumb.classList.add('dragging');
-      thumb.style.background = '#333';
-      document.body.style.cursor = 'grabbing';
-      document.body.style.userSelect = 'none';
+      thumb.classList.add("dragging");
+      thumb.style.background = "#333";
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
     };
 
     const handleMouseMove = (e) => {
@@ -237,7 +253,7 @@ class CustomThumbnailScrollbar {
       const maxThumbLeft = trackWidth - thumbWidth;
       const clampedLeft = Math.max(0, Math.min(newThumbLeft, maxThumbLeft));
 
-      thumb.style.left = clampedLeft + 'px';
+      thumb.style.left = clampedLeft + "px";
 
       const thumbnailCount = this.thumbnails.length;
 
@@ -245,7 +261,10 @@ class CustomThumbnailScrollbar {
       if (thumbnailCount <= 5) {
         const dragRatio = maxThumbLeft > 0 ? clampedLeft / maxThumbLeft : 0;
         const imageIndex = Math.round(dragRatio * (thumbnailCount - 1));
-        const clampedIndex = Math.max(0, Math.min(imageIndex, thumbnailCount - 1));
+        const clampedIndex = Math.max(
+          0,
+          Math.min(imageIndex, thumbnailCount - 1)
+        );
 
         if (clampedIndex !== this.lastImageIndex && this.onImageChange) {
           this.onImageChange(clampedIndex);
@@ -261,7 +280,11 @@ class CustomThumbnailScrollbar {
 
       container.scrollLeft = newScrollLeft;
 
-      const imageIndex = this.calculateImageIndex(newScrollLeft, container.scrollWidth, container.clientWidth);
+      const imageIndex = this.calculateImageIndex(
+        newScrollLeft,
+        container.scrollWidth,
+        container.clientWidth
+      );
       if (imageIndex !== this.lastImageIndex && this.onImageChange) {
         this.onImageChange(imageIndex);
         this.lastImageIndex = imageIndex;
@@ -270,28 +293,28 @@ class CustomThumbnailScrollbar {
 
     const handleMouseUp = () => {
       this.isDragging = false;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      thumb.classList.remove('dragging');
-      thumb.style.background = '#666';
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      thumb.classList.remove("dragging");
+      thumb.style.background = "#666";
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     };
 
-    thumb.addEventListener('mousedown', handleMouseDown);
-    thumb.addEventListener('dragstart', (e) => e.preventDefault());
+    thumb.addEventListener("mousedown", handleMouseDown);
+    thumb.addEventListener("dragstart", (e) => e.preventDefault());
 
-    thumb.addEventListener('mouseenter', () => {
+    thumb.addEventListener("mouseenter", () => {
       if (!this.isDragging) {
-        thumb.style.background = '#555';
-        document.body.style.cursor = 'grab';
+        thumb.style.background = "#555";
+        document.body.style.cursor = "grab";
       }
     });
 
-    thumb.addEventListener('mouseleave', () => {
+    thumb.addEventListener("mouseleave", () => {
       if (!this.isDragging) {
-        thumb.style.background = '#666';
-        document.body.style.cursor = '';
+        thumb.style.background = "#666";
+        document.body.style.cursor = "";
       }
     });
   }
@@ -308,7 +331,10 @@ class CustomThumbnailScrollbar {
     if (thumbnailCount <= 5) {
       const clickRatio = clickX / trackWidth;
       const targetImageIndex = Math.round(clickRatio * (thumbnailCount - 1));
-      const clampedIndex = Math.max(0, Math.min(targetImageIndex, thumbnailCount - 1));
+      const clampedIndex = Math.max(
+        0,
+        Math.min(targetImageIndex, thumbnailCount - 1)
+      );
 
       if (this.onImageChange) {
         this.onImageChange(clampedIndex);
@@ -326,17 +352,21 @@ class CustomThumbnailScrollbar {
     const clientWidth = container.clientWidth;
 
     const targetThumbCenter = clickX;
-    const targetThumbLeft = targetThumbCenter - (thumbWidth / 2);
+    const targetThumbLeft = targetThumbCenter - thumbWidth / 2;
     const maxThumbPosition = trackWidth - thumbWidth;
-    const clampedThumbLeft = Math.max(0, Math.min(targetThumbLeft, maxThumbPosition));
+    const clampedThumbLeft = Math.max(
+      0,
+      Math.min(targetThumbLeft, maxThumbPosition)
+    );
 
-    const clickRatio = maxThumbPosition > 0 ? clampedThumbLeft / maxThumbPosition : 0;
+    const clickRatio =
+      maxThumbPosition > 0 ? clampedThumbLeft / maxThumbPosition : 0;
     const maxScrollLeft = scrollWidth - clientWidth;
     const targetScrollLeft = clickRatio * maxScrollLeft;
 
     container.scrollTo({
       left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   }
 
@@ -352,7 +382,7 @@ class CustomThumbnailScrollbar {
 
     this.thumbnailContainer.scrollTo({
       left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
-      behavior: 'smooth'
+      behavior: "smooth",
     });
 
     this.lastImageIndex = imageIndex;
@@ -362,36 +392,36 @@ class CustomThumbnailScrollbar {
 export default function PidPage({ params }) {
   const getColorCode = (colorName) => {
     const colorMap = {
-      '白色': '#ffffff',
-      '黑色': '#000000',
-      '原木色': '#deb887',
-      '淺灰': '#d3d3d3',
-      '深灰': '#555555',
-      '淺藍': '#add8e6',
-      '深藍': '#000080',
-      '淺綠': '#90ee90',
-      '深綠': '#006400',
-      '米黃色': '#f5f5dc',
+      白色: "#ffffff",
+      黑色: "#000000",
+      原木色: "#deb887",
+      淺灰: "#d3d3d3",
+      深灰: "#555555",
+      淺藍: "#add8e6",
+      深藍: "#000080",
+      淺綠: "#90ee90",
+      深綠: "#006400",
+      米黃色: "#f5f5dc",
       // 英文顏色名稱
-      'white': '#ffffff',
-      'black': '#000000',
-      'red': '#ff0000',
-      'blue': '#0000ff',
-      'green': '#008000',
-      'yellow': '#ffff00',
-      'orange': '#ffa500',
-      'purple': '#800080',
-      'pink': '#ffc0cb',
-      'brown': '#a52a2a',
-      'gray': '#808080',
-      'grey': '#808080'
+      white: "#ffffff",
+      black: "#000000",
+      red: "#ff0000",
+      blue: "#0000ff",
+      green: "#008000",
+      yellow: "#ffff00",
+      orange: "#ffa500",
+      purple: "#800080",
+      pink: "#ffc0cb",
+      brown: "#a52a2a",
+      gray: "#808080",
+      grey: "#808080",
     };
 
-    if (!colorName) return '#cccccc';
-    return colorMap[colorName] || '#cccccc';
+    if (!colorName) return "#cccccc";
+    return colorMap[colorName] || "#cccccc";
   };
   const [selectedImage, setSelectedImage] = useState(0);
-  // const { addToCart } = useCart();
+  // const { addToCart } = cartContext();
   // ------------------------
   const { onAdd } = useCart();
   // ------------------------
@@ -422,7 +452,7 @@ export default function PidPage({ params }) {
     designer: false,
     materials: false,
     sizes: false,
-    stock: false
+    stock: false,
   });
 
   // 從 URL 參數獲取產品 ID
@@ -434,10 +464,12 @@ export default function PidPage({ params }) {
     const fetchProductData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3005/api/products/${productId}`);
+        const response = await fetch(
+          `http://localhost:3005/api/products/${productId}`
+        );
         const result = await response.json();
 
-        if (result.status === 'success') {
+        if (result.status === "success") {
           setProductData(result.data);
           // 設置默認選項
           if (result.data.colors && result.data.colors.length > 0) {
@@ -450,8 +482,8 @@ export default function PidPage({ params }) {
           setError(result.message);
         }
       } catch (err) {
-        setError('獲取產品資料時發生錯誤');
-        console.error('Error fetching product data:', err);
+        setError("獲取產品資料時發生錯誤");
+        console.error("Error fetching product data:", err);
       } finally {
         setLoading(false);
       }
@@ -459,7 +491,6 @@ export default function PidPage({ params }) {
 
     fetchProductData();
   }, [productId]);
-
 
   // useEffect(() => {
   //   const checkWishlistStatus = async () => {
@@ -544,9 +575,7 @@ export default function PidPage({ params }) {
   //     }
   //   }
 
-
   // };
-
 
   // useEffect(() => {
   //   if (showWishlistModal) {
@@ -568,11 +597,12 @@ export default function PidPage({ params }) {
 
     return () => {
       clearTimeout(timer);
-      const customScrollbars = document.querySelectorAll('.custom-scrollbar-container');
-      customScrollbars.forEach(el => el.remove());
+      const customScrollbars = document.querySelectorAll(
+        ".custom-scrollbar-container"
+      );
+      customScrollbars.forEach((el) => el.remove());
     };
   }, [productData]);
-
 
   const isProductInWishlist = (targetProductId) => {
     if (targetProductId === parseInt(productId)) {
@@ -690,13 +720,11 @@ export default function PidPage({ params }) {
 
   // 切換展開狀態
   const toggleExpanded = (section) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
-
   };
-
 
   // 展開圖示組件
   const ExpandIcon = ({ isExpanded }) => (
@@ -707,8 +735,8 @@ export default function PidPage({ params }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={{
-        transform: isExpanded ? 'rotate(45deg)' : 'rotate(0deg)',
-        transition: 'transform 0.3s ease'
+        transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)",
+        transition: "transform 0.3s ease",
       }}
     >
       <path
@@ -721,23 +749,25 @@ export default function PidPage({ params }) {
   // 展開內容組件
   const ExpandedContent = ({ section, isExpanded, children }) => (
     <div
-      className={`expanded-content ${isExpanded ? 'expanded' : ''}`}
+      className={`expanded-content ${isExpanded ? "expanded" : ""}`}
       style={{
-        maxHeight: isExpanded ? '500px' : '0',
-        overflow: 'hidden',
-        transition: 'max-height 0.3s ease',
-
+        maxHeight: isExpanded ? "500px" : "0",
+        overflow: "hidden",
+        transition: "max-height 0.3s ease",
       }}
     >
-      <div style={{
-        'paddingBottom': isExpanded ? '8px' : '0 px',
-        width: "100%"
-      }}>
+      <div
+        style={{
+          paddingBottom: isExpanded ? "8px" : "0 px",
+          width: "100%",
+        }}
+      >
         {children}
       </div>
     </div>
   );
 
+<<<<<<< HEAD
   if (loading) {
     return (
       <div className="detail-product-page">
@@ -755,11 +785,13 @@ export default function PidPage({ params }) {
     );
   }
 
+=======
+>>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
   if (error) {
     return (
       <div className="detail-product-page">
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <p style={{ color: '#dc2626' }}>錯誤: {error}</p>
+        <div style={{ textAlign: "center", padding: "100px 20px" }}>
+          <p style={{ color: "#dc2626" }}>錯誤: {error}</p>
         </div>
       </div>
     );
@@ -768,7 +800,7 @@ export default function PidPage({ params }) {
   if (!productData) {
     return (
       <div className="detail-product-page">
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
+        <div style={{ textAlign: "center", padding: "100px 20px" }}>
           <p>找不到產品資料</p>
         </div>
       </div>
@@ -781,19 +813,17 @@ export default function PidPage({ params }) {
       return ["https://via.placeholder.com/500x400/f0f0f0/666?text=No+Image"];
     }
 
-    return images.map(img => {
+    return images.map((img) => {
       // 如果是物件格式 { id: 1, url: "/uploads/pic.jpg" }
-      if (typeof img === 'object' && img.url) {
-        return img.url.startsWith('http')
+      if (typeof img === "object" && img.url) {
+        return img.url.startsWith("http")
           ? img.url
           : `http://localhost:3005${img.url}`;
       }
 
       // 如果是字串格式 "/uploads/pic.jpg"
-      if (typeof img === 'string') {
-        return img.startsWith('http')
-          ? img
-          : `http://localhost:3005${img}`;
+      if (typeof img === "string") {
+        return img.startsWith("http") ? img : `http://localhost:3005${img}`;
       }
 
       // 如果都不是，返回錯誤圖片
@@ -805,15 +835,18 @@ export default function PidPage({ params }) {
   const displayImages = processImages(productData.images);
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) {
-      const imageUrl = typeof product.images[0] === 'string'
-        ? product.images[0]
-        : product.images[0].url;
+      const imageUrl =
+        typeof product.images[0] === "string"
+          ? product.images[0]
+          : product.images[0].url;
 
-      return imageUrl.startsWith('http')
+      return imageUrl.startsWith("http")
         ? imageUrl
         : `http://localhost:3005${imageUrl}`;
     }
-    return `https://via.placeholder.com/300x200/f0f0f0/666?text=${encodeURIComponent(product.name)}`;
+    return `https://via.placeholder.com/300x200/f0f0f0/666?text=${encodeURIComponent(
+      product.name
+    )}`;
   };
 
   const handleCartClick = (targetProduct = null, event = null) => {
@@ -856,7 +889,7 @@ export default function PidPage({ params }) {
     }
 
     const product = currentCartProduct || productData;
-    addToCart(product, cartQuantity, selectedColor, selectedSize);
+    onAdd(product, cartQuantity, selectedColor, selectedSize);
     setShowCartModal(false);
     document.body.classList.remove('no-scroll');
 
@@ -1059,7 +1092,6 @@ export default function PidPage({ params }) {
           </a>
         </div>
       </div>
-
       {/* 子導航欄 */}
       <div className="breadcrumb-nav">
         <div className="sub-nav-content">
@@ -1072,7 +1104,6 @@ export default function PidPage({ params }) {
           </div>
         </div>
       </div>
-
       {/* 主要內容區域 */}
       <div className="pid-container">
         <div className="product-detail-wrapper">
@@ -1084,10 +1115,10 @@ export default function PidPage({ params }) {
             <div className="thumbnail-images">
               {displayImages.map((image, index) => (
                 <div
-
                   key={index}
-                  className={`thumbnail ${selectedImage === index ? "active" : ""
-                    }`}
+                  className={`thumbnail ${
+                    selectedImage === index ? "active" : ""
+                  }`}
                   onClick={() => setSelectedImage(index)}
                 >
                   <img src={image} alt={`${productData.name} ${index + 1}`} />
@@ -1100,9 +1131,12 @@ export default function PidPage({ params }) {
           <div className="pid-info">
             <div className="pid-name">{productData.name}</div>
             <div className="express">
-              {productData.colors?.[0]?.color_name || '白色'}, {productData.sizes?.[0]?.size_label || '71x50 公分'}
+              {productData.colors?.[0]?.color_name || "白色"},{" "}
+              {productData.sizes?.[0]?.size_label || "71x50 公分"}
             </div>
-            <div className="product-price">NT$ {productData.price?.toLocaleString()}</div>
+            <div className="product-price">
+              NT$ {productData.price?.toLocaleString()}
+            </div>
 
             <div className="rating">
               <div className="rating-icon-container">
@@ -1129,15 +1163,13 @@ export default function PidPage({ params }) {
                 className="btn view-review"
                 onClick={() => {
                   setShowModal(true);
-                  document.body.classList.add('modal-open');
-
+                  document.body.classList.add("modal-open");
                 }}
               >
                 查看評論
               </button>
               <div
-                className={`modal fade ${showModal ? 'show' : ''}`}
-
+                className={`modal fade ${showModal ? "show" : ""}`}
                 onWheel={(e) => e.preventDefault()}
                 onTouchMove={(e) => e.preventDefault()}
                 id="exampleModal"
@@ -1145,9 +1177,8 @@ export default function PidPage({ params }) {
                 aria-labelledby="exampleModalLabel"
                 aria-hidden={!showModal}
                 style={{
-                  display: showModal ? 'block' : 'none',
+                  display: showModal ? "block" : "none",
                 }}
-
               >
                 <div className="modal-dialog modal-lg modal-dialog-scrollable">
                   <div className="modal-content">
@@ -1195,7 +1226,8 @@ export default function PidPage({ params }) {
             </div>
 
             <div className="product-description">
-              {productData.description || "為你的生活角落增添一抹實用美感，這款北歐風簡約邊桌，採用實木材質與霧面烤漆，適合擺放於沙發側、床邊或閱讀角落。不僅能放置咖啡杯、書籍或燈具，極簡設計也能輕鬆融入各種空間風格。"}
+              {productData.description ||
+                "為你的生活角落增添一抹實用美感，這款北歐風簡約邊桌，採用實木材質與霧面烤漆，適合擺放於沙發側、床邊或閱讀角落。不僅能放置咖啡杯、書籍或燈具，極簡設計也能輕鬆融入各種空間風格。"}
             </div>
 
             <div className="product-specs">
@@ -1205,8 +1237,12 @@ export default function PidPage({ params }) {
                   {productData.colors?.map((color) => (
                     <div
                       key={color.id}
-                      className={`color ${selectedColor?.id === color.id ? 'selected' : ''}`}
-                      style={{ backgroundColor: getColorCode(color.color_name) }}
+                      className={`color ${
+                        selectedColor?.id === color.id ? "selected" : ""
+                      }`}
+                      style={{
+                        backgroundColor: getColorCode(color.color_name),
+                      }}
                       title={color.color_name}
                       onClick={() => setSelectedColor(color)} // 添加點擊事件
                     ></div>
@@ -1218,23 +1254,29 @@ export default function PidPage({ params }) {
             <div className="quantity-selector">
               <div className="quantity-controls">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                   disabled={quantity <= 1}
                 >
                   -
                 </button>
                 <div className="quantity-number">{quantity}</div>
-                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+                <button onClick={() => setQuantity((prev) => prev + 1)}>
+                  +
+                </button>
               </div>
               <div className="saved">
                 <div
-                  className={`saved-icon ${isWishlisted ? 'wishlisted' : ''}`}
+                  className={`saved-icon ${isWishlisted ? "wishlisted" : ""}`}
                   onClick={(e) => handleWishlistClick(null, e)}
                   style={{
-                    cursor: 'pointer',
+                    cursor: "pointer",
                   }}
                 >
-                  <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
+                  <i
+                    className={`fa-${
+                      isWishlisted ? "solid" : "regular"
+                    } fa-heart`}
+                  ></i>
                 </div>
               </div>
             </div>
@@ -1244,15 +1286,18 @@ export default function PidPage({ params }) {
               <button
                 className="add-to-cart-btn"
                 onClick={() => {
-                  console.log('商品資料：', productData);
+                  // console.log("商品資料：", productData);
                   // addToCart(productData, quantity, selectedColor, selectedSize);
                   // ------------------------
                   onAdd(productData, quantity, selectedColor, selectedSize);
+                  // handleAddToCart();
                   // 跳出訊息(呼叫吐司訊息)
-                  toast.success(`${productData.name} 已成功加入購物車！`)
+                  toast.success(`${productData.name} 已成功加入購物車！`);
                   // ------------------------
                 }}
-              >加入購物車</button>
+              >
+                加入購物車
+              </button>
             </div>
 
             {/* 更新的資訊展開區塊 */}
@@ -1261,52 +1306,56 @@ export default function PidPage({ params }) {
 
               <div
                 className="more-info-item-text"
-                onClick={() => toggleExpanded('productInfo')}
-                style={{ cursor: 'pointer' }}
+                onClick={() => toggleExpanded("productInfo")}
+                style={{ cursor: "pointer" }}
               >
                 產品資訊
                 <ExpandIcon isExpanded={expandedSections.productInfo} />
               </div>
-              <ExpandedContent section="productInfo" isExpanded={expandedSections.productInfo}>
+              <ExpandedContent
+                section="productInfo"
+                isExpanded={expandedSections.productInfo}
+              >
                 {productData.description}
                 <br></br>
-                <strong>產品編號：</strong>{productData.id}
-
+                <strong>產品編號：</strong>
+                {productData.id}
               </ExpandedContent>
-
 
               {/* 設計師 */}
               <div
                 className="more-info-item-text"
-                onClick={() => toggleExpanded('designer')}
-                style={{ cursor: 'pointer' }}
+                onClick={() => toggleExpanded("designer")}
+                style={{ cursor: "pointer" }}
               >
                 設計師
                 <ExpandIcon isExpanded={expandedSections.designer} />
               </div>
-              <ExpandedContent section="designer" isExpanded={expandedSections.designer}>
-                <div>
-                  {productData.designer_name || '未指定設計師'}
-                </div>
+              <ExpandedContent
+                section="designer"
+                isExpanded={expandedSections.designer}
+              >
+                <div>{productData.designer_name || "未指定設計師"}</div>
               </ExpandedContent>
 
               {/* 材質 */}
               <div
                 className="more-info-item-text"
-                onClick={() => toggleExpanded('materials')}
-                style={{ cursor: 'pointer' }}
+                onClick={() => toggleExpanded("materials")}
+                style={{ cursor: "pointer" }}
               >
                 材質
                 <ExpandIcon isExpanded={expandedSections.materials} />
               </div>
-              <ExpandedContent section="materials" isExpanded={expandedSections.materials}>
+              <ExpandedContent
+                section="materials"
+                isExpanded={expandedSections.materials}
+              >
                 <div>
                   {productData.materials?.length > 0 ? (
                     <div>
                       {productData.materials.map((material, index) => (
-                        <div key={material.id} >
-                          {material.material_name}
-                        </div>
+                        <div key={material.id}>{material.material_name}</div>
                       ))}
                     </div>
                   ) : (
@@ -1318,20 +1367,21 @@ export default function PidPage({ params }) {
               {/* 尺寸 */}
               <div
                 className="more-info-item-text"
-                onClick={() => toggleExpanded('sizes')}
-                style={{ cursor: 'pointer' }}
+                onClick={() => toggleExpanded("sizes")}
+                style={{ cursor: "pointer" }}
               >
                 尺寸
                 <ExpandIcon isExpanded={expandedSections.sizes} />
               </div>
-              <ExpandedContent section="sizes" isExpanded={expandedSections.sizes}>
+              <ExpandedContent
+                section="sizes"
+                isExpanded={expandedSections.sizes}
+              >
                 <div>
                   {productData.sizes?.length > 0 ? (
                     <div>
                       {productData.sizes.map((size) => (
-                        <div key={size.id} >
-                          {size.size_label}
-                        </div>
+                        <div key={size.id}>{size.size_label}</div>
                       ))}
                     </div>
                   ) : (
@@ -1343,33 +1393,41 @@ export default function PidPage({ params }) {
               {/* 庫存 */}
               <div
                 className="more-info-item-text"
-                onClick={() => toggleExpanded('stock')}
-                style={{ cursor: 'pointer' }}
+                onClick={() => toggleExpanded("stock")}
+                style={{ cursor: "pointer" }}
               >
                 庫存 ({productData.stock?.total || 0})
                 <ExpandIcon isExpanded={expandedSections.stock} />
               </div>
-              <ExpandedContent section="stock" isExpanded={expandedSections.stock}>
+              <ExpandedContent
+                section="stock"
+                isExpanded={expandedSections.stock}
+              >
                 <div>
                   {productData.stock?.details?.length > 0 ? (
                     <div>
-                      <div style={{ marginBottom: '16px', fontWeight: 'bold' }}>
+                      <div style={{ marginBottom: "16px", fontWeight: "bold" }}>
                         總庫存：{productData.stock.total} 件
                       </div>
-                      <div style={{ display: 'grid', gap: '12px' }}>
+                      <div style={{ display: "grid", gap: "12px" }}>
                         {productData.stock.details.map((stock, index) => (
-                          <div key={index} style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            fontSize: '14px'
-                          }}>
+                          <div
+                            key={index}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              fontSize: "14px",
+                            }}
+                          >
                             <span>
                               {stock.color_name} - {stock.size_label}
                             </span>
-                            <span style={{
-                              fontWeight: 'bold'
-                            }}>
+                            <span
+                              style={{
+                                fontWeight: "bold",
+                              }}
+                            >
                               {stock.amount} 件
                             </span>
                           </div>
@@ -1377,7 +1435,7 @@ export default function PidPage({ params }) {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ color: '#6A6A6A' }}>目前無庫存資訊</div>
+                    <div style={{ color: "#6A6A6A" }}>目前無庫存資訊</div>
                   )}
                 </div>
               </ExpandedContent>
@@ -1385,6 +1443,7 @@ export default function PidPage({ params }) {
           </div>
         </div>
 
+<<<<<<< HEAD
         <SimilarProducts
           currentProductId={parseInt(productId)}
           handleWishlistToggle={handleWishlistToggle}
@@ -1392,11 +1451,21 @@ export default function PidPage({ params }) {
           addToCart={addToCart}
           handleCartClick={handleCartClick}
         />
+=======
+        <SimilarProducts 
+  currentProductId={parseInt(productId)}
+  handleWishlistToggle={handleWishlistToggle}
+  isProductInWishlist={isProductInWishlist}
+  addToCart={onAdd}
+  handleCartClick={handleCartClick}
+/>
+>>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
 
 
         <RandomShowcaseSection />
 
 
+<<<<<<< HEAD
         <Bestseller
           currentProductId={parseInt(productId)}
           handleWishlistToggle={handleWishlistToggle}
@@ -1414,8 +1483,26 @@ export default function PidPage({ params }) {
           addToCart={addToCart}
           handleCartClick={handleCartClick}
         />
-      </div>
+=======
+        <Bestseller 
+  currentProductId={parseInt(productId)}
+  handleWishlistToggle={handleWishlistToggle}
+  isProductInWishlist={isProductInWishlist}
+  addToCart={onAdd}
+  handleCartClick={handleCartClick}
+/>
 
+<RecentViewedProducts
+  className="middle-content"
+  currentProductId={productId}
+  maxItems={8}
+  handleWishlistToggle={handleWishlistToggle}
+  isProductInWishlist={isProductInWishlist}
+  addToCart={onAdd}
+  handleCartClick={handleCartClick}
+/>
+>>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
+      </div>
       {/* 收藏選擇彈窗 */}
       {showWishlistModal && (
         <>
@@ -1423,7 +1510,7 @@ export default function PidPage({ params }) {
             className="wishlist-modal-backdrop"
             onClick={() => {
               setShowWishlistModal(false);
-              document.body.classList.remove('no-scroll');
+              document.body.classList.remove("no-scroll");
             }}
           ></div>
 
@@ -1433,7 +1520,7 @@ export default function PidPage({ params }) {
                 className="wishlist-modal-close"
                 onClick={() => {
                   setShowWishlistModal(false);
-                  document.body.classList.remove('no-scroll');
+                  document.body.classList.remove("no-scroll");
                 }}
               >
                 ✕
@@ -1446,34 +1533,53 @@ export default function PidPage({ params }) {
               <div className="wishlist-modal-body">
                 <div className="wishlist-product-image">
                   <img
-                    src={currentWishlistProduct ?
-                      getProductImage(currentWishlistProduct) :
-                      displayImages[selectedImage]
+                    src={
+                      currentWishlistProduct
+                        ? getProductImage(currentWishlistProduct)
+                        : displayImages[selectedImage]
                     }
                     alt={(currentWishlistProduct || productData).name}
                   />
                 </div>
                 <div className="wishlist-form-content">
-                  <h6 className="wishlist-product-name">{(currentWishlistProduct || productData).name}</h6>
-                  <p className="wishlist-product-price">NT$ {(currentWishlistProduct || productData).price?.toLocaleString()}</p>
+                  <h6 className="wishlist-product-name">
+                    {(currentWishlistProduct || productData).name}
+                  </h6>
+                  <p className="wishlist-product-price">
+                    NT${" "}
+                    {(
+                      currentWishlistProduct || productData
+                    ).price?.toLocaleString()}
+                  </p>
 
                   {/* 顏色選擇 */}
                   <div className="wishlist-form-group">
                     <label className="wishlist-form-label">選擇顏色</label>
                     <div className="wishlist-options">
-                      {Array.isArray((currentWishlistProduct || productData)?.colors) && (currentWishlistProduct || productData).colors.map((color) => (
-                        <div
-                          key={color.id}
-                          onClick={() => setSelectedColor(color)}
-                          className={`wishlist-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
-                        >
-                          <div
-                            className="wishlist-color-dot"
-                            style={{ backgroundColor: getColorCode(color.color_name) }}
-                          ></div>
-                          <span>{color.color_name}</span>
-                        </div>
-                      ))}
+                      {Array.isArray(
+                        (currentWishlistProduct || productData)?.colors
+                      ) &&
+                        (currentWishlistProduct || productData).colors.map(
+                          (color) => (
+                            <div
+                              key={color.id}
+                              onClick={() => setSelectedColor(color)}
+                              className={`wishlist-color-option ${
+                                selectedColor?.id === color.id ? "selected" : ""
+                              }`}
+                            >
+                              <div
+                                className="wishlist-color-dot"
+                                style={{
+                                  backgroundColor: getColorCode(
+                                    color.color_name
+                                  ),
+                                }}
+                              ></div>
+                              <span>{color.color_name}</span>
+                            </div>
+                          )
+                        )}
                     </div>
                   </div>
 
@@ -1481,15 +1587,22 @@ export default function PidPage({ params }) {
                   <div className="wishlist-form-group">
                     <label className="wishlist-form-label">選擇尺寸</label>
                     <div className="wishlist-options">
-                      {Array.isArray((currentWishlistProduct || productData)?.sizes) && (currentWishlistProduct || productData).sizes.map((size) => (
-                        <div
-                          key={size.id}
-                          onClick={() => setSelectedSize(size)}
-                          className={`wishlist-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
-                        >
-                          {size.size_label}
-                        </div>
-                      ))}
+                      {Array.isArray(
+                        (currentWishlistProduct || productData)?.sizes
+                      ) &&
+                        (currentWishlistProduct || productData).sizes.map(
+                          (size) => (
+                            <div
+                              key={size.id}
+                              onClick={() => setSelectedSize(size)}
+                              className={`wishlist-size-option ${
+                                selectedSize?.id === size.id ? "selected" : ""
+                              }`}
+                            >
+                              {size.size_label}
+                            </div>
+                          )
+                        )}
                     </div>
                   </div>
 
@@ -1498,7 +1611,9 @@ export default function PidPage({ params }) {
                     <label className="wishlist-form-label">數量</label>
                     <div className="wishlist-quantity-controls">
                       <button
-                        onClick={() => setWishlistQuantity(Math.max(1, wishlistQuantity - 1))}
+                        onClick={() =>
+                          setWishlistQuantity(Math.max(1, wishlistQuantity - 1))
+                        }
                         disabled={wishlistQuantity <= 1}
                         className="wishlist-quantity-btn"
                       >
@@ -1508,13 +1623,14 @@ export default function PidPage({ params }) {
                         {wishlistQuantity}
                       </span>
                       <button
-                        onClick={() => setWishlistQuantity(wishlistQuantity + 1)}
+                        onClick={() =>
+                          setWishlistQuantity(wishlistQuantity + 1)
+                        }
                         className="wishlist-quantity-btn"
                       >
                         +
                       </button>
                     </div>
-
                   </div>
                   <div className="wishlist-modal-footer">
                     <button
@@ -1610,7 +1726,10 @@ export default function PidPage({ params }) {
       </div>
       {/* 吐司訊息用元件(會先隱藏在這頁面內容裡不顯示*/}
       <ToastContainer />
+<<<<<<< HEAD
+=======
+      // ------------------------
+>>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
     </div>
   );
-
 }
