@@ -11,7 +11,7 @@ const router = express.Router();
 const upload = multer();
 const secretKey = process.env.JWT_SECRET_KEY;
 // 預設頭像
-const DEFAULT_AVATAR = "/img/default-avatar.png";
+const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 
 
 
@@ -135,7 +135,7 @@ router.post("/", upload.none(), async (req, res) => {
     // } 
 
     // 3) 產生頭像（可能為 null)(取用下面function Randomuser.me)
-    const avatar =  DEFAULT_AVATAR;
+    const avatar = DEFAULT_AVATAR;
     // 4) 壓縮密碼
     const hashedPassword = await bcrypt.hash(password, 10);
     // 5) 建立 SQL 語法,寫入資料（undefined 一律轉成 null）
@@ -255,7 +255,7 @@ router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) 
       err.status = "fail";
       throw err;
     }
-    
+
     // 建立avatar存放資料夾路徑
     const avatarUploadPath = path.resolve("public/uploads/avatars");
     await fs.mkdir(avatarUploadPath, { recursive: true });
@@ -265,13 +265,14 @@ router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) 
     const filepath = path.join(avatarUploadPath, filename);
     await fs.writeFile(filepath, req.file.buffer);
     // 給前端用的網址路徑
-    const publicPath = `/uploads/avatars/${filename}`;
+    const ORIGIN = process.env.SERVER_PUBLIC_ORIGIN || "http://localhost:3005";
+    const publicPath = `${ORIGIN}/uploads/avatars/${filename}`;
     // 更新頭像
     const [result] = await pool.execute(
       "UPDATE users SET avatar = ? WHERE id = ?",
       [publicPath, id]);
 
-    
+
     if (!result.affectedRows) {
       const err = new Error("頭像更新失敗，請洽管理人員");
       err.code = 400; err.status = "fail"; throw err;

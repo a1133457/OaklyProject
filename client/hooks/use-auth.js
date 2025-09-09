@@ -132,81 +132,88 @@ export function AuthProvider({ children }) {
     }
   };
 
-    // updateUserEdit------------------------------------
-    const updateUserEdit = async (id, data) => {
-        const API = `http://localhost:3005/api/users/${id}/edit`;
-        const token = localStorage.getItem(appKey);
+  // updateUserEdit------------------------------------
+  const updateUserEdit = async (id, data) => {
+    const API = `http://localhost:3005/api/users/${id}/edit`;
+    const token = localStorage.getItem(appKey);
 
-        try {
-            const res = await fetch(API, {
-                method: "PUT",
-                headers: { Authorization: `Bearer ${token}` },
-                body: new URLSearchParams(data), // 因為後端用 multer.none()
-            });
-            const result = await res.json();
-
-            if (result.status === "success") {
-                // 更新前端 user 狀態
-                // const newUser = { ...user, ...data };
-                const newUser = result.data?.user ? result.data.user : { ...user, ...data };
-                setUser(newUser);
-                localStorage.setItem(userKey, JSON.stringify(newUser));
-                return { success: true, message: result.message };
-            } else {
-                return { success: false, message: result.message };
-            }
-        } catch (error) {
-            return { success: false, message: "伺服器錯誤" };
+    try {
+      const form = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          form.append(key, value);
         }
-    };
-    // 更新密碼
-    const updateUserPassword = async (id, newPassword) => {
-        const API = `http://localhost:3005/api/users/${id}/password`;
-        const token = localStorage.getItem(appKey);
-        try {
-            const res = await fetch(API, {
-                method: "PUT",
-                headers: { Authorization: `Bearer ${token}` },
-                body: new URLSearchParams({ password: newPassword }),
-            });
-            const result = await res.json();
-            if (result.status === "success") {
-                return { success: true, message: result.message || "密碼更新成功" };
-            }
-            return { success: false, message: result.message || "密碼更新失敗" };
-        } catch {
-            return { success: false, message: "伺服器錯誤" };
-        }
-    };
+      });
+      const res = await fetch(API, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const result = await res.json();
 
-    // 更新頭像
-    const updateUserAvatar = async (id, file) => {
-        const API = `http://localhost:3005/api/users/${id}/avatar`;
-        const token = localStorage.getItem(appKey);
-        const formData = new FormData();
-        formData.append("avatar", file);
+      if (result.status === "success") {
+        // 更新前端 user 狀態
+        // const newUser = { ...user, ...data };
+        const newUser = result.data?.user ? result.data.user : { ...user, ...data };
+        setUser(newUser);
+        localStorage.setItem(userKey, JSON.stringify(newUser));
+        return { success: true, message: result.message };
+      } else {
+        return { success: false, message: result.message };
+      }
+    } catch (error) {
+      return { success: false, message: "伺服器錯誤" };
+    }
+  };
+  // 更新密碼
+  const updateUserPassword = async (id, newPassword) => {
+    const API = `http://localhost:3005/api/users/${id}/password`;
+    const token = localStorage.getItem(appKey);
+    try {
+      const res = await fetch(API, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: new URLSearchParams({ password: newPassword }),
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        return { success: true, message: result.message || "密碼更新成功" };
+      }
+      return { success: false, message: result.message || "密碼更新失敗" };
+    } catch {
+      return { success: false, message: "伺服器錯誤" };
+    }
+  };
 
-        try {
-            const res = await fetch(API, {
-                method: "PUT",
-                headers: { Authorization: `Bearer ${token}` },
-                body: formData,
-            });
-            const result = await res.json();
-            if (result.status === "success") {
-                // 若後端回傳最新 user 或 avatar 路徑，就同步更新前端
-                const newUser = result.data?.user
-                    ? result.data.user
-                    : (result.data?.avatar ? { ...user, avatar: result.data.avatar } : user);
-                setUser(newUser);
-                localStorage.setItem(userKey, JSON.stringify(updateUser));
-                return { success: true, message: result.message || "頭像更新成功" };
-            }
-            return { success: false, message: result.message || "頭像更新失敗" };
-        } catch {
-            return { success: false, message: "伺服器錯誤" };
-        }
-    };
+  // 更新頭像
+  const updateUserAvatar = async (id, file) => {
+    const API = `http://localhost:3005/api/users/${id}/avatar`;
+    const token = localStorage.getItem(appKey);
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch(API, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        // 若後端回傳最新 user 或 avatar 路徑，就同步更新前端
+        const newUser = result.data?.user
+          ? result.data.user
+          : (result.data?.avatar ? { ...user, avatar: result.data.avatar } : user);
+          
+        setUser(newUser);
+        localStorage.setItem(userKey, JSON.stringify(newUser));
+        return { success: true, message: result.message || "頭像更新成功" };
+      }
+      return { success: false, message: result.message || "頭像更新失敗" };
+    } catch {
+      return { success: false, message: "伺服器錯誤" };
+    }
+  };
 
 
 
@@ -229,13 +236,13 @@ export function AuthProvider({ children }) {
       };
     }
 
-        // 如果 newData 裡有 recipient，就更新 user.recipient
-        if (newData.recipient) {
-            updateUser.recipient = newData.recipient;
-        }
-        setUser(updateUser);
-        localStorage.setItem(userKey, JSON.stringify({updateUser}));
+    // 如果 newData 裡有 recipient，就更新 user.recipient
+    if (newData.recipient) {
+      updateUser.recipient = newData.recipient;
     }
+    setUser(updateUser);
+    localStorage.setItem(userKey, JSON.stringify(updateUser));
+  }
 
   // 保護頁面------------------------------------
   // useEffect(() => {
@@ -287,14 +294,14 @@ export function AuthProvider({ children }) {
     checkToken();
   }, []);
 
-    return (
-        <AuthContext.Provider
-            value={{
-                user, register, login, logout, isLoading, users,
-                updateUser, updateUserEdit, updateUserPassword, updateUserAvatar
-            }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider
+      value={{
+        user, register, login, logout, isLoading, users,
+        updateUser, updateUserEdit, updateUserPassword, updateUserAvatar
+      }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 export const useAuth = () => useContext(AuthContext);

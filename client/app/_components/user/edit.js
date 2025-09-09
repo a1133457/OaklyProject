@@ -21,8 +21,20 @@ export default function UserEditForm() {
     // api
     const router = useRouter();
     const { user, logout, updateUserEdit, updateUserPassword, updateUserAvatar } = useAuth();
+
+
     // 登出按鈕
     // const onLogout = () => {logout();};
+    // 轉頭像路徑
+    const toSrc = (p) => (p?.startsWith('/uploads/') ? `http://localhost:3005${p}` : p);
+    // 生日：正確格式化並送到後端
+    const toDateInput = (v) => {
+        if (!v) return '';
+        const d = new Date(v);
+        // 轉成 YYYY-MM-DD（避免時區影響）
+        const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+        return iso.slice(0, 10);
+    };
 
     // 狀態欄位
     const [name, setName] = useState('')
@@ -49,11 +61,13 @@ export default function UserEditForm() {
         return () => URL.revokeObjectURL(url); // 清掉暫時 URL，避免記憶體洩漏
     }, [avatar]);
 
+
+
     // 載入 user 後，填入表單
     useEffect(() => {
         if (!user) return
         setName(user.name ?? '')
-        setBirthday(user.birthday ?? '')
+        setBirthday(toDateInput(user.birthday))
         setPhone(user.phone ?? '')
         setCity(user.city ?? '')
         setDistrict(user.area ?? user.district ?? '')
@@ -66,7 +80,7 @@ export default function UserEditForm() {
     // 城市、地區選單
     const cities = [{ value: '臺北市', label: '臺北市' }, { value: '新北市', label: '新北市' }]
     //「地區選項陣列」用 districts 這個名稱，避免和 DB 欄位 area 混淆
-    const districts  = city === '臺北市'
+    const districts = city === '臺北市'
         ? ['中正區', '大安區', '信義區'].map(v => ({ value: v, label: v }))
         : city === '新北市'
             ? ['板橋區', '新莊區', '中和區'].map(v => ({ value: v, label: v }))
@@ -147,8 +161,11 @@ export default function UserEditForm() {
                     {/* 大頭貼上傳 */}
                     <div className={`${styles.avatarUpload} ${styles.uploader}`}>
                         <label htmlFor="avatarInput">
-                            <img src={avatarPreview || user?.avatar || '/img/ting/pexels-anntarazevich-8152002.jpg'}
-                                alt="頭像預覽" className={styles.avatarImg} />
+                            <img
+                                src={avatarPreview || toSrc(user?.avatar) || '/img/default-avatar.png'}
+                                alt="頭像預覽"
+                                className={styles.avatarImg}
+                            />
 
                         </label>
                         <input
