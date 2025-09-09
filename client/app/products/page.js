@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart'
 
 
 
@@ -171,6 +172,8 @@ const fetchHotProducts = async () => {
     setShowCartModal(false);
     document.body.classList.remove('no-scroll');
   };
+
+  const { onAdd, openSuccessModal, closeSuccessModal } = useCart();
 
   const getImageUrl = (product) => {
     if (!product || !product.images || product.images.length === 0) {
@@ -743,7 +746,8 @@ const fetchHotProducts = async () => {
     const defaultColor = product.colors?.[0] || null;
     const defaultSize = product.sizes?.[0] || null;
 
-    addToCart(product, 1, defaultColor, defaultSize);
+    onAdd(product);
+    openSuccessModal(product, 1, defaultColor, defaultSize);
   };
 
   const getColorCode = (colorName) => {
