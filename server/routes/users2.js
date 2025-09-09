@@ -54,15 +54,15 @@ router.get("/:id", async (req, res) => {
   // 路由參數
 
   try {
-    const email = req.params.id;
-    if (!email) {
+    const id = req.params.id;
+    if (!id) {
       const err = new Error("請提供使用者 ID");
       err.code = 400;
       err.status = "fail";
       throw err;
     }
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `name` = ?;";
-    let user = await pool.execute(sqlCheck1, [email]).then(([result]) => {
+    const sqlCheck1 = "SELECT * FROM `users` WHERE `id` = ?;";
+    let user = await pool.execute(sqlCheck1, [id]).then(([result]) => {
       return result[0];
     });
     if (!user) {
@@ -73,7 +73,7 @@ router.get("/:id", async (req, res) => {
     }
 
     // 剩餘參數 （不顯示出來的資料）
-    const { id, password, is_valid, created_at, updated_at, ...data } = user;
+    const { id: userId, password, is_valid, created_at, updated_at, ...data } = user;
 
 
     res.status(200).json({
