@@ -7,9 +7,10 @@ import pool from "../connect.js"
 import fileSystem from "fs/promises";
 import pathModule from "path";
 
+const router = express.Router();
 const upload = multer();
 const secretKey = process.env.JWT_SECRET_KEY;
-const router = express.Router();
+
 
 
 // 把route(s)(路由規則) 整理在 routers(路由物件器) 裡
@@ -160,206 +161,110 @@ router.post("/", upload.none(), async (req, res) => {
   }
 });
 
-// 更新(特定 ID)的使用者----------------------------------
-router.put("/:id", checkToken, upload.single("avatar"), async (req, res) => {
-
+// 更新(特定 ID 的)使用者-------------------------------
+// 1️⃣ 更新一般資料
+router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
   try {
-    const userIdFromParam = req.params.id;
-    const userIdFromToken = String(req.decoded.id);
-    if (String(userIdFromParam) !== userIdFromToken) {
-      return res.status(403).json({ status: "error", message: "無權限更新此帳號" });
-    }
-
-    const { name, birthday, phone, city, area, address, avatar } = req.body;
-
-    // 撈目前(current)使用者（必要：之後要做 email 檢查、密碼更新）
-    const [currentRows] = await pool.execute("SELECT * FROM users WHERE id=?", [userIdFromParam]);
-    const currentUser = currentRows[0];
-    if (!currentUser) return res.status(404).json({ status: "error", message: "找不到使用者" });
-
-    // 準備 UPDATE 子句
-    const updateFields = [];
-    const updateValues = [];
-
-    const maybeUpdate = { name, birthday, phone, city, area, address };
-    for (const [columnName, newValue] of Object.entries(maybeUpdate)) {
-      if (newValue !== undefined) {
-        updateFields.push(`${columnName}=?`);
-        updateValues.push(newValue);
-      }
-    }
-
-    // Email：有提供才檢查 無重複 並更新 // 檢查重複(副本dup)
-    if (newEmail !== undefined) {
-      const [dup] = await pool.execute(
-        "SELECT id FROM users WHERE email=? AND id<>? LIMIT 1"
-        , [newEmail, userIdFromParam]);
-
-      if (dup.length > 0) {
-        return res.status(400).json({ status: "error", message: "Email 已被使用" });
-      }
-      updateFields.push("email=?");
-      updateValues.push(newEmail);
-    }
-
-    // Password：有提供才更新
-    if (newPassword !== undefined) {
-      if (String(newPassword).length < 6) {
-        return res.status(400).json({ 
-          status: "error", 
-          message: "新密碼至少 6 碼" 
-        });
-      }
-      const hashed = await bcrypt.hash(newPassword, 10);
-      updateFields.push("password=?");
-      updateValues.push(hashed);
-    }
-    
-    // Avatar：有檔案才存
-    if (req.file) {
-      const uploadDirectory = pathModule.join(process.cwd(), "public", "uploads", "avatars");
-      await fileSystem.mkdir(uploadDirectory, { recursive: true });
-      const fileName = `${Date.now()}-${req.file.originalname}`;
-      const filePathOnDisk = pathModule.join(uploadDirectory, fileName);
-      await fileSystem.writeFile(filePathOnDisk, req.file.buffer);
-      const publicUrlPath = `/uploads/avatars/${fileName}`;
-      updateFields.push("avatar=?");
-      updateValues.push(publicUrlPath);
-    }
-    if (updateFields.length === 0) {
-      return res.status(400).json({ 
-        status: "error", 
-        message: "沒有可更新的欄位" 
-      });
-    }
-
-    updateValues.push(userIdFromParam);
-    await pool.execute(
-      `UPDATE users SET ${updateFields.join(", ")} WHERE id=?`
-      , updateValues
-    );
-
-    const [rows] = await pool.execute(
-      "SELECT id, name, birthday, email, phone, city, area, address, avatar FROM users WHERE id=?",
-      [userIdFromParam]
-    );
-    const updatedUser = rows[0];
-
-    return res.status(200).json({ 
-      status: "success", 
-      message: "會員資料更新成功", 
-      data: { user: updatedUser } 
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ 
-      status: "error", 
-      message: "會員資料更新失敗" });
-  }
-
-    const sql = `
-      UPDATE users 
-      SET name=?, birthday=?, phone=?, city=?, area=?, address=? ,avatar=?
-      WHERE id=?;
-    `;
-    await pool.execute(sql, [id, name, birthday, phone, city, area, address, avatar]);
-
-    // 取回最新資料
-    const [rows] = await pool.execute(
-      "SELECT id, name, birthday, email, phone, city, area, address, avatar FROM users WHERE id=?",
-      [id]
-    );
-    const user = rows[0];
-    const newUser = {
-      id: user.id,
-      name: user.name,
-      birthday: user.birthday,
-      email: user.email,
-      phone: user.phone,
-      city: user.city,
-      area: user.area,
-      address: user.address,
-      avatar: user.avatar,
-    };
-
-  
-});         
-
-// 更改 Email（需唯一）
-router.put("/:id/email", checkToken, upload.none(), async (req, res) => {
-  try {
+    // 取得表單中的欄位內容
     const id = req.params.id;
-    if (!email)
-      return res.status(400)
-        .json({
-          status: "error",
-          message: "請提供 email"
-        });
-    // 檢查重複 (副本dup)
-    const [dup] = await pool.execute(
-      `SELECT id FROM users WHERE email=? AND id<>?`,
-      [email, id]);
+    const { name, phone, city, area, address, birthday  } = req.body;
 
-    if (dup.length) return
-    res.status(400).json({
-      status: "error",
-      message: "Email 已被使用"
-    });
+    // 檢查至少要有一個欄位有資料
+    if (!name && !phone && !city && !area && !address && !birthday) {
+      const err = new Error("請提至少提供一個要更新的資料");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+    let updateFields = []; // 用陣列來記錄要更新的欄位
+    let values = []; // 用陣列來記錄要更新的欄位的值
 
-    await pool.execute("UPDATE users SET email=? WHERE id=?", [email, id]);
+    // if (password) {
+    //   // 如果有 password 這個欄位
+    //   const hashedPassword = await bcrypt.hash(password, 10); // 加密
+    //   updateFields.push("password = ?"); // 欄位部份的 SQL
+    //   values.push(hashedPassword); // 問號對應的值
+    // }
+    // if (head) {
+    //   // 如果有 head 這個欄位
+    //   updateFields.push("head = ?"); // 欄位部份的 SQL
+    //   values.push(head); // 問號對應的值
+    // }
 
-    // 回傳最新 user
-    const [rows] = await pool.execute(
-      `SELECT id, name, birthday, email, phone, postcode, city, area, address, avatar FROM users WHERE id=?`,
-      [id]
-    );
+    // 如果有 這個欄位 / 欄位部份的 SQL / 問號對應的值
+    if (name) { updateFields.push("name = ?"); values.push(name); }
+    if (phone) { updateFields.push("phone = ?"); values.push(phone); }
+    if (city) { updateFields.push("city = ?"); values.push(city); }
+    if (area) { updateFields.push("area = ?"); values.push(area); }
+    if (address) { updateFields.push("address = ?"); values.push(address); }
+    if (birthday) { updateFields.push("birthday = ?"); values.push(birthday); }
+
+    values.push(id); // SQL 的最後有用 id 來查詢
+
+    // console.log(updateFields);
+    // console.log(values);
+
+    const sql = `UPDATE users SET ${updateFields.join(", ")} WHERE account = ?`;
+    const [result] = await connection.execute(sql, values);
+    // console.log(result);
+
+    if (!result.affectedRows || result.affectedRows != 0) {
+      const err = new Error("更新失敗，請洽管理人員");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
     res.status(200).json({
       status: "success",
-      message: "Email 已更新",
-      data: { user: rows[0] }
+      message: "使用者資料更新成功",
     });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      status: "error",
-      message: "更新 Email 失敗"
-    });
+  } catch (error) {
+    // 補獲錯誤
+    // console.log(error);
+    sendError(res, error);
+    
   }
 });
 
-// 更改密碼（以登入態為準）
+// 2️⃣ 更新密碼
 router.put("/:id/password", checkToken, upload.none(), async (req, res) => {
   try {
     const id = req.params.id;
-    const { newPassword } = req.body;
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({
-        status: "error",
-        message: "新密碼至少 6 碼"
-      });
+    const { password } = req.body;
+
+    if (!password) {
+      const err = new Error("請提供新密碼");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
     }
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await pool.execute(
-      "UPDATE users SET password=? WHERE id=?"
-      , [hashed, id]);
-    res.status(200).json({
-      status: "success",
-      message: "密碼已更新"
-    });
-  } catch (e) {
-    console.log(e);
-    res.status(500)
-      .json({
-        status: "error",
-        message: "更新密碼失敗"
-      });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await pool.execute("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, id]);
+
+    if (!result.affectedRows) {
+      const err = new Error("更新失敗，請洽管理人員");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+
+    res.status(200).json({ status: "success", message: "密碼更新成功" });
+  } catch (error) {
+    sendError(res, error);
   }
 });
 
-// 上傳頭像（檔案）
+// 3️⃣ 更新頭像
 router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) => {
   try {
     const id = req.params.id;
+    if (!req.file) {
+      const err = new Error("請上傳頭像");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
     // 如果有上傳檔案就用檔案，否則給預設
     const avatar = req.file ? req.file.filename : "/public/img/放入預設圖片.png";
     // 建立avatar存放資料夾路徑
@@ -373,29 +278,80 @@ router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) 
     // 給前端用的網址路徑
     const publicPath = `/uploads/avatars/${filename}`;
     // 更新頭像
-    await pool.execute(
-      "UPDATE users SET avatar=? WHERE id=?"
-      , [publicPath, id]);
-    // 再撈出新的頭像（給前端顯示）
-    const [rows] = await pool.execute(
-      "SELECT avatar FROM users WHERE id=?",
-      [id]
+    const [result] = await pool.execute(
+      "UPDATE users SET avatar = ? WHERE id = ?", 
+      [publicPath, id]);
+
+    if (!result.affectedRows) {
+      const err = new Error("頭像更新失敗，請洽管理人員");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+    res.status(200).json({ 
+      status: "success", 
+      message: "頭像更新成功", 
+      data: { avatar: publicPath } 
+    });
+  } catch (error) {
+    sendError(res, error);
+  }
+});
+
+// 共用：錯誤回傳
+function sendError(res, error) {
+  const statusCode = error.code ?? 500;
+  const statusText = error.status ?? "error";
+  const message = error.message ?? "更新失敗，請洽管理人員";
+  return res.status(statusCode)
+  .json({ 
+    status: statusText, 
+    message 
+  });
+}
+// 刪除(特定 ID 的)使用者-----------------------------------------
+router.delete("/:account", checkToken, async (req, res) => {
+  try {
+    const { account } = req.params;
+
+    if (req.decoded.account !== account) {
+      // 檢查是不是本人
+      const err = new Error("你沒有權限刪除此帳號");
+      err.code = 403;
+      err.status = "fail";
+      throw err;
+    }
+
+    const result = await connection.execute(
+      "DELETE FROM users WHERE account = ?",
+      [account]
     );
+    console.log(result);
+    if (!result.affectedRows || result.affectedRows != 0) {
+      const err = new Error("刪除失敗，請洽管理人員");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+
     res.status(200).json({
       status: "success",
-      message: "頭像已更新",
-      data: { user: rows[0] }
+      message: "帳號已成功註銷",
     });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      status: "error",
-      message: "上傳頭像失敗"
+  } catch (error) {
+    // 補獲錯誤
+    console.log(error);
+    const statusCode = error.code ?? 500;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "註冊失敗，請洽管理人員";
+    res.status(statusCode).json({
+      status: statusText,
+      message,
     });
   }
 });
 
-// 刪除(特定 ID)的使用者
+// 刪除(特定 ID)的使用者------------------------------------
 router.delete("/:id", (req, res) => {
   const id = req.params.id;
   res.status(200).json({

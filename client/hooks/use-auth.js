@@ -132,24 +132,70 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const list = async () => {
-    const API = "http://localhost:3005/api/users";
-    try {
-      const res = await fetch(API);
-      const result = await res.json();
-      console.log(result);
+    // updateUserEdit------------------------------------
+    const updateUserEdit = async (id, data) => {
+        const API = `http://localhost:3005/api/users/${id}`;
+        const token = localStorage.getItem(appKey);
 
-      if (result.status == "success") {
-        setUsers(result.data);
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      console.log(`使用者列表取得: ${error.message}`);
-      setUsers([]);
-      alert(error.message);
-    }
-  };
+        try {
+            const res = await fetch(API, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}` },
+                body: new URLSearchParams(data), // 因為後端用 multer.none()
+            });
+            const result = await res.json();
+
+            if (result.status === "success") {
+                // 更新前端 user 狀態
+                // const newUser = { ...user, ...data };
+                const newUser = result.data?.user ? result.data.user : { ...user, ...data };
+                setUser(newUser);
+                localStorage.setItem(userKey, JSON.stringify(newUser));
+                return { success: true, message: result.message };
+            } else {
+                return { success: false, message: result.message };
+            }
+        } catch (error) {
+            return { success: false, message: "伺服器錯誤" };
+        }
+    };
+    // 更新密碼
+    const updateUserPassword = async (id, newPassword) => {
+        const API = `http://localhost:3005/api/users/${id}/password`;
+        const token = localStorage.getItem(appKey);
+        try {
+            const res = await fetch(API, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}` },
+                body: new URLSearchParams({ password: newPassword }),
+            });
+            return await res.json();
+        } catch {
+            return { status: "error", message: "伺服器錯誤" };
+        }
+    };
+
+    // 更新頭像
+    const updateUserAvatar = async (id, avatarFile) => {
+        const API = `http://localhost:3005/api/users/${id}/avatar`;
+        const token = localStorage.getItem(appKey);
+
+        const formData = new FormData();
+        formData.append("avatar", avatarFile);
+
+        try {
+            const res = await fetch(API, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            return await res.json();
+        } catch {
+            return { status: "error", message: "伺服器錯誤" };
+        }
+    };
+
+
 
   // 更新訂購人跟收件人---------------------------
   const updateUser = (newData) => {
@@ -228,12 +274,11 @@ export function AuthProvider({ children }) {
     checkToken();
   }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{ user, login, logout, isLoading, list, users, updateUser }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider
+            value={{ user, register, login, logout, isLoading, users, updateUser, updateUserEdit, updateUserPassword, updateUserAvatar }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 export const useAuth = () => useContext(AuthContext);
