@@ -7,11 +7,8 @@ import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
-// import { cartContext } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from "@/app/_components/CategoryDropdown.js";
 import { useCart } from "@/hooks/use-cart";
-// 導入吐司訊息用方法+元件
-import { toast, ToastContainer } from "react-toastify";
 
 // 跟隨指針移動的滾動條類別
 class CustomThumbnailScrollbar {
@@ -421,10 +418,7 @@ export default function PidPage({ params }) {
     return colorMap[colorName] || "#cccccc";
   };
   const [selectedImage, setSelectedImage] = useState(0);
-  // const { addToCart } = cartContext();
-  // ------------------------
-  const { onAdd } = useCart();
-  // ------------------------
+  const { addToCart, openSuccessModal } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -442,7 +436,49 @@ export default function PidPage({ params }) {
   const [cartQuantity, setCartQuantity] = useState(1);
   const [cartLoading, setCartLoading] = useState(false);
 
+  const categoryMapping = {
+    // 客廳分類
+    '邊桌': '客廳',
+    '單椅': '客廳',
+    '茶几': '客廳',
+    '書櫃': '客廳',
+    '書桌': '客廳',
+    '邊櫃': '客廳',
+    // 廚房分類
+    '實木餐桌': '廚房',
+    '餐椅': '廚房',
+    '吧台桌': '廚房',
+    '吧台椅': '廚房',
+    // 臥室分類
+    '床架': '臥室',
+    '床邊桌': '臥室',
+    '化妝台': '臥室',
+    '全身鏡': '臥室',
+    '衣櫃': '臥室',
+    // 兒童房分類
+    '桌椅組': '兒童房',
+    '衣櫃': '兒童房',
+    '收納櫃': '兒童房',
+    // 收納用品分類
+    '收納盒': '收納用品',
+    '收納箱': '收納用品'
+  };
 
+  const handleCategoryClick = (e, categoryName) => {
+    e.preventDefault();
+
+    if (categoryMapping[categoryName]) {
+      // 子分類
+      const mainCategory = categoryMapping[categoryName];
+
+      window.location.href = `/products?category=${encodeURIComponent(mainCategory)}&subcategory=${encodeURIComponent(categoryName)}`;
+      console.log('跳轉到:', `/products?category=${mainCategory}&subcategory=${categoryName}`); // 加這行
+
+    } else {
+      // 主分類
+      window.location.href = `/products?category=${encodeURIComponent(categoryName)}`;
+    }
+  };
 
 
 
@@ -491,6 +527,8 @@ export default function PidPage({ params }) {
 
     fetchProductData();
   }, [productId]);
+
+
 
   // useEffect(() => {
   //   const checkWishlistStatus = async () => {
@@ -766,27 +804,16 @@ export default function PidPage({ params }) {
       </div>
     </div>
   );
-
-<<<<<<< HEAD
   if (loading) {
     return (
       <div className="detail-product-page">
-        <div style={{
-          textAlign: 'center',
-          padding: '100px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '20px'
-        }}>
-          <div className="spinner"></div>
+        <div className="pulse-loading">
+          <div className="pulse-circle"></div>
+          <p className="loading-text">載入商品詳情中...</p>
         </div>
       </div>
     );
   }
-
-=======
->>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
   if (error) {
     return (
       <div className="detail-product-page">
@@ -882,21 +909,26 @@ export default function PidPage({ params }) {
     }
   };
 
-  const addToCartFromModal = async () => {
+
+  const addToCartFromModal = () => {
     if (!selectedColor || !selectedSize) {
       alert('請選擇顏色和尺寸');
       return;
     }
 
-    const product = currentCartProduct || productData;
-    onAdd(product, cartQuantity, selectedColor, selectedSize);
+    addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
+    openSuccessModal(currentCartProduct, cartQuantity, selectedColor, selectedSize);
     setShowCartModal(false);
     document.body.classList.remove('no-scroll');
-
-
   };
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation();
 
+    const defaultColor = product.colors?.[0] || null;
+    const defaultSize = product.sizes?.[0] || null;
 
+    addToCart(product, 1, defaultColor, defaultSize);
+  };
   return (
     <div className="detail-product-page">
       {/* 麵包屑導航 */}
@@ -925,162 +957,84 @@ export default function PidPage({ params }) {
             </div>
             <div className="dropdown-menu dropdown-megamenu">
               <div className="megamenu-column">
-                <a href="#" className="dropdown-header" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳';
-                }}>
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '客廳')}>
                   客廳
-                </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳&subcategory=邊桌';
-                }}>
+                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '邊桌')}>
                   邊桌
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳&subcategory=單椅';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '單椅')}>
                   單椅/單人沙發
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳&subcategory=茶几';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '茶几')}>
                   茶几
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳&subcategory=書櫃';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '書櫃')}>
                   書櫃 / 書架
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳&subcategory=書桌';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '書桌')}>
                   書桌 / 書桌椅
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=客廳&subcategory=邊櫃';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '邊櫃')}>
                   邊櫃 / 收納櫃
                 </a>
               </div>
               <div className="megamenu-column">
-                <a href="#" className="dropdown-header" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=廚房';
-                }}>
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '廚房')}>
                   廚房
-                </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=廚房&subcategory=實木餐桌';
-                }}>
+                </a>                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '實木餐桌')}>
                   實木餐桌
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=廚房&subcategory=餐椅';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '餐椅')}>
                   餐椅 / 椅子
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=廚房&subcategory=吧台桌';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '吧台桌')}>
                   吧台桌
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=廚房&subcategory=吧台椅';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '吧台椅')}>
                   吧台椅
                 </a>
               </div>
               <div className="megamenu-column">
-                <a href="#" className="dropdown-header" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=臥室';
-                }}>
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '臥室')}>
                   臥室
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=臥室&subcategory=床架';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
                   床架
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=臥室&subcategory=床邊桌';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床邊桌')}>
                   床邊桌
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=臥室&subcategory=化妝台';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '化妝台')}>
                   化妝台
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=臥室&subcategory=全身鏡';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '全身鏡')}>
                   全身鏡 / 鏡子
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=臥室&subcategory=衣櫃';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '衣櫃')}>
                   衣櫃 / 衣架
                 </a>
               </div>
               <div className="megamenu-column">
-                <a href="#" className="dropdown-header" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=兒童房';
-                }}>
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '兒童房')}>
                   兒童房
-                </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=兒童房&subcategory=桌椅組';
-                }}>
+                </a>                      <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '桌椅組')}>
                   桌椅組
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=兒童房&subcategory=衣櫃';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '衣櫃')}>
                   衣櫃
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=兒童房&subcategory=床架';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
                   床架
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=兒童房&subcategory=收納櫃';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納櫃')}>
                   收納櫃
                 </a>
               </div>
               <div className="megamenu-column">
-                <a href="#" className="dropdown-header" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=收納用品';
-                }}>
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '收納用品')}>
                   收納用品
                 </a>
-                <a className="dropdown-item" href="#" onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/products?category=收納用品&subcategory=收納盒';
-                }}>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納盒')}>
                   收納盒 / 收納箱
                 </a>
               </div>
@@ -1116,9 +1070,8 @@ export default function PidPage({ params }) {
               {displayImages.map((image, index) => (
                 <div
                   key={index}
-                  className={`thumbnail ${
-                    selectedImage === index ? "active" : ""
-                  }`}
+                  className={`thumbnail ${selectedImage === index ? "active" : ""
+                    }`}
                   onClick={() => setSelectedImage(index)}
                 >
                   <img src={image} alt={`${productData.name} ${index + 1}`} />
@@ -1237,9 +1190,8 @@ export default function PidPage({ params }) {
                   {productData.colors?.map((color) => (
                     <div
                       key={color.id}
-                      className={`color ${
-                        selectedColor?.id === color.id ? "selected" : ""
-                      }`}
+                      className={`color ${selectedColor?.id === color.id ? "selected" : ""
+                        }`}
                       style={{
                         backgroundColor: getColorCode(color.color_name),
                       }}
@@ -1273,9 +1225,8 @@ export default function PidPage({ params }) {
                   }}
                 >
                   <i
-                    className={`fa-${
-                      isWishlisted ? "solid" : "regular"
-                    } fa-heart`}
+                    className={`fa-${isWishlisted ? "solid" : "regular"
+                      } fa-heart`}
                   ></i>
                 </div>
               </div>
@@ -1286,14 +1237,17 @@ export default function PidPage({ params }) {
               <button
                 className="add-to-cart-btn"
                 onClick={() => {
-                  // console.log("商品資料：", productData);
-                  // addToCart(productData, quantity, selectedColor, selectedSize);
-                  // ------------------------
-                  onAdd(productData, quantity, selectedColor, selectedSize);
-                  // handleAddToCart();
-                  // 跳出訊息(呼叫吐司訊息)
-                  toast.success(`${productData.name} 已成功加入購物車！`);
-                  // ------------------------
+                  if (!selectedColor) {
+                    toast.error('請選擇顏色');
+                    return;
+                  }
+
+                  if (!selectedSize) {
+                    toast.error('請選擇尺寸');
+                    return;
+                  }
+                  addToCart(productData, quantity, selectedColor, selectedSize);
+                  openSuccessModal(productData, quantity, selectedColor, selectedSize);
                 }}
               >
                 加入購物車
@@ -1443,7 +1397,6 @@ export default function PidPage({ params }) {
           </div>
         </div>
 
-<<<<<<< HEAD
         <SimilarProducts
           currentProductId={parseInt(productId)}
           handleWishlistToggle={handleWishlistToggle}
@@ -1451,21 +1404,11 @@ export default function PidPage({ params }) {
           addToCart={addToCart}
           handleCartClick={handleCartClick}
         />
-=======
-        <SimilarProducts 
-  currentProductId={parseInt(productId)}
-  handleWishlistToggle={handleWishlistToggle}
-  isProductInWishlist={isProductInWishlist}
-  addToCart={onAdd}
-  handleCartClick={handleCartClick}
-/>
->>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
 
 
         <RandomShowcaseSection />
 
 
-<<<<<<< HEAD
         <Bestseller
           currentProductId={parseInt(productId)}
           handleWishlistToggle={handleWishlistToggle}
@@ -1483,25 +1426,6 @@ export default function PidPage({ params }) {
           addToCart={addToCart}
           handleCartClick={handleCartClick}
         />
-=======
-        <Bestseller 
-  currentProductId={parseInt(productId)}
-  handleWishlistToggle={handleWishlistToggle}
-  isProductInWishlist={isProductInWishlist}
-  addToCart={onAdd}
-  handleCartClick={handleCartClick}
-/>
-
-<RecentViewedProducts
-  className="middle-content"
-  currentProductId={productId}
-  maxItems={8}
-  handleWishlistToggle={handleWishlistToggle}
-  isProductInWishlist={isProductInWishlist}
-  addToCart={onAdd}
-  handleCartClick={handleCartClick}
-/>
->>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
       </div>
       {/* 收藏選擇彈窗 */}
       {showWishlistModal && (
@@ -1564,9 +1488,8 @@ export default function PidPage({ params }) {
                             <div
                               key={color.id}
                               onClick={() => setSelectedColor(color)}
-                              className={`wishlist-color-option ${
-                                selectedColor?.id === color.id ? "selected" : ""
-                              }`}
+                              className={`wishlist-color-option ${selectedColor?.id === color.id ? "selected" : ""
+                                }`}
                             >
                               <div
                                 className="wishlist-color-dot"
@@ -1582,7 +1505,6 @@ export default function PidPage({ params }) {
                         )}
                     </div>
                   </div>
-
                   {/* 尺寸選擇 */}
                   <div className="wishlist-form-group">
                     <label className="wishlist-form-label">選擇尺寸</label>
@@ -1595,9 +1517,8 @@ export default function PidPage({ params }) {
                             <div
                               key={size.id}
                               onClick={() => setSelectedSize(size)}
-                              className={`wishlist-size-option ${
-                                selectedSize?.id === size.id ? "selected" : ""
-                              }`}
+                              className={`wishlist-size-option ${selectedSize?.id === size.id ? "selected" : ""
+                                }`}
                             >
                               {size.size_label}
                             </div>
@@ -1605,7 +1526,6 @@ export default function PidPage({ params }) {
                         )}
                     </div>
                   </div>
-
                   {/* 數量選擇 */}
                   <div className="wishlist-form-group">
                     <label className="wishlist-form-label">數量</label>
@@ -1643,12 +1563,11 @@ export default function PidPage({ params }) {
                   </div>
                 </div>
               </div>
-
-
             </div>
           </div>
         </>
       )}
+
 
       {/* 購物車選擇彈窗 */}
       {showCartModal && (
@@ -1724,12 +1643,6 @@ export default function PidPage({ params }) {
           </div>
         </div>
       </div>
-      {/* 吐司訊息用元件(會先隱藏在這頁面內容裡不顯示*/}
-      <ToastContainer />
-<<<<<<< HEAD
-=======
-      // ------------------------
->>>>>>> 2841824e2195df87b75967bea23d9a1596b2f910
     </div>
   );
 }

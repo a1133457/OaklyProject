@@ -531,7 +531,7 @@ export default function SearchResultsPage() {
 
       {/* Hero 區域 */}
       <section className="hero">
-        <img src="/img/lan/header.png" alt="hero" />
+        <img src="/img/lan/header.png" alt="hero" style={{ filter: 'brightness(0.7)' }} />
         <div className="hero-content">
           <h1 className="hero-title">搜尋結果</h1>
         </div>

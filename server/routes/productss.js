@@ -67,7 +67,7 @@ router.get("/", async (req, res) => {
 router.get("/search", async (req, res) => {
   let { q, page = 1, limit = 10 } = req.query;
 
-  console.log("🔍 搜尋API被呼叫:", { q, page, limit });
+  console.log("搜尋API被呼叫:", { q, page, limit });
 
   q = q ? q.trim() : "";
   page = parseInt(page, 10);

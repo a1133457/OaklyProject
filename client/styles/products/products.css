@@ -44,11 +44,12 @@ html{
   height: 100%;
   object-fit: cover;
   transition: opacity 0.3s ease-in-out;
+  
 
-  ;
 
 
 }
+
 
 .alls {
   display: none;
@@ -69,7 +70,7 @@ html{
   font-weight: 700;
   margin: 0;
   color: white;
-  text-shadow: #393939 2px 2px 10px;
+  text-shadow: #505050 2px 2px 10px;
 
 
 }
@@ -229,7 +230,6 @@ html{
 
 /* 主要內容區域 */
 
-/* 基本 hover 行為 */
 .dropdown-toggle {
   cursor: pointer;
 }
@@ -255,8 +255,53 @@ html{
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
+    padding-top: 10px; 
+
+}
+.pulse-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px;
+  gap: 20px;
 }
 
+.pulse-circle {
+  width: 50px;
+  height: 50px;
+  background: #9FA79A;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.products-fade-in {
+  display: contents;
+}
+
+.fade-in-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* 多欄式下拉選單設定 */
 .dropdown-megamenu {
   display: none;
@@ -268,7 +313,6 @@ html{
   border: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-
 }
 
 /* 每一欄 */
@@ -289,7 +333,6 @@ html{
   text-decoration: none;
   cursor: pointer;
   font-weight: bold;
-
 }
 
 .filter-option.active {

@@ -209,16 +209,16 @@ const bestseller = ({ currentProductId,
                                     alt={product.name}
                                     onError={(e) => handleImageError(e, product.id)}
                                 />
-                                <div className="product-actions">
-                                    <button
-                                        className="action-btn add-to-cart-action"
+                                <button className="action-btn add-to-cart-action">
+                                    <div
+                                        className="product-actions"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleCartClick && handleCartClick(product, e);
                                         }}>
                                         加入購物車
-                                    </button>
-                                </div>
+                                    </div>
+                                </button>
                             </div>
                             <div className="product-info">
                                 <div className="product-info">
