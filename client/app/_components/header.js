@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePathname } from 'next/navigation';
 import { useAuth } from "@/hooks/use-auth";
 import "@/styles/header.css";
 // import { useCart } from "@/app/contexts/CartContext";
 
 export default function Header() {
   const { user, logout, isLoading } = useAuth();
+  const pathname = usePathname();
   // const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,6 +73,11 @@ export default function Header() {
       setIsInputFocused(false);
     }
   };
+
+  // 登入/註冊頁，不顯示 header
+  if (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) {
+    return null;
+  }
 
   return (
     <div className="container-fluid header">

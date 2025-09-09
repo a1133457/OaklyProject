@@ -1,9 +1,16 @@
 "use client"
-
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import '@/styles/footer/footer.css';
 
 const Footer = () => {
+  const pathname = usePathname();
+
+  // 登入/註冊頁，不顯示 footer
+  if (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) {
+    return null;
+  }
+
   return (
     <footer className="footer">
      
