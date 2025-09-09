@@ -5,8 +5,8 @@
     box-sizing: border-box;
 }
 
-html,
-body {
+/* html,
+{
     width: 100%;
     max-width: 1920px;
     min-width: 1200px;
@@ -16,11 +16,10 @@ body {
     box-sizing: border-box;
     
     background-color: #ffffff;
-}
+} */
 
 body {
     font-family: 'Noto Sans TC';
-    color: white;
     min-width: 1200px;
     max-width: 1920px;
     overflow-x: hidden;

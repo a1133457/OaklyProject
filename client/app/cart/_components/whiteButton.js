@@ -1,14 +1,16 @@
 "use client";
 
 import "@/styles/cart/button.css";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function WhiteButton({ step, to }) {
+  const router = useRouter();
+  const goTo = () => {
+    router.push(`${to}`);
+  }
   return (
-    // <Link href="{to}" alt="">
-      <button className="white-button">
-        <h6>{step}</h6>
-      </button>
-    // </Link>
+    <button onClick={goTo} className="white-button">
+      <h6>{step}</h6>
+    </button>
   );
 }

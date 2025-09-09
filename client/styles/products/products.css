@@ -5,8 +5,7 @@
   box-sizing: border-box;
 }
 
-html,
-body {
+html{
   /* height: 100%; 移除這行 */
   width: 100%;
   max-width: 1920px;
@@ -1348,8 +1347,8 @@ span {
 
   html,
   body {
-    width: 100% !important;
-    min-height: 100% !important;
+    width: 430px;
+    min-height: 100%;
   }
 
   .sub-nav {

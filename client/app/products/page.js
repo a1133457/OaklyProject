@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
-import { useCart } from '@/app/contexts/CartContext';
+// import { useCart } from '@/app/contexts/CartContext';
 
 
 

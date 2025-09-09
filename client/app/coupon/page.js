@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 // 針對單一頁面使用css modules技術
 import styles from "@/styles/coupon/coupon.module.css";
 
@@ -13,6 +13,27 @@ import MemberCard from "./_components/MemberCard";
 
 export default function CouponPage() {
   const [coupons, setCoupons] = useState([]);
+
+  const handleClaimCoupon = async (couponId) => {
+    const userId = 1;
+    try {
+      const result = await fetch(
+        `http://localhost:3005/api/user/coupons/${userId}/${couponId}`,
+        {
+          method: "POST",
+        }
+      );
+      const data = await result.json();
+      if(data.status === 'success'){
+        alert('領取成功')
+      }else{
+        alert(data.message)
+      }
+    } catch (err) {
+      console.log('優惠券領取失敗',err);
+    }
+  };
+
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
@@ -26,6 +47,10 @@ export default function CouponPage() {
     };
     fetchCoupons();
   }, []);
+
+  useEffect(() => {
+    //要寫
+  });
 
   return (
     <>
@@ -74,6 +99,8 @@ export default function CouponPage() {
                       ? "不限金額"
                       : `最低消費$${coupon.min_discount}`
                   }
+                  couponId={coupon.id}
+                  onClaim={handleClaimCoupon}
                 />
               ))}
             </div>

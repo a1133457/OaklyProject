@@ -281,7 +281,8 @@ router.post("/login", upload.none(), async (req, res) => {
       throw err;
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;
@@ -304,11 +305,11 @@ router.post("/login", upload.none(), async (req, res) => {
       mail: user.mail,
       head: user.head,
     }
-    
+
     res.status(200).json({
       status: "success",
       message: "登入成功",
-      data: {token, user: newUser},
+      data: { token, user: newUser },
     });
   } catch (error) {
     // 補獲錯誤
@@ -403,7 +404,7 @@ router.post("/status", checkToken, async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "處於登入狀態",
-      data: {token, user: newUser},
+      data: { token, user: newUser },
     });
   } catch (error) {
     // 補獲錯誤

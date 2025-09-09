@@ -7,8 +7,8 @@ import { AuthProvider } from "@/hooks/use-auth";
 import "@/styles/globalsHui.css"
 import Header from "./_components/header";
 import Footer from "./_components/footer"
-// import { CartProvider } from "@/hooks/use-cart";
-import { CartProvider } from './contexts/CartContext.js';
+import { CartProvider } from "@/hooks/use-cart";
+// import { CartProvider } from './contexts/CartContext.js';
 
 
 export const metadata = {
@@ -33,13 +33,13 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <AuthProvider>
-          <CartProvider>
+          {/* <CartProvider> */}
             <ArticleProvider>
               <Header />
               {children}
               <Footer />
             </ArticleProvider>
-          </CartProvider>
+          {/* </CartProvider> */}
         </AuthProvider>
       </body>
 
