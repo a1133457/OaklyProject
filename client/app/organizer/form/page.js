@@ -14,6 +14,8 @@ import Hero from "../_components/Hero";
 
 
 export default function FormPage() {
+  const router = useRouter();
+
   const [SelectedOrganizers, setSelectedOrganizers] = useState(""); //整理師
   const [selectedCity, setSelectedCity] = useState(""); //縣市
   const [selectedDistrict, setSelectedDistrict] = useState(""); //區域
@@ -28,7 +30,46 @@ export default function FormPage() {
   const [note, setNote] = useState("");                 // 備註
   const [isConfirmed, setIsConfirmed] = useState(false); // 確認checkbox
   const [selectedFiles, setSelectedFiles] = useState([]); // 上傳的檔案
-  const router = useRouter();
+
+  //登入驗證
+  const token = localStorage.getItem('reactLoginToken')
+  const userStr = localStorage.getItem('user')
+
+  // 處理跳轉
+  useEffect(() => {
+    //沒登入的跳轉
+    if (!token || !userStr) {
+      router.push('/auth/login')
+      return
+    }
+    
+  }, [router, token, userStr])
+  
+  //解析token
+  if(!token || !userStr){
+     return <div>載入中...</div>
+  }
+
+  const user = JSON.parse(userStr)
+  const userId = user.id;
+
+  const userResult = useFetch(`http://localhost:3005/api/users/${userId}`)
+  // 使用者 fetch
+  const currentUser = userResult.data ? userResult.data.data : null
+  if (userResult.error) {
+    console.error("載入使用者資料失敗:", userResult.error)
+  }
+
+  useEffect(() => {
+    if (currentUser) {
+      setUserForm({
+        name: currentUser.name,
+        email: currentUser.email,
+        phone: currentUser.phone
+      })
+    }
+  }, [currentUser])
+
 
   // 整理師fetch
   const organizerResult = useFetch("http://localhost:3005/api/organizers")
@@ -48,9 +89,9 @@ export default function FormPage() {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     //限制4張
-    if(files.length > 4){
+    if (files.length > 4) {
       alert('最多只能上傳4張圖片!');
-      e.target.value ="";
+      e.target.value = "";
       return;
     }
     setSelectedFiles(files);
@@ -64,26 +105,6 @@ export default function FormPage() {
     return minDate.toISOString().split('T')[0]
   }
 
-  // ===(測試insert預約表單)之後要改獲取當前使用者的登入資料status!!!!!!!!!
-  // 使用者 fetch
-  const userResult = useFetch("http://localhost:3005/api/users")
-  const users = userResult.data ? userResult.data.data : []
-  if (userResult.error) {
-    console.error("載入使用者資料失敗:", userResult.error)
-  }
-
-  useEffect(() => {
-    if (users && users.length > 0) {
-      const currentUser = users[0]; //有資料的情況下 他是第一筆
-      console.log('選中的使用者', currentUser);
-
-      setUserForm({
-        name: currentUser.name,
-        email: currentUser.email,
-        phone: currentUser.phone
-      })
-    }
-  }, [users]) // 因為有在資料載入後 執行額外的動作 所以需要[users]
 
 
   // 地區北中南的地區分類
@@ -120,7 +141,7 @@ export default function FormPage() {
     const formData = new FormData();
 
     // 加入一般資料
-    formData.append('user_id', 1);
+    formData.append('user_id', userId);
     formData.append('city', selectedCity);
     formData.append('district', selectedDistrict);
     formData.append('address', address);

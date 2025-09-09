@@ -8,6 +8,7 @@ import styles from "@/styles/userCoupon/userCoupon.module.css";
 import TabItem from "@/app/_components/TabItem";
 // 自訂組件 (專用)
 import "@/styles/btnReset/btnReset.css";
+import CartCoupon from "./_components/CartCoupon";
 import CanUseCoupon from "./_components/CanUseCoupon";
 import UsedCoupon from "./_components/UsedCoupon";
 import Link from "next/link";
@@ -68,35 +69,40 @@ export default function UserCouponPage() {
                     date={`${coupon.get_at.split("T")[0]} – ${
                       coupon.expire_at.split("T")[0]
                     }`}
-                    costCate="$ "
-                    cost={parseInt(coupon.discount)}
+                    costCate1={coupon.discount_type === 1 ? "$ " : ""}
+                    cost={
+                      coupon.discount_type === 1
+                        ? parseInt(coupon.discount)
+                        : parseInt(coupon.discount * 100)
+                    }
+                    costCate2={coupon.discount_type === 1 ? "" : " 折"}
                   />
-                ))}
+                ))}            
             {activeTab === "used" &&
               userCoupons
-              .filter((coupon) => coupon.status === 1)
-              .map((coupon) => (
-                <UsedCoupon
-                  key={coupon.id}
-                  tag={
-                    coupon.category_names &&
-                    coupon.category_names.split(",").length >= 6
-                      ? "全館適用"
-                      : `${coupon.category_names}適用`
-                  }
-                  name={coupon.name}
-                  smallCost={`滿 $${coupon.min_discount} 使用`}
-                  usedDate={`${coupon.used_at.split("T")[0]} 使用完畢
+                .filter((coupon) => coupon.status === 1)
+                .map((coupon) => (
+                  <UsedCoupon
+                    key={coupon.id}
+                    tag={
+                      coupon.category_names &&
+                      coupon.category_names.split(",").length >= 6
+                        ? "全館適用"
+                        : `${coupon.category_names}適用`
+                    }
+                    name={coupon.name}
+                    smallCost={`滿 $${coupon.min_discount} 使用`}
+                    usedDate={`${coupon.used_at.split("T")[0]} 使用完畢
                   `}
-                  costCate1={coupon.discount_type === 1 ? "$ " : ""}
-                  cost={
-                    coupon.discount_type === 1
-                      ? parseInt(coupon.discount)
-                      : parseInt(coupon.discount * 100)
-                  }
-                  costCate2={coupon.discount_type === 2 ? "" : " 折"}
-                />
-              ))}
+                    costCate1={coupon.discount_type === 1 ? "$ " : ""}
+                    cost={
+                      coupon.discount_type === 1
+                        ? parseInt(coupon.discount)
+                        : parseInt(coupon.discount * 100)
+                    }
+                    costCate2={coupon.discount_type === 1 ? "" : " 折"}
+                  />
+                ))}
           </div>
         </div>
       </section>

@@ -1,7 +1,7 @@
 import CanUseLeft from './CanUseLeft'
 import styles from '@/styles/userCoupon/userCoupon.module.css'
 
-export default function CanUseCoupon({ tag, name, smallCost, date, costCate, cost }) {
+export default function CanUseCoupon({ tag, name, smallCost, date, costCate1, costCate2, cost }) {
   return (
     <>
       <div
@@ -18,8 +18,9 @@ export default function CanUseCoupon({ tag, name, smallCost, date, costCate, cos
           <p className="t-primary03">{date}</p>
         </div>
         <h3 className="t-secondary01">
-          {costCate}
+          {costCate1}
           <span className={styles.cost}>{cost}</span>
+          {costCate2}
         </h3>
         <CanUseLeft />
       </div>
