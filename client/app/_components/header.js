@@ -147,7 +147,8 @@ export default function Header() {
           {user ? (
             <div className="user-log">
               <button>
-                <i className="fa-solid fa-circle-user"></i>
+              <Link href="/user/edit"><i className="fa-solid fa-circle-user"></i></Link>
+                
               </button>
               <button onClick={handleLogout}>
                 <h6>登出</h6>
