@@ -43,7 +43,7 @@ const userId = user?.id;
 
 // 所有 useFetch 都在這裡
 const userResult = useFetch(
-  userId ? `http://localhost:3005/api/users/${userId}` : null
+ `http://localhost:3005/api/users/${userId}`
 );
 const organizerResult = useFetch("http://localhost:3005/api/organizers");
 const taiwanResult = useFetch("/TwCities.json");
