@@ -60,8 +60,8 @@ export default function CartCard({ type }) {
                     />
                     <div className="card-title">
                       <h6>{item.name}</h6>
-                      <p>顏色: {item.color.color_name || "無顏色"}</p>
-                      <p>size: {item.size.size_label || "無尺寸"}</p>
+                      <p>顏色: {item.colors.color_name || "無顏色"}</p>
+                      <p>size: {item.sizes.size_label || "無尺寸"}</p>
                       {/* <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p> */}
                     </div>
                   </div>
@@ -116,8 +116,8 @@ export default function CartCard({ type }) {
                     />
                     <div className="card-title">
                       <h6>{item.name}</h6>
-                      <p>顏色: {item.color.color_name || "無顏色"}</p>
-                      <p>size: {item.size.size_label || "無尺寸"}</p>
+                      <p>顏色: {item.colors.color_name || "無顏色"}</p>
+                      <p>size: {item.sizes.size_label || "無尺寸"}</p>
                       {/* <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p> */}
                       <div className="price-one">
                         <h6>${item.price}</h6>
@@ -175,8 +175,8 @@ export default function CartCard({ type }) {
                   />
                   <div className="card-title">
                     <h5>{item.name}</h5>
-                    <p>顏色: {item.color.color_name || "無顏色"}</p>
-                    <p>size: {item.size.size_label || "無尺寸"}</p>
+                    <p>顏色: {item.colors.color_name || "無顏色"}</p>
+                    <p>size: {item.sizes.size_label || "無尺寸"}</p>
                     {/* <p>材質: {item.material}</p> */}
                   </div>
                 </div>

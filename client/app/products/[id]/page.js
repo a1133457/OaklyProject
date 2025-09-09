@@ -869,7 +869,7 @@ const [cartLoading, setCartLoading] = useState(false);
     }
   
     const product = currentCartProduct || productData;
-    addToCart(product, cartQuantity, selectedColor, selectedSize);
+    onAdd(product, cartQuantity, selectedColor, selectedSize);
     setShowCartModal(false);
     document.body.classList.remove('no-scroll');
     
@@ -1092,8 +1092,8 @@ const [cartLoading, setCartLoading] = useState(false);
                   // console.log("商品資料：", productData);
                   // addToCart(productData, quantity, selectedColor, selectedSize);
                   // ------------------------
-                  // onAdd(productData, quantity, selectedColor, selectedSize);
-                  handleAddToCart();
+                  onAdd(productData, quantity, selectedColor, selectedSize);
+                  // handleAddToCart();
                   // 跳出訊息(呼叫吐司訊息)
                   toast.success(`${productData.name} 已成功加入購物車！`);
                   // ------------------------
@@ -1250,7 +1250,7 @@ const [cartLoading, setCartLoading] = useState(false);
   currentProductId={parseInt(productId)}
   handleWishlistToggle={handleWishlistToggle}
   isProductInWishlist={isProductInWishlist}
-  addToCart={addToCart}
+  addToCart={onAdd}
   handleCartClick={handleCartClick}
 />
 
@@ -1262,7 +1262,7 @@ const [cartLoading, setCartLoading] = useState(false);
   currentProductId={parseInt(productId)}
   handleWishlistToggle={handleWishlistToggle}
   isProductInWishlist={isProductInWishlist}
-  addToCart={addToCart}
+  addToCart={onAdd}
   handleCartClick={handleCartClick}
 />
 
@@ -1272,7 +1272,7 @@ const [cartLoading, setCartLoading] = useState(false);
   maxItems={8}
   handleWishlistToggle={handleWishlistToggle}
   isProductInWishlist={isProductInWishlist}
-  addToCart={addToCart}
+  addToCart={onAdd}
   handleCartClick={handleCartClick}
 />
       </div>

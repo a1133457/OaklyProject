@@ -35,11 +35,27 @@ export default function ContactPerson() {
 
     try {
       const savedUser = localStorage.getItem("user");
+      const savedBuyer = localStorage.getItem("buyer");
+      if (savedBuyer) {
+        const buyerData = JSON.parse(savedUser);
+        console.log("從 localStorage 讀取的 buyer:", userData);
+
+        setBuyer({
+          name: buyerData.name || userData.updateUser?.name || "",
+          phone: buyerData.phone || userData.updateUser?.phone || "",
+          email: buyerData.email || userData.updateUser?.email || "",
+          address: `${
+            buyerData.postcode || userData.updateUser?.postcode || ""
+          }${buyerData.city || userData.updateUser?.city || ""}${
+            buyerData.area || userData.updateUser?.area || ""
+          }${buyerData.address || userData.updateUser?.address || ""}`,
+        });
+      }
       if (savedUser) {
         const userData = JSON.parse(savedUser);
         console.log("從 localStorage 讀取的 user:", userData);
 
-        const buyerData = userData.updateUser?.buyer || {};
+        const buyerData = buyer || {};
         const recipientData = userData.updateUser?.recipient || {};
 
         setBuyer({

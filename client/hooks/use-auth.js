@@ -227,45 +227,6 @@ export function AuthProvider({ children }) {
     };
     checkToken();
   }, []);
-        if (!token) {
-            setUser(null);
-            setIsLoading(false);
-            return;
-        }
-        const checkToken = async () => {
-            try {
-                const res = await fetch(API, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                const result = await res.json();
-                if (result.status == "success") {
-                    const token = result.data.token; // 伺服器會回新的 30 分 token
-                    setUser(result.data.user);
-                    localStorage.setItem(appKey, token); // 覆蓋舊的 token
-                    setIsLoading(false);
-                } else {
-                    //alert(result.message);
-                    setIsLoading(false);
-                    // setUser(null);
-                    // localStorage.removeItem(appKey);
-                    // router.push('/auth/login');
-                    // router.replace(loginRoute)// 👈 token 驗證失敗跳登入頁 這是全域請在各頁導頁
-                    // 接 吐司？
-                }
-            } catch (error) {
-                console.log(`解析token失敗: ${error.message}`);
-                setUser(null);
-                localStorage.removeItem(appKey);
-                // router.push('/auth/login');
-                // router.replace(loginRoute);//解析錯誤回登入頁 這是全域請在各頁導頁
-            }
-        };
-        checkToken();
-    }, []);
-
 
   return (
     <AuthContext.Provider
