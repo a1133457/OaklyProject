@@ -1,8 +1,8 @@
 "use client";
 //react
 import { useState, useEffect, useRef } from "react";
-import { useFetch } from '@/hooks/use-fetch'
-import { useRouter } from 'next/navigation';
+import { useFetch } from "@/hooks/use-fetch";
+import { useRouter } from "next/navigation";
 
 // 針對單一頁面使用css modules技術
 import styles from "@/styles/organizer/organizer.module.css";
@@ -12,169 +12,193 @@ import GreenBorderButton from "@/app/_components/GreenBorderButton";
 //自訂組件 整理師專用
 import Hero from "../_components/Hero";
 
-
 export default function FormPage() {
-  const router = useRouter();
+const router = useRouter();
 
-  const [SelectedOrganizers, setSelectedOrganizers] = useState(""); //整理師
-  const [selectedCity, setSelectedCity] = useState(""); //縣市
-  const [selectedDistrict, setSelectedDistrict] = useState(""); //區域
-  const [userForm, setUserForm] = useState({
-    name: "",
-    email: "",
-    phone: ""
-  });
-  //
-  const [address, setAddress] = useState("");           // 詳細地址
-  const [serviceDate, setServiceDate] = useState("");   // 服務日期
-  const [note, setNote] = useState("");                 // 備註
-  const [isConfirmed, setIsConfirmed] = useState(false); // 確認checkbox
-  const [selectedFiles, setSelectedFiles] = useState([]); // 上傳的檔案
+const [SelectedOrganizers, setSelectedOrganizers] = useState(""); //整理師
+const [selectedCity, setSelectedCity] = useState(""); //縣市
+const [selectedDistrict, setSelectedDistrict] = useState(""); //區域
+const [userForm, setUserForm] = useState({
+  name: "",
+  email: "",
+  phone: "",
+});
+const [address, setAddress] = useState(""); // 詳細地址
+const [serviceDate, setServiceDate] = useState(""); // 服務日期
+const [note, setNote] = useState(""); // 備註
+const [isConfirmed, setIsConfirmed] = useState(false); // 確認checkbox
+const [selectedFiles, setSelectedFiles] = useState([]); // 上傳的檔案
 
-  //登入驗證
-  const token = localStorage.getItem('reactLoginToken')
-  const userStr = localStorage.getItem('user')
+// 登入相關的 state
+const [token, setToken] = useState(null);
+const [userStr, setUserStr] = useState(null);
+const [isLoading, setIsLoading] = useState(true);
 
-  // 處理跳轉
-  useEffect(() => {
-    //沒登入的跳轉
-    if (!token || !userStr) {
-      router.push('/auth/login')
-      return
-    }
-    
-  }, [router, token, userStr])
-  
-  //解析token
-  if(!token || !userStr){
-     return <div>載入中...</div>
+// 圖片的input 創建 ref 來控制 input
+const fileInputRef = useRef(null);
+
+// 安全地解析用戶資料
+const user = userStr ? JSON.parse(userStr) : null;
+const userId = user?.id;
+
+// 所有 useFetch 都在這裡
+const userResult = useFetch(
+  userId ? `http://localhost:3005/api/users/${userId}` : null
+);
+const organizerResult = useFetch("http://localhost:3005/api/organizers");
+const taiwanResult = useFetch("/TwCities.json");
+
+// 定義所有變數讓 useEffect 可以使用
+const currentUser = userResult.data ? userResult.data.data : null;
+const organizers = organizerResult.data ? organizerResult.data.data : [];
+const taiwanData = taiwanResult.data || [];
+
+// 處理登入
+useEffect(() => {
+  const tokenFromStorage = localStorage.getItem("reactLoginToken");
+  const userFromStorage = localStorage.getItem("user");
+
+  setToken(tokenFromStorage);
+  setUserStr(userFromStorage);
+
+  //沒登入的跳轉
+  if (!tokenFromStorage || !userFromStorage) {
+    router.push("/auth/login");
+    return;
   }
 
-  const user = JSON.parse(userStr)
-  const userId = user.id;
+  setIsLoading(false);
+}, [router]);
 
-  const userResult = useFetch(`http://localhost:3005/api/users/${userId}`)
-  // 使用者 fetch
-  const currentUser = userResult.data ? userResult.data.data : null
-  if (userResult.error) {
-    console.error("載入使用者資料失敗:", userResult.error)
+// 當 API 返回用戶資料時設置表單
+useEffect(() => {
+  if (currentUser) {
+    setUserForm({
+      name: currentUser.name,
+      email: currentUser.email,
+      phone: currentUser.phone,
+    });
+  }
+}, [currentUser]);
+
+//解析token
+if (isLoading || !token || !userStr) {
+  return <div>載入中...</div>;
+}
+
+//使用fetch錯誤處理
+if (userResult.error && !userResult.data) {
+  console.error("載入使用者資料失敗:", userResult.error);
+}
+if (organizerResult.error) {
+  console.error("載入整理師資料失敗:", organizerResult.error);
+}
+if (taiwanResult.error) {
+  console.error("載入地區失敗:", taiwanResult.error);
+}
+
+// 圖片上傳
+const handleFileChange = (e) => {
+  const files = Array.from(e.target.files);
+  //限制4張
+  if (files.length > 4) {
+    alert("最多只能上傳4張圖片!");
+    e.target.value = "";
+    return;
+  }
+  setSelectedFiles(files);
+};
+
+//日期選擇
+const getMinDate = () => {
+  const today = new Date();
+  const minDate = new Date(today);
+  minDate.setDate(today.getDate() + 14);
+  return minDate.toISOString().split("T")[0];
+};
+
+// 地區北中南的地區分類
+const cityRegionMap = {
+  // 北部 - 1
+  臺北市: 1,
+  新北市: 1,
+  桃園市: 1,
+  基隆市: 1,
+  新竹市: 1,
+  新竹縣: 1,
+  // 中部 - 2
+  臺中市: 2,
+  苗栗縣: 2,
+  彰化縣: 2,
+  南投縣: 2,
+  雲林縣: 2,
+  // 南部 - 3
+  嘉義市: 3,
+  嘉義縣: 3,
+  臺南市: 3,
+  高雄市: 3,
+  屏東縣: 3,
+};
+
+
+const handleDivClick = () => {
+  fileInputRef.current.click();
+};
+
+// 收集所有表單的資料
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // 確認要勾
+  if (!isConfirmed) {
+    alert("請確認資訊無誤後，勾選確認框！");
+    return;
   }
 
-  useEffect(() => {
-    if (currentUser) {
-      setUserForm({
-        name: currentUser.name,
-        email: currentUser.email,
-        phone: currentUser.phone
-      })
-    }
-  }, [currentUser])
-
-
-  // 整理師fetch
-  const organizerResult = useFetch("http://localhost:3005/api/organizers")
-  const organizers = organizerResult.data ? organizerResult.data.data : []
-  if (organizerResult.error) {
-    console.error("載入整理師資料失敗:", organizerResult.error)
+  if (selectedFiles.length === 0) {
+    alert("請上傳至少一張照片！");
+    return;
   }
 
-  // 地區JSON fetch
-  const taiwanResult = useFetch("/TwCities.json")
-  const taiwanData = taiwanResult.data || []
-  if (taiwanResult.error) {
-    console.error("載入地區失敗:", taiwanResult.error)
-  }
+  const formData = new FormData();
 
-  // 圖片上傳
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    //限制4張
-    if (files.length > 4) {
-      alert('最多只能上傳4張圖片!');
-      e.target.value = "";
-      return;
-    }
-    setSelectedFiles(files);
-  };
+  // 加入一般資料
+  formData.append("user_id", userId);
+  formData.append("city", selectedCity);
+  formData.append("district", selectedDistrict);
+  formData.append("address", address);
+  formData.append("organizer_id", SelectedOrganizers);
+  formData.append("service_datetime", serviceDate);
+  formData.append("note", note);
 
-  //日期選擇
-  const getMinDate = () => {
-    const today = new Date();
-    const minDate = new Date(today)
-    minDate.setDate(today.getDate() + 14)
-    return minDate.toISOString().split('T')[0]
-  }
+  selectedFiles.forEach((file, index) => {
+    formData.append("photos", file);
+  }); //圖片檔案
 
+  console.log("檔案數量:", selectedFiles.length);
 
-
-  // 地區北中南的地區分類
-  const cityRegionMap = {
-    // 北部 - 1
-    "臺北市": 1, "新北市": 1, "桃園市": 1, "基隆市": 1, "新竹市": 1, "新竹縣": 1,
-    // 中部 - 2  
-    "臺中市": 2, "苗栗縣": 2, "彰化縣": 2, "南投縣": 2, "雲林縣": 2,
-    // 南部 - 3
-    "嘉義市": 3, "嘉義縣": 3, "臺南市": 3, "高雄市": 3, "屏東縣": 3
-  };
-
-  // 圖片的input 創建 ref 來控制 input
-  const fileInputRef = useRef(null);
-  const handleDivClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // 收集所有表單的資料
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    // 確認要勾
-    if (!isConfirmed) {
-      alert('請確認資訊無誤後，勾選確認框！');
-      return;
-    }
-
-    if (selectedFiles.length === 0) {
-      alert('請上傳至少一張照片！');
-      return;
-    }
-
-    const formData = new FormData();
-
-    // 加入一般資料
-    formData.append('user_id', userId);
-    formData.append('city', selectedCity);
-    formData.append('district', selectedDistrict);
-    formData.append('address', address);
-    formData.append('organizer_id', SelectedOrganizers);
-    formData.append('service_datetime', serviceDate);
-    formData.append('note', note);
-
-    selectedFiles.forEach((file, index) => {
-      formData.append('photos', file);
-    }); //圖片檔案
-
-    console.log('檔案數量:', selectedFiles.length);
-
-    // 送出資料
-    try {
-      const response = await fetch('http://localhost:3005/api/user/organizers/add', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('提交成功:', result);
-        router.push('/organizer/form/success'); // 導向成功頁面
-      } else {
-        alert('表單請填寫完整');
+  // 送出資料
+  try {
+    const response = await fetch(
+      "http://localhost:3005/api/user/organizers/add",
+      {
+        method: "POST",
+        body: formData,
       }
-    } catch (error) {
-      console.error('提交錯誤:', error);
-      alert('網路錯誤，請檢查連線');
-    }
-  }
+    );
 
+    if (response.ok) {
+      const result = await response.json();
+      console.log("提交成功:", result);
+      router.push("/organizer/form/success"); // 導向成功頁面
+    } else {
+      alert("表單請填寫完整");
+    }
+  } catch (error) {
+    console.error("提交錯誤:", error);
+    alert("網路錯誤，請檢查連線");
+  }
+};
   return (
     <>
       <Hero />
@@ -302,7 +326,9 @@ export default function FormPage() {
                     name="address"
                     placeholder="請輸入詳細地址"
                     value={address}
-                    onChange={(e) => { setAddress(e.target.value) }}
+                    onChange={(e) => {
+                      setAddress(e.target.value);
+                    }}
                     required
                   />
                 </div>
@@ -321,13 +347,17 @@ export default function FormPage() {
                     className="form-select"
                     name="organizer"
                     required
-                    disabled={!selectedCity}>
+                    disabled={!selectedCity}
+                  >
                     <option value="" disabled>
                       {!selectedCity ? "請先選擇縣市地址" : "選擇整理師"}
                     </option>
                     {selectedCity &&
                       organizers
-                        .filter((organizer) => organizer.region === cityRegionMap[selectedCity])
+                        .filter(
+                          (organizer) =>
+                            organizer.region === cityRegionMap[selectedCity]
+                        )
                         .map((organizer) => (
                           <option key={organizer.id} value={organizer.id}>
                             {organizer.name}
@@ -337,7 +367,8 @@ export default function FormPage() {
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
                   <label className="form-label t-primary03">
-                    <span className="label700">希望服務日期*</span>（為確保最佳服務品質，請選擇2週後的日期）
+                    <span className="label700">希望服務日期*</span>
+                    （為確保最佳服務品質，請選擇2週後的日期）
                   </label>
                   <input
                     type="date"
@@ -418,13 +449,16 @@ export default function FormPage() {
                   id="confirm"
                   className="form-check-input me-2 "
                   checked={isConfirmed}
-                  onChange={(e) => { setIsConfirmed(e.target.checked) }}
+                  onChange={(e) => {
+                    setIsConfirmed(e.target.checked);
+                  }}
                 />
                 請確認以上資訊無誤，整理師將依據您提供的資料安排聯繫！
               </label>
               <div className="d-flex justify-content-center">
-                <GreenBorderButton
-                  onClick={handleSubmit}>提交表單</GreenBorderButton>
+                <GreenBorderButton onClick={handleSubmit}>
+                  提交表單
+                </GreenBorderButton>
               </div>
             </form>
           </div>
