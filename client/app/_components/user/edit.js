@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+
 // import Sidebar from '../_components/sidebar'
 // import HeaderImg from '../_components/HeaderImg'
 import styles from '@/app/user/user.module.css'
@@ -27,12 +28,13 @@ import ButtonGroup from '@/app/_components/ButtonGroup'
 export default function UserEditForm() {
     // api
     const router = useRouter();
-    const { user, logout } = useAuth();
+    const { user, logout, updateUserEdit } = useAuth();
+
 
     // 登出按鈕
     // const onLogout = () => {
     //     logout();
-     
+
     // };
 
 
@@ -43,6 +45,7 @@ export default function UserEditForm() {
     const [city, setCity] = useState('')
     const [district, setDistrict] = useState('')
     const [addr, setAddr] = useState('')
+    const [postcode, setPostcode] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [password2, setPassword2] = useState('')
@@ -50,6 +53,7 @@ export default function UserEditForm() {
     // 新增：頭像預覽 URL（避免每次 render 都 createObjectURL）
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [errors, setErrors] = useState({})
+    const [saving, setSaving] = useState(false)
 
     // 接上面新增頭像
     useEffect(() => {
@@ -66,7 +70,8 @@ export default function UserEditForm() {
         setBirthday(user.birthday ?? '')
         setPhone(user.phone ?? '')
         setCity(user.city ?? '')
-        setDistrict(user.district ?? '')
+        setDistrict(user.area ?? user.district ?? '')
+        setPostcode(user.postcode ?? '')
         setAddr(user.address ?? '')
         setEmail(user.email ?? '')
         setPassword('')     // ✅ 密碼不回填
@@ -86,28 +91,38 @@ export default function UserEditForm() {
     //     console.log('送出表單:', { name, birthday, phone, city, district, addr, email, password, password2 })
     // }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         const next = {}
         if (password && password !== password2) next.password2 = '兩次密碼不一致'
         setErrors(next)
         if (Object.keys(next).length) return
 
-        // === 串接「修改會員資料」API ===
-        // 👉 請把 API 改成你後端的路由（例如 /api/users/profile 或 /api/users/:id）
-        const API = 'http://localhost:3005/api/users/profile';
-        const token = localStorage.getItem('reactLoginToken');
+        if (!user?.id) {
+            alert('找不到使用者 ID，請重新登入後再試')
+            return
+        }
 
-        const form = new FormData();
-        form.append('name', name);
-        form.append('birthday', birthday);
-        form.append('phone', phone);
-        form.append('city', city);
-        form.append('district', district);
-        form.append('address', addr);
-        form.append('email', email);
-        if (password) form.append('password', password); // 有改才送
-        if (avatar) form.append('avatar', avatar);       // 有選才送
+        // 後端目前只更新文字欄位：name/phone/postcode/city/area/address
+        // district → area、addr → address
+        const payload = {
+            name,
+            phone,
+            postcode,
+            city,
+            area: district,
+            address: addr,
+        }
+
+        try {
+            setSaving(true)
+            const { success, message } = await updateUserEdit(user.id, payload)
+            setSaving(false)
+            alert(success ? (message || '更新成功') : (message || '更新失敗'))
+        } catch (err) {
+            setSaving(false)
+            alert('伺服器錯誤，請稍後再試')
+        }
     }
 
     // 表單重設
@@ -134,7 +149,7 @@ export default function UserEditForm() {
                     {/* 大頭貼上傳 */}
                     <div className={`${styles.avatarUpload} ${styles.uploader}`}>
                         <label htmlFor="avatarInput">
-                            <img src={avatar ? URL.createObjectURL(avatar) : '/img/ting/pexels-anntarazevich-8152002.jpg'}
+                            <img src={avatarPreview || user?.avatar || '/img/ting/pexels-anntarazevich-8152002.jpg'}
                                 alt="頭像預覽" className={styles.avatarImg} />
 
                         </label>

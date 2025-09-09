@@ -16,9 +16,6 @@ export function AuthProvider({ children }) {
     const [isLoading, setIsLoading] = useState(true);
     const [item, setItem] = useState([]);
     const router = useRouter();
-    // const pathname = usePathname();
-    // const loginRoute = "/auth/login";
-    // const protectedRoutes = ["/user", "/order/detail",];
 
     // register------------------------------------
     const register = async (name, email, password) => {
@@ -41,9 +38,9 @@ export function AuthProvider({ children }) {
         formData.append("password", password);
 
         try {
-            const res = await fetch(API, { 
-                method: "POST", 
-                body: formData 
+            const res = await fetch(API, {
+                method: "POST",
+                body: formData
             });
             const result = await res.json();
 
@@ -133,25 +130,34 @@ export function AuthProvider({ children }) {
         }
     };
 
-    //   const list = async () => {
-    //     const API = "http://localhost:3005/api/users";
-    //     try {
-    //       const res = await fetch(API);
-    //       const result = await res.json();
-    //       console.log(result);
+    // updateUserEdit------------------------------------
+    const updateUserEdit = async (id, data) => {
+        const API = `http://localhost:3005/api/users/${id}`;
+        const token = localStorage.getItem(appKey);
 
+        try {
+            const res = await fetch(API, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}`},
+                body: new URLSearchParams(data), // 因為後端用 multer.none()
+            });
+            const result = await res.json();
 
-    //       if (result.status == "success") {
-    //         setUsers(result.data);
-    //       } else {
-    //         throw new Error(result.message);
-    //       }
-    //     } catch (error) {
-    //       console.log(`使用者列表取得: ${error.message}`);
-    //       setUsers([]);
-    //       alert(error.message);
-    //     }
-    //   };
+            if (result.status === "success") {
+                // 更新前端 user 狀態
+                // const newUser = { ...user, ...data };
+                const newUser = result.data?.user ? result.data.user : { ...user, ...data };
+                setUser(newUser);
+                localStorage.setItem(userKey, JSON.stringify(newUser));
+                return { success: true, message: result.message };
+            } else {
+                return { success: false, message: result.message };
+            }
+        } catch (error) {
+            return { success: false, message: "伺服器錯誤" };
+        }
+    };
+
 
     // 更新訂購人跟收件人---------------------------
     const updateUser = (newData) => {
@@ -187,6 +193,7 @@ export function AuthProvider({ children }) {
     //     }
     // }, [isLoading, user, pathname]);
 
+    // status------------------------------------
     useEffect(() => {
         const API = "http://localhost:3005/api/users/status";
         const token = localStorage.getItem(appKey);
@@ -233,7 +240,8 @@ export function AuthProvider({ children }) {
 
 
     return (
-        <AuthContext.Provider value={{ user, register, login, logout, isLoading, users, updateUser }}>
+        <AuthContext.Provider 
+        value={{ user, register, login, logout, isLoading, users, updateUser, updateUserEdit }}>
             {children}
         </AuthContext.Provider>
     );
