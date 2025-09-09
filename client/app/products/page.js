@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
+
 
 
 
@@ -521,6 +523,35 @@ const fetchHotProducts = async () => {
   };
 
   useEffect(() => {
+    //詳情頁過來分類函數
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    const subcategory = urlParams.get('subcategory');
+    const type = urlParams.get('type');
+    
+    if (type === 'latest') {
+      fetchLatestProducts();
+      return;
+    } 
+    
+    if (type === 'hot') {
+      fetchHotProducts();
+      return;
+    }
+    
+    if (category) {
+      setSelectedCategory(category);
+      const categoryInfo = categoryData[category] || categoryData[''];
+      setCurrentTitle(categoryInfo.title);
+      setCurrentHeroImage(categoryInfo.image);
+      
+      if (subcategory) {
+        setSelectedSubCategory(subcategory);
+      }
+      
+      clearFilters();
+      return;
+    }
     const fetchProducts = async () => {
       try {
         let url = "http://localhost:3005/api/products";

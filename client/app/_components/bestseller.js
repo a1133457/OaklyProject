@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/app/contexts/CartContext';
 
 
-const bestseller = ({ currentProductId, 
-    handleWishlistToggle, 
+const bestseller = ({ currentProductId,
+    handleWishlistToggle,
     isProductInWishlist,
-    addToCart,      
-    handleCartClick 
+    addToCart,
+    handleCartClick
 }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -195,13 +195,13 @@ const bestseller = ({ currentProductId,
                             onClick={() => handleProductClick(product.id)}
                             style={{ width: `${100 / products.length}%` }}
                         >
-                           <button
-  className={`wishlist-heart-btn ${isProductInWishlist(product.id) ? 'active' : ''}`}
-  onClick={(e) => handleWishlistToggle(product, e)}
-  title={isProductInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
->
-  <i className={isProductInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
-</button>
+                            <button
+                                className={`wishlist-heart-btn ${isProductInWishlist(product.id) ? 'active' : ''}`}
+                                onClick={(e) => handleWishlistToggle(product, e)}
+                                title={isProductInWishlist(product.id) ? '從願望清單移除' : '加入願望清單'}
+                            >
+                                <i className={isProductInWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+                            </button>
 
                             <div className="product-image">
                                 <img
@@ -215,7 +215,7 @@ const bestseller = ({ currentProductId,
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleCartClick && handleCartClick(product, e);
-                                          }}>
+                                        }}>
                                         加入購物車
                                     </button>
                                 </div>

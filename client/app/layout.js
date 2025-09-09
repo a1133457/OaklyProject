@@ -33,13 +33,13 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <AuthProvider>
-          {/* <CartProvider> */}
+          <CartProvider>
             <ArticleProvider>
               <Header />
               {children}
               <Footer />
             </ArticleProvider>
-          {/* </CartProvider> */}
+          </CartProvider>
         </AuthProvider>
       </body>
 

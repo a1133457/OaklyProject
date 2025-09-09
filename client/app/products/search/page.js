@@ -12,7 +12,7 @@ export default function SearchResultsPage() {
   const query = searchParams.get('q');
   const page = parseInt(searchParams.get('page') || '1');
 
-  // 完全複用產品頁面的狀態
+  //產品頁面的狀態
   const [selectedFilters, setSelectedFilters] = useState({
     colors: [],
     materials: [],
@@ -43,18 +43,18 @@ export default function SearchResultsPage() {
   const [currentCartProduct, setCurrentCartProduct] = useState(null);
   const [cartQuantity, setCartQuantity] = useState(1);
 
-  
+
   const handleWishlistToggle = async (product, e) => {
     e.stopPropagation();
     e.preventDefault();
-  
+
     if (isWishlisted[product.id]) {
       await removeFromWishlist(product.id);
     } else {
       openWishlistModal(product);
     }
   };
-  
+
   const openWishlistModal = async (product) => {
     setCurrentWishlistProduct(product);
     setSelectedColor(product.colors?.[0] || null);
@@ -62,7 +62,7 @@ export default function SearchResultsPage() {
     setWishlistQuantity(1);
     setShowWishlistModal(true);
     document.body.classList.add('no-scroll');
-  
+
     // 如果商品缺少詳細資料，獲取完整資料
     if (!product.colors || !product.sizes) {
       try {
@@ -78,7 +78,7 @@ export default function SearchResultsPage() {
       }
     }
   };
-  
+
   const removeFromWishlist = async (productId) => {
     try {
       const userId = localStorage.getItem('userId') || 1;
@@ -88,7 +88,7 @@ export default function SearchResultsPage() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-  
+
       const result = await response.json();
       if (result.status === 'success') {
         setIsWishlisted(prev => ({
@@ -129,7 +129,7 @@ export default function SearchResultsPage() {
       }
     }
   };
-  
+
 
   const addToCartFromModal = () => {
     if (!selectedColor || !selectedSize) {
@@ -209,17 +209,17 @@ export default function SearchResultsPage() {
     if (!product || !product.images || product.images.length === 0) {
       return '/img/lan/placeholder.jpg';
     }
-    
+
     const firstImage = product.images[0];
     if (typeof firstImage === 'string') {
       return `http://localhost:3005${firstImage}`;
     } else if (firstImage && firstImage.url) {
       return `http://localhost:3005${firstImage.url}`;
     }
-    
+
     return '/img/lan/placeholder.jpeg';
   };
-  
+
   const getColorCode = (colorName) => {
     const colorMap = {
       '白色': '#ffffff',
@@ -747,8 +747,8 @@ export default function SearchResultsPage() {
 
               {/* 商品網格 - 完全複用產品頁面 */}
               {currentProducts.length > 0 ? (
-              <div className={`products-grid ${viewMode}`} key={viewMode}>
-                {currentProducts.map((product) => (
+                <div className={`products-grid ${viewMode}`} key={viewMode}>
+                  {currentProducts.map((product) => (
                     <div key={product.id} className="productcard" onClick={() => handleProductClick(product.id)} style={{ cursor: 'pointer' }}>
                       <span className="badge-new">新品</span>
                       <div className="image">
@@ -828,7 +828,7 @@ export default function SearchResultsPage() {
                   {renderPaginationButtons()}
                 </div>
               )}
-              {/* 選擇彈窗 */}
+              {/* 收藏選擇彈窗 */}
               {showWishlistModal && (
                 <>
                   <div
@@ -942,120 +942,119 @@ export default function SearchResultsPage() {
                 </>
               )}
               {/* 購物車選擇彈窗 */}
-{/* 購物車選擇彈窗 */}
-{showCartModal && (
-  <>
-    <div
-      className="cart-modal-backdrop"
-      onClick={() => {
-        setShowCartModal(false);
-        document.body.classList.remove('no-scroll');
-      }}
-    ></div>
-
-    <div className="cart-modal-container">
-      <div className="cart-modal-content">
-        <button
-          className="cart-modal-close"
-          onClick={() => {
-            setShowCartModal(false);
-            document.body.classList.remove('no-scroll');
-          }}
-        >
-          ✕
-        </button>
-
-        <div className="cart-modal-header">
-          <h5 className="cart-modal-title">加入購物車</h5>
-        </div>
-
-        <div className="cart-modal-body">
-          <div className="cart-product-image">
-            <img
-              src={getImageUrl(currentCartProduct)}
-              alt={currentCartProduct?.name || ''}
-              onError={(e) => {
-                console.log('彈窗圖片載入失敗:', e.target.src);
-                e.target.src = '/img/lan/placeholder.jpeg';
-              }}
-            />
-          </div>
-          <div className="cart-form-content">
-            <h6 className="cart-product-name">{currentCartProduct?.name}</h6>
-            <p className="cart-product-price">NT$ {currentCartProduct?.price?.toLocaleString()}</p>
-
-            {/* 顏色選擇 */}
-            <div className="cart-form-group">
-              <label className="cart-form-label">選擇顏色</label>
-              <div className="cart-options">
-                {Array.isArray(currentCartProduct?.colors) && currentCartProduct.colors.map((color) => (
+              {showCartModal && (
+                <>
                   <div
-                    key={color.id}
-                    onClick={() => setSelectedColor(color)}
-                    className={`cart-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
-                  >
-                    <div
-                      className="cart-color-dot"
-                      style={{ backgroundColor: getColorCode(color.color_name) }}
-                    ></div>
-                    <span>{color.color_name}</span>
+                    className="cart-modal-backdrop"
+                    onClick={() => {
+                      setShowCartModal(false);
+                      document.body.classList.remove('no-scroll');
+                    }}
+                  ></div>
+
+                  <div className="cart-modal-container">
+                    <div className="cart-modal-content">
+                      <button
+                        className="cart-modal-close"
+                        onClick={() => {
+                          setShowCartModal(false);
+                          document.body.classList.remove('no-scroll');
+                        }}
+                      >
+                        ✕
+                      </button>
+
+                      <div className="cart-modal-header">
+                        <h5 className="cart-modal-title">加入購物車</h5>
+                      </div>
+
+                      <div className="cart-modal-body">
+                        <div className="cart-product-image">
+                          <img
+                            src={getImageUrl(currentCartProduct)}
+                            alt={currentCartProduct?.name || ''}
+                            onError={(e) => {
+                              console.log('彈窗圖片載入失敗:', e.target.src);
+                              e.target.src = '/img/lan/placeholder.jpeg';
+                            }}
+                          />
+                        </div>
+                        <div className="cart-form-content">
+                          <h6 className="cart-product-name">{currentCartProduct?.name}</h6>
+                          <p className="cart-product-price">NT$ {currentCartProduct?.price?.toLocaleString()}</p>
+
+                          {/* 顏色選擇 */}
+                          <div className="cart-form-group">
+                            <label className="cart-form-label">選擇顏色</label>
+                            <div className="cart-options">
+                              {Array.isArray(currentCartProduct?.colors) && currentCartProduct.colors.map((color) => (
+                                <div
+                                  key={color.id}
+                                  onClick={() => setSelectedColor(color)}
+                                  className={`cart-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
+                                >
+                                  <div
+                                    className="cart-color-dot"
+                                    style={{ backgroundColor: getColorCode(color.color_name) }}
+                                  ></div>
+                                  <span>{color.color_name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 尺寸選擇 */}
+                          <div className="cart-form-group">
+                            <label className="cart-form-label">選擇尺寸</label>
+                            <div className="cart-options">
+                              {Array.isArray(currentCartProduct?.sizes) && currentCartProduct.sizes.map((size) => (
+                                <div
+                                  key={size.id}
+                                  onClick={() => setSelectedSize(size)}
+                                  className={`cart-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
+                                >
+                                  {size.size_label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 數量選擇 */}
+                          <div className="cart-form-group">
+                            <label className="cart-form-label">數量</label>
+                            <div className="cart-quantity-controls">
+                              <button
+                                onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
+                                disabled={cartQuantity <= 1}
+                                className="cart-quantity-btn"
+                              >
+                                -
+                              </button>
+                              <span className="cart-quantity-display">{cartQuantity}</span>
+                              <button
+                                onClick={() => setCartQuantity(cartQuantity + 1)}
+                                className="cart-quantity-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="cart-modal-footer">
+                            <button
+                              onClick={addToCartFromModal}
+                              disabled={!selectedColor || !selectedSize}
+                              className="cart-submit-btn"
+                            >
+                              加入購物車
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 尺寸選擇 */}
-            <div className="cart-form-group">
-              <label className="cart-form-label">選擇尺寸</label>
-              <div className="cart-options">
-                {Array.isArray(currentCartProduct?.sizes) && currentCartProduct.sizes.map((size) => (
-                  <div
-                    key={size.id}
-                    onClick={() => setSelectedSize(size)}
-                    className={`cart-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
-                  >
-                    {size.size_label}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 數量選擇 */}
-            <div className="cart-form-group">
-              <label className="cart-form-label">數量</label>
-              <div className="cart-quantity-controls">
-                <button
-                  onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
-                  disabled={cartQuantity <= 1}
-                  className="cart-quantity-btn"
-                >
-                  -
-                </button>
-                <span className="cart-quantity-display">{cartQuantity}</span>
-                <button
-                  onClick={() => setCartQuantity(cartQuantity + 1)}
-                  className="cart-quantity-btn"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div className="cart-modal-footer">
-              <button
-                onClick={addToCartFromModal}
-                disabled={!selectedColor || !selectedSize}
-                className="cart-submit-btn"
-              >
-                加入購物車
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </>
-)}
+                </>
+              )}
             </main>
           </div>
         </div>
