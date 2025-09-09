@@ -10,6 +10,8 @@ import path from "path";
 const router = express.Router();
 const upload = multer();
 const secretKey = process.env.JWT_SECRET_KEY;
+// 預設頭像
+const DEFAULT_AVATAR = "/img/default-avatar.png";
 
 
 
@@ -133,7 +135,7 @@ router.post("/", upload.none(), async (req, res) => {
     // } 
 
     // 3) 產生頭像（可能為 null)(取用下面function Randomuser.me)
-    const avatar = await getRandomAvatar();
+    const avatar =  DEFAULT_AVATAR;
     // 4) 壓縮密碼
     const hashedPassword = await bcrypt.hash(password, 10);
     // 5) 建立 SQL 語法,寫入資料（undefined 一律轉成 null）
@@ -529,18 +531,18 @@ function checkToken(req, res, next) {
 
 }
 
-async function getRandomAvatar() {
-  const API = "https://randomuser.me/api";
-  try {
-    const response = await fetch(API);
-    if (!response.ok)
-      throw new Error(`${response.status}: ${response.statusText}`);
-    const result = await response.json();
-    return result.results[0].picture.large;
-  } catch (error) {
-    console.log("getRandomAvatar", error.message);
-    return null;
-  }
-}
+// async function getRandomAvatar() {
+//   const API = "https://randomuser.me/api";
+//   try {
+//     const response = await fetch(API);
+//     if (!response.ok)
+//       throw new Error(`${response.status}: ${response.statusText}`);
+//     const result = await response.json();
+//     return result.results[0].picture.large;
+//   } catch (error) {
+//     console.log("getRandomAvatar", error.message);
+//     return null;
+//   }
+// }
 
 export default router;

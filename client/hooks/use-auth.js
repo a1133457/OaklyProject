@@ -252,7 +252,7 @@ export function AuthProvider({ children }) {
 
     if (!token) {
       setUser(null);
-      //setIsLoading(false);
+      setIsLoading(false);
       return;
     }
     const checkToken = async () => {
@@ -268,10 +268,10 @@ export function AuthProvider({ children }) {
           const token = result.data.token; // 伺服器會回新的 30 分 token
           setUser(result.data.user);
           localStorage.setItem(appKey, token); // 覆蓋舊的 token
-          //setIsLoading(false);
+          setIsLoading(false);
         } else {
           //alert(result.message);
-          //setIsLoading(false);
+          setIsLoading(false);
           // setUser(null);
           // localStorage.removeItem(appKey);
           // router.push('/auth/login');
