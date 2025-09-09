@@ -1,21 +1,13 @@
-// 'use client'
-
-// export default function Login(){
-//     return(
 //         <>
 //             <h1>登入狀態 stauts - edit</h1>
 //             <p>預計要放大頭照跟名稱</p>
 //         </>
-//     )
-// }
+
 'use client'
 
+import styles from '@/app/user/user.module.css'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
-
-// import Sidebar from '../_components/sidebar'
-// import HeaderImg from '../_components/HeaderImg'
-import styles from '@/app/user/user.module.css'
 import { useRouter } from 'next/navigation'
 
 // 共用元件
@@ -28,15 +20,9 @@ import ButtonGroup from '@/app/_components/ButtonGroup'
 export default function UserEditForm() {
     // api
     const router = useRouter();
-    const { user, logout, updateUserEdit } = useAuth();
-
-
+    const { user, logout, updateUserEdit, updateUserPassword, updateUserAvatar } = useAuth();
     // 登出按鈕
-    // const onLogout = () => {
-    //     logout();
-
-    // };
-
+    // const onLogout = () => {logout();};
 
     // 狀態欄位
     const [name, setName] = useState('')
@@ -45,7 +31,7 @@ export default function UserEditForm() {
     const [city, setCity] = useState('')
     const [district, setDistrict] = useState('')
     const [addr, setAddr] = useState('')
-    const [postcode, setPostcode] = useState('')
+    // const [postcode, setPostcode] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [password2, setPassword2] = useState('')
@@ -71,28 +57,25 @@ export default function UserEditForm() {
         setPhone(user.phone ?? '')
         setCity(user.city ?? '')
         setDistrict(user.area ?? user.district ?? '')
-        setPostcode(user.postcode ?? '')
+        // setPostcode(user.postcode ?? '')
         setAddr(user.address ?? '')
         setEmail(user.email ?? '')
         setPassword('')     // ✅ 密碼不回填
         setPassword2('')
     }, [user])
-
+    // 城市、地區選單
     const cities = [{ value: '臺北市', label: '臺北市' }, { value: '新北市', label: '新北市' }]
-    const districts = city === '臺北市'
+    //「地區選項陣列」用 districts 這個名稱，避免和 DB 欄位 area 混淆
+    const districts  = city === '臺北市'
         ? ['中正區', '大安區', '信義區'].map(v => ({ value: v, label: v }))
         : city === '新北市'
             ? ['板橋區', '新莊區', '中和區'].map(v => ({ value: v, label: v }))
             : []
 
     // 表單送出
-    // const handleSubmit = (e) => {
-    //     e.preventDefault()
-    //     console.log('送出表單:', { name, birthday, phone, city, district, addr, email, password, password2 })
-    // }
-
     const handleSubmit = async (e) => {
         e.preventDefault()
+        // 1) 前端驗證：密碼一致
         const next = {}
         if (password && password !== password2) next.password2 = '兩次密碼不一致'
         setErrors(next)
@@ -103,27 +86,42 @@ export default function UserEditForm() {
             return
         }
 
-        // 後端目前只更新文字欄位：name/phone/postcode/city/area/address
-        // district → area、addr → address
+        // 更新文字欄位：name/phone/postcode/city/area/address
         const payload = {
             name,
             phone,
-            postcode,
             city,
-            area: district,
-            address: addr,
+            area: district,  // 送後端的 area 來自 district
+            address: addr,   // 你 state 叫 addr，送出要轉回 address
+            birthday
         }
-
+        setSaving(true);
+        const messages = [];
         try {
-            setSaving(true)
-            const { success, message } = await updateUserEdit(user.id, payload)
-            setSaving(false)
-            alert(success ? (message || '更新成功') : (message || '更新失敗'))
+            // 2-1 一般資料
+            const base = await updateUserEdit(user.id, payload);
+            messages.push(`一般資料：${base.success ? '✔ 成功' : `✘ 失敗（${base.message || '未知原因'}）`}`);
+
+            // 2-2 密碼（有填才送）
+            if (password) {
+                const pw = await updateUserPassword(user.id, password);
+                messages.push(`密碼：${pw.success ? '✔ 成功' : `✘ 失敗（${pw.message || '未知原因'}）`}`);
+                if (pw.success) { setPassword(''); setPassword2(''); }
+            }
+
+            // 2-3 頭像（有選檔才送）
+            if (avatar) {
+                const av = await updateUserAvatar(user.id, avatar);
+                messages.push(`頭像：${av.success ? '✔ 成功' : `✘ 失敗（${av.message || '未知原因'}）`}`);
+                if (av.success) { setAvatar(null); } // 清掉暫存檔
+            }
+            alert(messages.join('\n'));
         } catch (err) {
-            setSaving(false)
-            alert('伺服器錯誤，請稍後再試')
+            alert('伺服器錯誤，請稍後再試');
+        } finally {
+            setSaving(false);
         }
-    }
+    };
 
     // 表單重設
     const handleReset = () => {
@@ -132,7 +130,7 @@ export default function UserEditForm() {
         setBirthday(user.birthday ?? '')
         setPhone(user.phone ?? '')
         setCity(user.city ?? '')
-        setDistrict(user.district ?? '')
+        setDistrict(user.area ?? user.district ?? '')
         setAddr(user.address ?? '')
         setEmail(user.email ?? '')
         setPassword('')
@@ -188,7 +186,7 @@ export default function UserEditForm() {
                         <UserTextInput id="addr" label="地址" required
                             value={addr} onChange={e => setAddr(e.target.value)} />
                         <UserTextInput id="email" label="電子郵件" type="email" required
-                            value={email} onChange={e => setEmail(e.target.value)} />
+                            value={email} onChange={e => setEmail(e.target.value)} readOnly />
 
                         <UserTextInput id="password" label="新密碼" type="password"
                             value={password} onChange={e => setPassword(e.target.value)} />
@@ -201,7 +199,7 @@ export default function UserEditForm() {
                                 <button type="reset" className="btn btn-outline-success">取消</button>
                             </div> */}
                         <ButtonGroup align="Center">
-                            <Button type="submit" variant="primary01" size="sm">確認修改</Button>
+                            <Button type="submit" variant="primary01" size="sm" disabled={saving}>{saving ? '儲存中…' : '確認修改'}</Button>
                             <Button type="reset" variant="white" size="sm">取消</Button>
                             {/* <Button type="button" variant="white" size="sm" onClick={logout} >登出</Button> */}
                         </ButtonGroup>

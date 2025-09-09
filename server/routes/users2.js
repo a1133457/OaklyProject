@@ -4,8 +4,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
 import pool from "../connect.js"
-import fileSystem from "fs/promises";
-import pathModule from "path";
+import fs from "fs/promises";
+import path from "path";
 
 const router = express.Router();
 const upload = multer();
@@ -167,7 +167,7 @@ router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
   try {
     // 取得表單中的欄位內容
     const id = req.params.id;
-    const { name, phone, city, area, address, birthday  } = req.body;
+    const { name, phone, city, area, address, birthday } = req.body;
 
     // 檢查至少要有一個欄位有資料
     if (!name && !phone && !city && !area && !address && !birthday) {
@@ -178,18 +178,6 @@ router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
     }
     let updateFields = []; // 用陣列來記錄要更新的欄位
     let values = []; // 用陣列來記錄要更新的欄位的值
-
-    // if (password) {
-    //   // 如果有 password 這個欄位
-    //   const hashedPassword = await bcrypt.hash(password, 10); // 加密
-    //   updateFields.push("password = ?"); // 欄位部份的 SQL
-    //   values.push(hashedPassword); // 問號對應的值
-    // }
-    // if (head) {
-    //   // 如果有 head 這個欄位
-    //   updateFields.push("head = ?"); // 欄位部份的 SQL
-    //   values.push(head); // 問號對應的值
-    // }
 
     // 如果有 這個欄位 / 欄位部份的 SQL / 問號對應的值
     if (name) { updateFields.push("name = ?"); values.push(name); }
@@ -204,11 +192,11 @@ router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
     // console.log(updateFields);
     // console.log(values);
 
-    const sql = `UPDATE users SET ${updateFields.join(", ")} WHERE account = ?`;
-    const [result] = await connection.execute(sql, values);
+    const sql = `UPDATE users SET ${updateFields.join(", ")} WHERE id = ?`;
+    const [result] = await pool.execute(sql, values);
     // console.log(result);
 
-    if (!result.affectedRows || result.affectedRows != 0) {
+    if (!result.affectedRows || result.affectedRows === 0) {
       const err = new Error("更新失敗，請洽管理人員");
       err.code = 400;
       err.status = "fail";
@@ -222,7 +210,7 @@ router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
     // 補獲錯誤
     // console.log(error);
     sendError(res, error);
-    
+
   }
 });
 
@@ -265,8 +253,7 @@ router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) 
       err.status = "fail";
       throw err;
     }
-    // 如果有上傳檔案就用檔案，否則給預設
-    const avatar = req.file ? req.file.filename : "/public/img/放入預設圖片.png";
+    
     // 建立avatar存放資料夾路徑
     const avatarUploadPath = path.resolve("public/uploads/avatars");
     await fs.mkdir(avatarUploadPath, { recursive: true });
@@ -279,22 +266,22 @@ router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) 
     const publicPath = `/uploads/avatars/${filename}`;
     // 更新頭像
     const [result] = await pool.execute(
-      "UPDATE users SET avatar = ? WHERE id = ?", 
+      "UPDATE users SET avatar = ? WHERE id = ?",
       [publicPath, id]);
 
+    
     if (!result.affectedRows) {
       const err = new Error("頭像更新失敗，請洽管理人員");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
+      err.code = 400; err.status = "fail"; throw err;
     }
-    res.status(200).json({ 
-      status: "success", 
-      message: "頭像更新成功", 
-      data: { avatar: publicPath } 
+
+    return res.status(200).json({
+      status: "success",
+      message: "頭像更新成功",
+      data: { avatar: publicPath }
     });
   } catch (error) {
-    sendError(res, error);
+    return sendError(res, error);
   }
 });
 
@@ -304,52 +291,11 @@ function sendError(res, error) {
   const statusText = error.status ?? "error";
   const message = error.message ?? "更新失敗，請洽管理人員";
   return res.status(statusCode)
-  .json({ 
-    status: statusText, 
-    message 
-  });
-}
-// 刪除(特定 ID 的)使用者-----------------------------------------
-router.delete("/:account", checkToken, async (req, res) => {
-  try {
-    const { account } = req.params;
-
-    if (req.decoded.account !== account) {
-      // 檢查是不是本人
-      const err = new Error("你沒有權限刪除此帳號");
-      err.code = 403;
-      err.status = "fail";
-      throw err;
-    }
-
-    const result = await connection.execute(
-      "DELETE FROM users WHERE account = ?",
-      [account]
-    );
-    console.log(result);
-    if (!result.affectedRows || result.affectedRows != 0) {
-      const err = new Error("刪除失敗，請洽管理人員");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-
-    res.status(200).json({
-      status: "success",
-      message: "帳號已成功註銷",
-    });
-  } catch (error) {
-    // 補獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 500;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "註冊失敗，請洽管理人員";
-    res.status(statusCode).json({
+    .json({
       status: statusText,
-      message,
+      message
     });
-  }
-});
+}
 
 // 刪除(特定 ID)的使用者------------------------------------
 router.delete("/:id", (req, res) => {
@@ -361,15 +307,14 @@ router.delete("/:id", (req, res) => {
   });
 });
 
-// 使用者登入
+// 使用者登入-----------------------------------------------
 router.post("/login", upload.none(), async (req, res) => {
 
   try {
     const { email, password } = req.body;
 
     // 1) 撈使用者
-    const user = await pool
-      .execute('SELECT * FROM users WHERE `email`= ?', [email])
+    const user = await pool.execute('SELECT * FROM users WHERE `email`= ?', [email])
       .then(([result]) => {
         // console.log(result);
         return result[0];
@@ -449,7 +394,7 @@ router.post("/login", upload.none(), async (req, res) => {
 });
 
 
-// 使用者登出
+// 使用者登出-----------------------------------------------
 router.post("/logout", checkToken, async (req, res) => {
   try {
     const { email } = req.decoded;
@@ -487,14 +432,13 @@ router.post("/logout", checkToken, async (req, res) => {
   }
 });
 
-// 檢查登入狀態
+// 檢查登入狀態-------------------------------------------
 router.post("/status", checkToken, async (req, res) => {
   try {
     const { email } = req.decoded;
 
     const sqlCheck1 = "SELECT * FROM `users` WHERE `email` = ?;";
-    let user = await pool
-      .execute(sqlCheck1, [email])
+    let user = await pool.execute(sqlCheck1, [email])
       .then(([result]) => {
         return result[0];
       });

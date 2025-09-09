@@ -134,7 +134,7 @@ export function AuthProvider({ children }) {
 
     // updateUserEdit------------------------------------
     const updateUserEdit = async (id, data) => {
-        const API = `http://localhost:3005/api/users/${id}`;
+        const API = `http://localhost:3005/api/users/${id}/edit`;
         const token = localStorage.getItem(appKey);
 
         try {
@@ -169,19 +169,22 @@ export function AuthProvider({ children }) {
                 headers: { Authorization: `Bearer ${token}` },
                 body: new URLSearchParams({ password: newPassword }),
             });
-            return await res.json();
+            const result = await res.json();
+            if (result.status === "success") {
+                return { success: true, message: result.message || "密碼更新成功" };
+            }
+            return { success: false, message: result.message || "密碼更新失敗" };
         } catch {
-            return { status: "error", message: "伺服器錯誤" };
+            return { success: false, message: "伺服器錯誤" };
         }
     };
 
     // 更新頭像
-    const updateUserAvatar = async (id, avatarFile) => {
+    const updateUserAvatar = async (id, file) => {
         const API = `http://localhost:3005/api/users/${id}/avatar`;
         const token = localStorage.getItem(appKey);
-
         const formData = new FormData();
-        formData.append("avatar", avatarFile);
+        formData.append("avatar", file);
 
         try {
             const res = await fetch(API, {
@@ -189,9 +192,19 @@ export function AuthProvider({ children }) {
                 headers: { Authorization: `Bearer ${token}` },
                 body: formData,
             });
-            return await res.json();
+            const result = await res.json();
+            if (result.status === "success") {
+                // 若後端回傳最新 user 或 avatar 路徑，就同步更新前端
+                const newUser = result.data?.user
+                    ? result.data.user
+                    : (result.data?.avatar ? { ...user, avatar: result.data.avatar } : user);
+                setUser(newUser);
+                localStorage.setItem(userKey, JSON.stringify(updateUser));
+                return { success: true, message: result.message || "頭像更新成功" };
+            }
+            return { success: false, message: result.message || "頭像更新失敗" };
         } catch {
-            return { status: "error", message: "伺服器錯誤" };
+            return { success: false, message: "伺服器錯誤" };
         }
     };
 
@@ -216,13 +229,13 @@ export function AuthProvider({ children }) {
       };
     }
 
-    // 如果 newData 裡有 recipient，就更新 user.recipient
-    if (newData.recipient) {
-      updateUser.recipient = newData.recipient;
+        // 如果 newData 裡有 recipient，就更新 user.recipient
+        if (newData.recipient) {
+            updateUser.recipient = newData.recipient;
+        }
+        setUser(updateUser);
+        localStorage.setItem(userKey, JSON.stringify({updateUser}));
     }
-    setUser(updateUser);
-    localStorage.setItem(userKey, JSON.stringify({ user: updateUser }));
-  };
 
   // 保護頁面------------------------------------
   // useEffect(() => {
@@ -276,7 +289,10 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider
-            value={{ user, register, login, logout, isLoading, users, updateUser, updateUserEdit, updateUserPassword, updateUserAvatar }}>
+            value={{
+                user, register, login, logout, isLoading, users,
+                updateUser, updateUserEdit, updateUserPassword, updateUserAvatar
+            }}>
             {children}
         </AuthContext.Provider>
     );
