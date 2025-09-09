@@ -11,9 +11,9 @@ router.get("/", async (req, res) => {
   try {
     const { category } = req.query;
     console.log('收到的 category 參數:', category);
-    
+
     let products;
-    
+
     if (category) {
       const query = `
         SELECT 
@@ -23,9 +23,9 @@ router.get("/", async (req, res) => {
         FROM products p
         LEFT JOIN products_category pc ON p.category_id = pc.category_id
         LEFT JOIN product_img pi ON p.id = pi.product_id
-        WHERE pc.category_name LIKE ?
+        WHERE pc.category_name LIKE ? AND p.is_valid = 1
       `;
-      
+
       try {
         const [rows] = await db.execute(query, [`%${category}%`]);
         console.log('分類查詢結果數量:', rows.length);
@@ -37,7 +37,7 @@ router.get("/", async (req, res) => {
     } else {
       products = await getProductsFromDB();
     }
-    
+
     const productMap = new Map();
     products.forEach(item => {
       if (!productMap.has(item.id)) {
@@ -49,16 +49,16 @@ router.get("/", async (req, res) => {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
       }
     });
-    
+
     const productsWithImages = Array.from(productMap.values());
     console.log('最終回傳產品數量:', productsWithImages.length);
     res.json(productsWithImages);
-    
+
   } catch (error) {
     console.error('詳細錯誤訊息:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "取得商品失敗",
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -83,7 +83,7 @@ router.get("/search", async (req, res) => {
   try {
     // 直接使用現有的 getProductsFromDB 函數
     const allProducts = await getProductsFromDB();
-    
+
     const productMap = new Map();
     allProducts.forEach(item => {
       if (!productMap.has(item.id)) {
@@ -97,7 +97,7 @@ router.get("/search", async (req, res) => {
     });
 
     const productsWithImages = Array.from(productMap.values());
-    
+
     //搜尋篩選
     const filteredProducts = productsWithImages.filter(product => {
       // ID 搜尋
@@ -112,7 +112,7 @@ router.get("/search", async (req, res) => {
     filteredProducts.sort((a, b) => {
       const aStartsWith = a.name.toLowerCase().startsWith(q.toLowerCase());
       const bStartsWith = b.name.toLowerCase().startsWith(q.toLowerCase());
-      
+
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
       return a.name.localeCompare(b.name);
@@ -123,7 +123,7 @@ router.get("/search", async (req, res) => {
     const paginatedResults = filteredProducts.slice(offset, offset + limit);
 
     console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
-    
+
     if (paginatedResults.length > 0) {
       console.log("找到的產品:", paginatedResults.map(r => r.name));
     }
@@ -146,8 +146,98 @@ router.get("/search", async (req, res) => {
 });
 
 
+//  最新商品
+router.get('/latest', async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
 
-//  獲取產品詳細資料
+    // 加入圖片查詢
+    const query = `
+      SELECT 
+        p.*,
+        pi.img
+      FROM products p
+      LEFT JOIN product_img pi ON p.id = pi.product_id
+       WHERE p.is_valid = 1
+      ORDER BY p.create_at DESC 
+      LIMIT ?
+    `;
+
+    const [products] = await db.execute(query, [parseInt(limit)]);
+
+    const productMap = new Map();
+    products.forEach(item => {
+      if (!productMap.has(item.id)) {
+        productMap.set(item.id, {
+          ...item,
+          images: item.img ? [`/uploads/${item.img}`] : []
+        });
+      } else if (item.img) {
+        productMap.get(item.id).images.push(`/uploads/${item.img}`);
+      }
+    });
+
+    const productsWithImages = Array.from(productMap.values());
+
+    res.json(productsWithImages);
+
+  } catch (error) {
+    console.error('獲取最新商品失敗:', error);
+    res.status(500).json({
+      status: 'error',
+      message: '獲取最新商品失敗'
+    });
+  }
+});
+
+// 熱賣商品
+router.get('/hot-products', async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+
+    // 簡單查詢：quantity ≤ 20 的商品
+    const query = `
+      SELECT 
+        p.*,
+        pi.img
+      FROM products p
+      LEFT JOIN product_img pi ON p.id = pi.product_id
+      WHERE p.quantity <= 20 
+        AND p.quantity > 0
+        AND p.is_valid = 1
+      ORDER BY p.quantity ASC
+      LIMIT ?
+    `;
+
+    const [products] = await db.execute(query, [parseInt(limit)]);
+
+    // 使用你現有的圖片處理邏輯
+    const productMap = new Map();
+    products.forEach(item => {
+      if (!productMap.has(item.id)) {
+        productMap.set(item.id, {
+          ...item,
+          images: item.img ? [`/uploads/${item.img}`] : []
+        });
+      } else if (item.img) {
+        productMap.get(item.id).images.push(`/uploads/${item.img}`);
+      }
+    });
+
+    const productsWithImages = Array.from(productMap.values());
+
+    res.json(productsWithImages);
+
+  } catch (error) {
+    console.error('獲取熱賣商品失敗:', error);
+    res.status(500).json({
+      status: 'error',
+      message: '獲取熱賣商品失敗'
+    });
+  }
+});
+
+//  產品詳細資料
 router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -169,7 +259,7 @@ router.get("/:id", async (req, res) => {
       FROM products p
       LEFT JOIN designers d ON p.designers_id = d.id
       LEFT JOIN product_img pi ON p.id = pi.product_id
-      WHERE p.id = ?
+      WHERE p.id = ? AND p.is_valid = 1
       LIMIT 1
     `;
     const imagesQuery = `
@@ -290,39 +380,6 @@ router.get("/:id", async (req, res) => {
     });
   }
 });
-
-
-
-// router.get('/image/:product_id', async (req, res) => {
-//   try {
-//     const productId = req.params.product_id;
-
-//     const [rows] = await db.query(
-//       'SELECT img FROM product_img WHERE product_id = ? LIMIT 1',
-//       [productId]
-//     );
-
-//     if (rows.length === 0) {
-//       return res.status(404).send('圖片不存在');
-//     }
-
-//     const imgData = rows[0].img; // BLOB 資料
-
-//     res.set('Content-Type', 'image/jpg'); // 依圖片格式調整
-//     res.send(imgData);
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('伺服器錯誤');
-//   }
-// });
-
-
-
-
-
-
-
 
 
 

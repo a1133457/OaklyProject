@@ -1,10 +1,11 @@
-// 檔案路徑: /app/products/search/page.js
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import "@/styles/products/products.css";
+import "@/styles/products/search.css";
+import { useCart } from '@/app/contexts/CartContext';
+
 
 export default function SearchResultsPage() {
   const searchParams = useSearchParams();
@@ -31,7 +32,209 @@ export default function SearchResultsPage() {
   const [tempPriceRange, setTempPriceRange] = useState({ min: 0, max: 50000 });
   const [loading, setLoading] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState({});
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [wishlistQuantity, setWishlistQuantity] = useState(1);
+  const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
+  const { addToCart } = useCart();
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [currentCartProduct, setCurrentCartProduct] = useState(null);
+  const [cartQuantity, setCartQuantity] = useState(1);
 
+  
+  const handleWishlistToggle = async (product, e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  
+    if (isWishlisted[product.id]) {
+      await removeFromWishlist(product.id);
+    } else {
+      openWishlistModal(product);
+    }
+  };
+  
+  const openWishlistModal = async (product) => {
+    setCurrentWishlistProduct(product);
+    setSelectedColor(product.colors?.[0] || null);
+    setSelectedSize(product.sizes?.[0] || null);
+    setWishlistQuantity(1);
+    setShowWishlistModal(true);
+    document.body.classList.add('no-scroll');
+  
+    // 如果商品缺少詳細資料，獲取完整資料
+    if (!product.colors || !product.sizes) {
+      try {
+        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+        const result = await response.json();
+        if (result.status === 'success') {
+          setCurrentWishlistProduct(result.data);
+          setSelectedColor(result.data.colors?.[0] || null);
+          setSelectedSize(result.data.sizes?.[0] || null);
+        }
+      } catch (err) {
+        console.error('獲取商品詳細資料失敗:', err);
+      }
+    }
+  };
+  
+  const removeFromWishlist = async (productId) => {
+    try {
+      const userId = localStorage.getItem('userId') || 1;
+      const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      const result = await response.json();
+      if (result.status === 'success') {
+        setIsWishlisted(prev => ({
+          ...prev,
+          [productId]: false
+        }));
+      }
+    } catch (err) {
+      console.error('移除收藏失敗:', err);
+    }
+  };
+
+  const handleCartClick = (product, e) => {
+    e.stopPropagation();
+    openCartModal(product);
+  };
+
+  const openCartModal = async (product) => {
+    setCurrentCartProduct(product);
+    setSelectedColor(product.colors?.[0] || null);
+    setSelectedSize(product.sizes?.[0] || null);
+    setCartQuantity(1);
+    setShowCartModal(true);
+    document.body.classList.add('no-scroll');
+
+    // 如果需要獲取完整商品資料
+    if (!product.colors || !product.sizes) {
+      try {
+        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+        const result = await response.json();
+        if (result.status === 'success') {
+          setCurrentCartProduct(result.data);
+          setSelectedColor(result.data.colors?.[0] || null);
+          setSelectedSize(result.data.sizes?.[0] || null);
+        }
+      } catch (err) {
+        console.error('獲取商品詳細資料失敗:', err);
+      }
+    }
+  };
+  
+
+  const addToCartFromModal = () => {
+    if (!selectedColor || !selectedSize) {
+      alert('請選擇顏色和尺寸');
+      return;
+    }
+
+    addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
+    setShowCartModal(false);
+    document.body.classList.remove('no-scroll');
+  };
+  const addToWishlist = async () => {
+    if (!selectedColor || !selectedSize) {
+      alert('請選擇顏色和尺寸');
+      return;
+    }
+
+    try {
+      const userId = localStorage.getItem('userId') || 1;
+      const wishlistData = {
+        userId: userId,
+        productId: currentWishlistProduct.id,
+        colorId: selectedColor.id,
+        sizeId: selectedSize.id,
+        quantity: wishlistQuantity
+      };
+
+      const response = await fetch('http://localhost:3005/api/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(wishlistData)
+      });
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        setIsWishlisted(prev => ({
+          ...prev,
+          [currentWishlistProduct.id]: true
+        }));
+        setShowWishlistModal(false);
+        document.body.classList.remove('no-scroll');
+
+        // 顯示成功通知
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #9FA79A;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-size: 14px;
+      `;
+        notification.textContent = '已加入收藏';
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('加入收藏失敗:', err);
+      alert('加入收藏時發生錯誤');
+    }
+  };
+
+
+  const getImageUrl = (product) => {
+    if (!product || !product.images || product.images.length === 0) {
+      return '/img/lan/placeholder.jpg';
+    }
+    
+    const firstImage = product.images[0];
+    if (typeof firstImage === 'string') {
+      return `http://localhost:3005${firstImage}`;
+    } else if (firstImage && firstImage.url) {
+      return `http://localhost:3005${firstImage.url}`;
+    }
+    
+    return '/img/lan/placeholder.jpeg';
+  };
+  
+  const getColorCode = (colorName) => {
+    const colorMap = {
+      '白色': '#ffffff',
+      '黑色': '#000000',
+      '原木色': '#deb887',
+      '淺灰': '#d3d3d3',
+      '深灰': '#555555',
+      '淺藍': '#add8e6',
+      '深藍': '#000080',
+      '淺綠': '#90ee90',
+      '深綠': '#006400',
+      '米黃色': '#f5f5dc'
+    };
+    return colorMap[colorName] || '#cccccc';
+  };
   // 完全複用產品頁面的選項
   const colorMapping = {
     1: "白色",
@@ -310,7 +513,7 @@ export default function SearchResultsPage() {
           <div className="breadcrumb">
             <Link href="/">首頁</Link>
             <div className="arrow">&gt;</div>
-            <Link href="/products">商品總頁</Link>
+            <Link href="/products">商品列表</Link>
             <div className="arrow">&gt;</div>
             搜尋結果
           </div>
@@ -390,7 +593,7 @@ export default function SearchResultsPage() {
           <div className="breadcrumb">
             <Link href="/">首頁</Link>
             <div className="arrow">&gt;</div>
-            <Link href="/products">商品總頁</Link>
+            <Link href="/products">商品列表</Link>
             <div className="arrow">&gt;</div>
             搜尋結果
           </div>
@@ -544,15 +747,15 @@ export default function SearchResultsPage() {
 
               {/* 商品網格 - 完全複用產品頁面 */}
               {currentProducts.length > 0 ? (
-                <div className={`products-grid ${viewMode}`}>
-                  {currentProducts.map((product) => (
+              <div className={`products-grid ${viewMode}`} key={viewMode}>
+                {currentProducts.map((product) => (
                     <div key={product.id} className="productcard" onClick={() => handleProductClick(product.id)} style={{ cursor: 'pointer' }}>
                       <span className="badge-new">新品</span>
                       <div className="image">
                         {product.images.length > 0 && (
                           <img
-                          src={`http://localhost:3005${product.images[0]}`} 
-                          alt={product.name}
+                            src={`http://localhost:3005${product.images[0]}`}
+                            alt={product.name}
                             style={{ maxWidth: "200px" }}
                             onLoad={(e) => {
                               console.log(' 圖片載入成功');
@@ -572,7 +775,7 @@ export default function SearchResultsPage() {
                               } else {
                                 console.log('所有路徑都嘗試失敗');
                                 // 設置一個預設圖片
-                                e.target.src = 'https://picsum.photos/200/300';
+                                e.target.src = './img/lan/lines.png';
                               }
                             }}
                           />
@@ -583,6 +786,25 @@ export default function SearchResultsPage() {
                         <h3 className="name">{product.name}</h3>
                         <p className="price">NT$ {product.price}</p>
                       </div>
+                      {/* 操作按鈕區域 */}
+                      <div className="product-actions">
+                        <button
+                          className="action-btn add-to-cart"
+                          onClick={(e) => handleCartClick(product, e)}
+                        >
+                          加入購物車
+                        </button>
+                      </div>
+
+                      {/* 右上角愛心按鈕 */}
+                      <button
+                        className={`wishlist-heart-btn ${isWishlisted[product.id] ? 'active' : ''}`}
+                        onClick={(e) => {
+                          handleWishlistToggle(product, e);
+                        }}
+                      >
+                        <i className={`fa-${isWishlisted[product.id] ? 'solid' : 'regular'} fa-heart`}></i>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -590,7 +812,7 @@ export default function SearchResultsPage() {
                 <div className="nosearchfit">
                   <h3>沒有找到符合條件的產品</h3>
                   <p>請嘗試調整篩選條件或搜尋其他關鍵字</p>
-                  <Link href="/products" style={{ color: '#DBA783', textDecoration: 'none', fontSize:'14px' }}>
+                  <Link href="/products" style={{ color: '#DBA783', textDecoration: 'none', fontSize: '14px' }}>
                     瀏覽所有產品
                   </Link>
                 </div>
@@ -606,6 +828,234 @@ export default function SearchResultsPage() {
                   {renderPaginationButtons()}
                 </div>
               )}
+              {/* 選擇彈窗 */}
+              {showWishlistModal && (
+                <>
+                  <div
+                    className="wishlist-modal-backdrop"
+                    onClick={() => {
+                      setShowWishlistModal(false);
+                      document.body.classList.remove('no-scroll');
+                    }}
+                  ></div>
+
+                  <div className="wishlist-modal-container">
+                    <div className="wishlist-modal-content">
+                      <button
+                        className="wishlist-modal-close"
+                        onClick={() => {
+                          setShowWishlistModal(false);
+                          document.body.classList.remove('no-scroll');
+                        }}
+                      >
+                        ✕
+                      </button>
+
+                      <div className="wishlist-modal-header">
+                        <h5 className="wishlist-modal-title">加入收藏清單</h5>
+                      </div>
+
+                      <div className="wishlist-modal-body">
+                        <div className="wishlist-product-image">
+                          <img
+                            src={getImageUrl(currentWishlistProduct)}
+                            alt={currentWishlistProduct?.name || ''}
+                            onError={(e) => {
+                              console.log('彈窗圖片載入失敗:', e.target.src);
+                              e.target.src = '/img/lan/placeholder.jpeg';
+                            }}
+                          />
+                        </div>
+                        <div className="wishlist-form-content">
+                          <h6 className="wishlist-product-name">{currentWishlistProduct?.name}</h6>
+                          <p className="wishlist-product-price">NT$ {currentWishlistProduct?.price?.toLocaleString()}</p>
+
+                          {/* 顏色選擇 */}
+                          <div className="wishlist-form-group">
+                            <label className="wishlist-form-label">選擇顏色</label>
+                            <div className="wishlist-options">
+                              {Array.isArray(currentWishlistProduct?.colors) && currentWishlistProduct.colors.map((color) => (
+                                <div
+                                  key={color.id}
+                                  onClick={() => setSelectedColor(color)}
+                                  className={`wishlist-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
+                                >
+                                  <div
+                                    className="wishlist-color-dot"
+                                    style={{ backgroundColor: getColorCode(color.color_name) }}
+                                  ></div>
+                                  <span>{color.color_name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 尺寸選擇 */}
+                          <div className="wishlist-form-group">
+                            <label className="wishlist-form-label">選擇尺寸</label>
+                            <div className="wishlist-options">
+                              {Array.isArray(currentWishlistProduct?.sizes) && currentWishlistProduct.sizes.map((size) => (
+                                <div
+                                  key={size.id}
+                                  onClick={() => setSelectedSize(size)}
+                                  className={`wishlist-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
+                                >
+                                  {size.size_label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {/* 數量選擇 */}
+                          <div className="wishlist-form-group">
+                            <label className="wishlist-form-label">數量</label>
+                            <div className="wishlist-quantity-controls">
+                              <button
+                                onClick={() => setWishlistQuantity(Math.max(1, wishlistQuantity - 1))}
+                                disabled={wishlistQuantity <= 1}
+                                className="wishlist-quantity-btn"
+                              >
+                                -
+                              </button>
+                              <span className="wishlist-quantity-display">{wishlistQuantity}</span>
+                              <button
+                                onClick={() => setWishlistQuantity(wishlistQuantity + 1)}
+                                className="wishlist-quantity-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="wishlist-modal-footer">
+                            <button
+                              onClick={addToWishlist}
+                              disabled={!selectedColor || !selectedSize}
+                              className="wishlist-submit-btn"
+                            >
+                              加入收藏
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              {/* 購物車選擇彈窗 */}
+{/* 購物車選擇彈窗 */}
+{showCartModal && (
+  <>
+    <div
+      className="cart-modal-backdrop"
+      onClick={() => {
+        setShowCartModal(false);
+        document.body.classList.remove('no-scroll');
+      }}
+    ></div>
+
+    <div className="cart-modal-container">
+      <div className="cart-modal-content">
+        <button
+          className="cart-modal-close"
+          onClick={() => {
+            setShowCartModal(false);
+            document.body.classList.remove('no-scroll');
+          }}
+        >
+          ✕
+        </button>
+
+        <div className="cart-modal-header">
+          <h5 className="cart-modal-title">加入購物車</h5>
+        </div>
+
+        <div className="cart-modal-body">
+          <div className="cart-product-image">
+            <img
+              src={getImageUrl(currentCartProduct)}
+              alt={currentCartProduct?.name || ''}
+              onError={(e) => {
+                console.log('彈窗圖片載入失敗:', e.target.src);
+                e.target.src = '/img/lan/placeholder.jpeg';
+              }}
+            />
+          </div>
+          <div className="cart-form-content">
+            <h6 className="cart-product-name">{currentCartProduct?.name}</h6>
+            <p className="cart-product-price">NT$ {currentCartProduct?.price?.toLocaleString()}</p>
+
+            {/* 顏色選擇 */}
+            <div className="cart-form-group">
+              <label className="cart-form-label">選擇顏色</label>
+              <div className="cart-options">
+                {Array.isArray(currentCartProduct?.colors) && currentCartProduct.colors.map((color) => (
+                  <div
+                    key={color.id}
+                    onClick={() => setSelectedColor(color)}
+                    className={`cart-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
+                  >
+                    <div
+                      className="cart-color-dot"
+                      style={{ backgroundColor: getColorCode(color.color_name) }}
+                    ></div>
+                    <span>{color.color_name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 尺寸選擇 */}
+            <div className="cart-form-group">
+              <label className="cart-form-label">選擇尺寸</label>
+              <div className="cart-options">
+                {Array.isArray(currentCartProduct?.sizes) && currentCartProduct.sizes.map((size) => (
+                  <div
+                    key={size.id}
+                    onClick={() => setSelectedSize(size)}
+                    className={`cart-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
+                  >
+                    {size.size_label}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 數量選擇 */}
+            <div className="cart-form-group">
+              <label className="cart-form-label">數量</label>
+              <div className="cart-quantity-controls">
+                <button
+                  onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
+                  disabled={cartQuantity <= 1}
+                  className="cart-quantity-btn"
+                >
+                  -
+                </button>
+                <span className="cart-quantity-display">{cartQuantity}</span>
+                <button
+                  onClick={() => setCartQuantity(cartQuantity + 1)}
+                  className="cart-quantity-btn"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="cart-modal-footer">
+              <button
+                onClick={addToCartFromModal}
+                disabled={!selectedColor || !selectedSize}
+                className="cart-submit-btn"
+              >
+                加入購物車
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
+)}
             </main>
           </div>
         </div>

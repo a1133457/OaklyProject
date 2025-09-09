@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
+import { useCart } from '@/app/contexts/CartContext';
+
 
 const RecentViewedProducts = ({ 
   currentProductId, 
   maxItems = 8,
   handleWishlistToggle,
   isProductInWishlist,
-  addToCart
+  addToCart,
+  handleCartClick
 }) => {
   const [recentProducts, setRecentProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const router = useRouter();
+  
 
   // 響應式顯示數量
   const [itemsToShow, setItemsToShow] = useState(4);
@@ -235,7 +238,7 @@ const RecentViewedProducts = ({
                 className="product-add-to-cart-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  addToCart && addToCart(product, 1, product.colors?.[0], product.sizes?.[0]);
+                  handleCartClick && handleCartClick(product, e);
                 }}
               >
                 加入購物車
