@@ -36,7 +36,7 @@ const MainProduct = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [wishlistQuantity, setWishlistQuantity] = useState(1);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
-  const { addToCart,openSuccessModal } = useCart();
+  const { addToCart, openSuccessModal } = useCart();
   const [showCartModal, setShowCartModal] = useState(false);
   const [currentCartProduct, setCurrentCartProduct] = useState(null);
   const [cartQuantity, setCartQuantity] = useState(1);
@@ -1022,7 +1022,6 @@ const MainProduct = () => {
       <div className="content">
         <div className="mid-sec">
           <div className="filter" onClick={toggleMobileFilter}>
-
             <svg
               width="11"
               height="10"
@@ -1085,6 +1084,7 @@ const MainProduct = () => {
             </select>
           </div>
         </div>
+
         <div className="products-container">
           <div className="wrapper">
             {/* 左側邊欄 */}
@@ -1237,11 +1237,11 @@ const MainProduct = () => {
                     <p className="loading-text">載入中</p>
                   </div>
                 ) :
-                  currentProducts.map((product , index) => (
+                  currentProducts.map((product, index) => (
                     <div key={product.id}
                       className="productcard fade-in-item"
                       onClick={() => handleProductClick(product.id)}
-                      style={{ 
+                      style={{
                         cursor: 'pointer',
                         animationDelay: `${index * 0.1}s`
                       }}>
@@ -1536,115 +1536,132 @@ const MainProduct = () => {
           </div>
         </div>
       </div>
-      {/* 手機版篩選側邊欄 */}
-      {isMobileFilterOpen && (
-        <>
-          <div className={`mobile-filter-overlay ${isMobileFilterOpen ? 'active' : ''}`} onClick={closeMobileFilter} />
-          <div className={`mobile-filter-sidebar ${isMobileFilterOpen ? 'active' : ''}`}>
-            {/* 標題區域 */}
-            <div className="mobile-filter-header">
-              <h3 className="mobile-filter-title">篩選條件</h3>
-              <button className="mobile-filter-close" onClick={closeMobileFilter}>
-                ×
-              </button>
+      <div className={`modal fade ${isMobileFilterOpen ? 'show' : ''}`}
+        style={{ display: isMobileFilterOpen ? 'block' : 'none' }}
+        tabIndex="-1"
+        aria-labelledby="mobileFilterModalLabel"
+        aria-hidden={!isMobileFilterOpen}>
+
+        <div className="modal-dialog modal-dialog-end mobile-filter-modal">
+          <div className="modal-content h-100">
+
+            {/* Modal 頭部 */}
+            <div className="modal-header">
+              <h5 className="modal-title" id="mobileFilterModalLabel">篩選</h5>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Close"
+                onClick={closeMobileFilter}
+              ></button>
             </div>
 
-            {/* 篩選結果顯示 */}
-            <div className="mobile-filter-results">
-              找到 {filteredProducts.length} 項商品
-            </div>
+            {/* Modal 內容 */}
+            <div className="modal-body flex-grow-1 overflow-auto p-0">
+             
+              {/* 價格 */}
+              <div className="filter-section">
+                <h6 className="filter-title">價格</h6>
+                <div className="px-3 py-2">
+                  <input
+                    type="range"
+                    className="form-range"
+                    min="0"
+                    max="50000"
+                    step="1000"
+                    value={tempPriceRange.max}
+                    onChange={(e) => setTempPriceRange({ min: 0, max: parseInt(e.target.value) })}
+                  />
+                  <div className="text-center text-muted small">
+                    NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}
+                  </div>
+                </div>
+              </div>
 
-            {/* 篩選內容 */}
-            <div className="mobile-filter-content">
-              <div className="filter-sections">
+              {/* 顏色 */}
+              <div className="filter-section">
+                <h6 className="filter-title">顏色</h6>
+                <div className="color-grid px-3 py-2">
+                  {colorOptions.map((color) => (
+                    <div
+                      key={color.value}
+                      className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
+                      style={{ backgroundColor: color.color }}
+                      onClick={() => handleColorFilter(color.value)}
+                      title={color.name}
+                    ></div>
+                  ))}
+                </div>
+              </div>
 
-
-
-                {/* 價格篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">價格範圍</h4>
-                  <div className="price-range">
-                    <div className="price-slider">
+              {/* 材質 */}
+              <div className="filter-section">
+                <h6 className="filter-title">材質</h6>
+                <div className="px-3 py-2">
+                  {materialOptions.map((material) => (
+                    <div key={material} className="form-check mb-2">
                       <input
-                        type="range"
-                        min="0"
-                        max="50000"
-                        step="1000"
-                        value={tempPriceRange.max}
-                        onChange={(e) => {
-                          const newMax = parseInt(e.target.value);
-                          setTempPriceRange({ min: 0, max: newMax });
-                        }}
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`material-${material}`}
+                        checked={tempFilters?.materials?.includes(material) || false}
+                        onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
                       />
+                      <label className="form-check-label" htmlFor={`material-${material}`}>
+                        {material}
+                      </label>
                     </div>
-                    <span>NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}</span>
-                  </div>
+                  ))}
                 </div>
+              </div>
 
-                {/* 顏色篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">顏色</h4>
-                  <div className="color-options">
-                    {colorOptions.map((color) => (
-                      <div
-                        key={color.value}
-                        className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
-                        style={{ backgroundColor: color.color }}
-                        onClick={() => handleColorFilter(color.value)}
-                        title={color.name}
+              {/* 系列 */}
+              <div className="filter-section">
+                <h6 className="filter-title">系列</h6>
+                <div className="px-3 py-2">
+                  {seriesOptions.map((series) => (
+                    <div key={series} className="form-check mb-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`series-${series}`}
+                        checked={tempFilters?.series?.includes(series) || false}
+                        onChange={(e) => handleFilterChange('series', series, e.target.checked)}
                       />
-                    ))}
-                  </div>
-                </div>
-
-                {/* 材質篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">材質</h4>
-                  <div className="filter-options">
-                    {materialOptions.map((material) => (
-                      <div key={material} className="option">
-                        <input
-                          type="checkbox"
-                          checked={tempFilters?.materials?.includes(material) || false}
-                          onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
-                        />
-                        <span>{material}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 系列篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">系列</h4>
-                  <div className="filter-options">
-                    {seriesOptions.map((series) => (
-                      <div key={series} className="option">
-                        <input
-                          type="checkbox"
-                          checked={tempFilters?.series?.includes(series) || false}
-                          onChange={(e) => handleFilterChange('series', series, e.target.checked)}
-                        />
-                        <span>{series}</span>
-                      </div>
-                    ))}
-                  </div>
+                      <label className="form-check-label" htmlFor={`series-${series}`}>
+                        {series}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* 底部按鈕 */}
-            <div className="mobile-filter-buttons">
-              <button className="mobile-filter-reset" onClick={handleMobileFilterReset}>
-                清除
-              </button>
-              <button className="mobile-filter-apply" onClick={handleMobileFilterApply}>
+            {/* Modal 底部 */}
+            <div className="modal-footer">
+         
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleMobileFilterApply}
+                style={{ backgroundColor: '#719A8B', borderColor: '#719A8B' }}
+              >
                 套用篩選
+              </button>
+                   <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={handleMobileFilterReset}
+              >
+                清除
               </button>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+
+      {/* Modal 背景遮罩 */}
+      {isMobileFilterOpen && <div className="modal-backdrop fade show"></div>}
     </div>
   );
 };

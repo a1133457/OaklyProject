@@ -1569,65 +1569,114 @@ export default function PidPage({ params }) {
       )}
 
 
-      {/* 購物車選擇彈窗 */}
-      {showCartModal && (
-        <>
-          <div className="wishlist-modal-backdrop" onClick={() => { setShowCartModal(false); document.body.classList.remove('no-scroll'); }}></div>
-          <div className="wishlist-modal-container">
-            <div className="wishlist-modal-content">
-              <button className="wishlist-modal-close" onClick={() => { setShowCartModal(false); document.body.classList.remove('no-scroll'); }}>✕</button>
-              <div className="wishlist-modal-header">
-                <h5 className="wishlist-modal-title">加入購物車</h5>
-              </div>
-              <div className="wishlist-modal-body">
-                <div className="wishlist-product-image">
-                  <img src={currentCartProduct ? getProductImage(currentCartProduct) : displayImages[selectedImage]} alt={(currentCartProduct || productData).name} />
-                </div>
-                <div className="wishlist-form-content">
-                  <h6 className="wishlist-product-name">{(currentCartProduct || productData).name}</h6>
-                  <p className="wishlist-product-price">NT$ {(currentCartProduct || productData).price?.toLocaleString()}</p>
-
-                  <div className="wishlist-form-group">
-                    <label className="wishlist-form-label">選擇顏色</label>
-                    <div className="wishlist-options">
-                      {Array.isArray((currentCartProduct || productData)?.colors) && (currentCartProduct || productData).colors.map((color) => (
-                        <div key={color.id} onClick={() => setSelectedColor(color)} className={`wishlist-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}>
-                          <div className="wishlist-color-dot" style={{ backgroundColor: getColorCode(color.color_name) }}></div>
-                          <span>{color.color_name}</span>
-                        </div>
-                      ))}
-                    </div>
+     {/* 購物車選擇彈窗 */}
+{showCartModal && (
+  <>
+    <div 
+      className="cart-modal-backdrop" 
+      onClick={() => { 
+        setShowCartModal(false); 
+        document.body.classList.remove('no-scroll'); 
+      }}
+    ></div>
+    
+    <div className="cart-modal-container">
+      <div className="cart-modal-content">
+        <button 
+          className="cart-modal-close" 
+          onClick={() => { 
+            setShowCartModal(false); 
+            document.body.classList.remove('no-scroll'); 
+          }}
+        >
+          ✕
+        </button>
+        
+        <div className="cart-modal-header">
+          <h5 className="cart-modal-title">加入購物車</h5>
+        </div>
+        
+        <div className="cart-modal-body">
+          <div className="cart-product-image">
+            <img 
+              src={currentCartProduct ? getProductImage(currentCartProduct) : displayImages[selectedImage]} 
+              alt={(currentCartProduct || productData).name} 
+            />
+          </div>
+          
+          <div className="cart-form-content">
+            <h6 className="cart-product-name">{(currentCartProduct || productData).name}</h6>
+            <p className="cart-product-price">NT$ {(currentCartProduct || productData).price?.toLocaleString()}</p>
+            
+            <div className="cart-form-group">
+              <label className="cart-form-label">選擇顏色</label>
+              <div className="cart-options">
+                {Array.isArray((currentCartProduct || productData)?.colors) && (currentCartProduct || productData).colors.map((color) => (
+                  <div 
+                    key={color.id} 
+                    onClick={() => setSelectedColor(color)} 
+                    className={`cart-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
+                  >
+                    <div 
+                      className="cart-color-dot" 
+                      style={{ backgroundColor: getColorCode(color.color_name) }}
+                    ></div>
+                    <span>{color.color_name}</span>
                   </div>
-
-                  <div className="wishlist-form-group">
-                    <label className="wishlist-form-label">選擇尺寸</label>
-                    <div className="wishlist-options">
-                      {Array.isArray((currentCartProduct || productData)?.sizes) && (currentCartProduct || productData).sizes.map((size) => (
-                        <div key={size.id} onClick={() => setSelectedSize(size)} className={`wishlist-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}>
-                          {size.size_label}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="wishlist-form-group">
-                    <label className="wishlist-form-label">數量</label>
-                    <div className="wishlist-quantity-controls">
-                      <button onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))} disabled={cartQuantity <= 1} className="wishlist-quantity-btn">-</button>
-                      <span className="wishlist-quantity-display">{cartQuantity}</span>
-                      <button onClick={() => setCartQuantity(cartQuantity + 1)} className="wishlist-quantity-btn">+</button>
-                    </div>
-                  </div>
-
-                  <div className="wishlist-modal-footer">
-                    <button onClick={addToCartFromModal} disabled={!selectedColor || !selectedSize} className="wishlist-submit-btn">加入購物車</button>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
+            
+            <div className="cart-form-group">
+              <label className="cart-form-label">選擇尺寸</label>
+              <div className="cart-options">
+                {Array.isArray((currentCartProduct || productData)?.sizes) && (currentCartProduct || productData).sizes.map((size) => (
+                  <div 
+                    key={size.id} 
+                    onClick={() => setSelectedSize(size)} 
+                    className={`cart-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
+                  >
+                    {size.size_label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="cart-form-group">
+              <label className="cart-form-label">數量</label>
+              <div className="cart-quantity-controls">
+                <button 
+                  onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))} 
+                  disabled={cartQuantity <= 1} 
+                  className="cart-quantity-btn"
+                >
+                  -
+                </button>
+                <span className="cart-quantity-display">{cartQuantity}</span>
+                <button 
+                  onClick={() => setCartQuantity(cartQuantity + 1)} 
+                  className="cart-quantity-btn"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            
+            <div className="cart-modal-footer">
+              <button 
+                onClick={addToCartFromModal} 
+                disabled={!selectedColor || !selectedSize} 
+                className="cart-submit-btn"
+              >
+                加入購物車
+              </button>
+            </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+    </div>
+  </>
+)}
 
       <div className="end-content">
         <img src="/img/lan/clean.jpg" alt="clean" />

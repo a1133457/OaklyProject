@@ -960,9 +960,13 @@ span {
   opacity: 1 !important;
   visibility: visible !important;
 }
-/* 收藏彈窗樣式 */
+
 .no-scroll {
-  overflow: hidden !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
 }
 
 .wishlist-modal-backdrop {
@@ -1686,6 +1690,26 @@ span {
   width: 44px;
   height: 44px;
   background: #DBA783;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-family: Noto Sans TC;
+  font-weight: 900;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  z-index: 2;
+}
+.productcard .badge-hot {
+  display: inline-block;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  align-self: flex-start;
+  margin-bottom: 8px;
+  width: 44px;
+  height: 44px;
+  background: #c14545;
   color: #fff;
   border-radius: 50%;
   font-size: 12px;
