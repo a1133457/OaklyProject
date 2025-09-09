@@ -86,7 +86,7 @@ export default function Header() {
           <Link className="nav-items" href="/products">
             <h6>商品列表</h6>
           </Link>
-          <Link className="nav-items" href="/organizers">
+          <Link className="nav-items" href="/organizer">
             <h6>預約整理師</h6>
           </Link>
           <Link className="nav-items" href="/article">
