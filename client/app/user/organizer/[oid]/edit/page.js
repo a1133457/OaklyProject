@@ -13,9 +13,14 @@ import GreenBorderButton from "@/app/_components/GreenBorderButton";
 // 自訂組件 (專用)
 
 export default function UserOrganizerEditPage() {
+  const router = useRouter();
   const params = useParams();
+  const [token, setToken] = useState(null);
+  const [userStr, setUserStr] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const bookingId = params.oid;
-  const userId = 1;
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userId = user?.id;
 
   // 修改狀態
   const [editData, setEditData] = useState({
@@ -38,6 +43,9 @@ export default function UserOrganizerEditPage() {
   // );
 
   const booking = result.data?.data; // 修正：確保有資料才渲染
+
+
+
 
   // 初始化editData
   useEffect(() => {
@@ -211,6 +219,7 @@ export default function UserOrganizerEditPage() {
 
       if (response.ok) {
         alert("預約資訊更新成功！");
+        router.push("/user/organizer")
       } else {
         alert(`更新失敗：${result.message || '未知錯誤'}`);
       }
@@ -242,7 +251,7 @@ export default function UserOrganizerEditPage() {
 
       if (response.ok) {
         alert("預約取消成功！");
-        window.location.href = "http://localhost:3000/user/organizer";
+        router.push("/user/organizer")
       } else {
         alert("取消失敗，請稍後再試");
       }
@@ -253,11 +262,30 @@ export default function UserOrganizerEditPage() {
     }
   };
 
-  
-  // 修正：加上載入狀態和錯誤處理
-  if (result.loading) {
+    // 處理登入
+  useEffect(() => {
+    const tokenFromStorage = localStorage.getItem("reactLoginToken");
+    const userFromStorage = localStorage.getItem("user");
+
+    setToken(tokenFromStorage);
+    setUserStr(userFromStorage);
+
+    //沒登入的跳轉
+    if (!tokenFromStorage || !userFromStorage) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setIsLoading(false);
+  }, [router]);
+
+  //解析token
+  if (isLoading || !token || !userStr) {
     return <div>載入中...</div>;
   }
+
+
+  // 修正：加上載入狀態和錯誤處理
 
   if (result.error) {
     return <div>載入失敗：{result.error.message}</div>;
