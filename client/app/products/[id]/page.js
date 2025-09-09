@@ -3,17 +3,19 @@
 import React, { useState, useEffect } from "react";
 import "@/styles/products/pid.css";
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
+import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
+
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
 // import { useCart } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from '@/app/_components/CategoryDropdown.js';
-<<<<<<< HEAD
+
+
+
 import {useCart} from '@/hooks/use-cart';
 // 導入吐司訊息用方法+元件
 import { toast, ToastContainer } from 'react-toastify';
 
-=======
->>>>>>> origin/lan
 // 跟隨指針移動的滾動條類別
 class CustomThumbnailScrollbar {
   constructor(onImageChange) {
@@ -405,6 +407,11 @@ export default function PidPage({ params }) {
   const [wishlistQuantity, setWishlistQuantity] = useState(1);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
+  const [showCartModal, setShowCartModal] = useState(false);
+const [currentCartProduct, setCurrentCartProduct] = useState(null);
+const [cartQuantity, setCartQuantity] = useState(1);
+const [cartLoading, setCartLoading] = useState(false);
+
 
 
 
@@ -794,6 +801,53 @@ export default function PidPage({ params }) {
     return `https://via.placeholder.com/300x200/f0f0f0/666?text=${encodeURIComponent(product.name)}`;
   };
 
+  const handleCartClick = (targetProduct = null, event = null) => {
+    const product = targetProduct || productData;
+    openCartModal(product, event);
+  };
+  
+  const openCartModal = async (product, clickEvent = null) => {
+    setCurrentCartProduct(product);
+    setSelectedColor(product.colors?.[0] || null);
+    setSelectedSize(product.sizes?.[0] || null);
+    setCartQuantity(1);
+    setShowCartModal(true);
+    document.body.classList.add('no-scroll');
+  
+    if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
+      try {
+        setCartLoading(true);
+        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+        const result = await response.json();
+        if (result.status === 'success') {
+          setCurrentCartProduct(result.data);
+          setSelectedColor(result.data.colors?.[0] || null);
+          setSelectedSize(result.data.sizes?.[0] || null);
+        }
+      } catch (err) {
+        console.error('獲取商品詳細資料失敗:', err);
+        alert('無法載入商品資料，請稍後再試');
+        return;
+      } finally {
+        setCartLoading(false);
+      }
+    }
+  };
+  
+  const addToCartFromModal = async () => {
+    if (!selectedColor || !selectedSize) {
+      alert('請選擇顏色和尺寸');
+      return;
+    }
+  
+    const product = currentCartProduct || productData;
+    addToCart(product, cartQuantity, selectedColor, selectedSize);
+    setShowCartModal(false);
+    document.body.classList.remove('no-scroll');
+    
+
+  };
+
 
   return (
     <div className="detail-product-page">
@@ -820,7 +874,7 @@ export default function PidPage({ params }) {
           <div className="breadcrumb">
             <a href="/">首頁</a>
             <div className="arrow">&gt;</div>
-            商品總頁
+            商品列表
             <div className="arrow-name">&gt;</div>
             {productData.name}
           </div>
@@ -914,9 +968,8 @@ export default function PidPage({ params }) {
                         className="btn-close"
                         onClick={() => {
                           setShowModal(false);
-                          document.body.style.position = '';
-                          document.body.style.width = '';
-                          document.body.style.overflow = '';
+                          document.body.classList.remove('modal-open');
+
                         }}
                         aria-label="Close"
                       ></button>
@@ -941,10 +994,9 @@ export default function PidPage({ params }) {
                 <div
                   className="modal-backdrop fade show"
                   onClick={() => {
-                    setShowModal(false);
-                    document.body.style.position = '';
-                    document.body.style.width = '';
-                    document.body.style.overflow = '';
+                    setShowModal(false); 
+                    document.body.classList.remove('modal-open');
+
                   }}
                 ></div>
               )}
@@ -1141,29 +1193,35 @@ export default function PidPage({ params }) {
           </div>
         </div>
 
-        <SimilarProducts currentProductId={parseInt(productId)}
-          handleWishlistToggle={handleWishlistToggle}
-          isProductInWishlist={isProductInWishlist}
-          addToCart={addToCart}/>
+        <SimilarProducts 
+  currentProductId={parseInt(productId)}
+  handleWishlistToggle={handleWishlistToggle}
+  isProductInWishlist={isProductInWishlist}
+  addToCart={addToCart}
+  handleCartClick={handleCartClick}
+/>
 
 
         <RandomShowcaseSection />
 
 
-        <SimilarProducts currentProductId={parseInt(productId)}
-          handleWishlistToggle={handleWishlistToggle}
-          isProductInWishlist={isProductInWishlist} 
-          addToCart={addToCart}
-          />
+        <Bestseller 
+  currentProductId={parseInt(productId)}
+  handleWishlistToggle={handleWishlistToggle}
+  isProductInWishlist={isProductInWishlist}
+  addToCart={addToCart}
+  handleCartClick={handleCartClick}
+/>
 
-        <RecentViewedProducts
-          className="middle-content"
-          currentProductId={productId}
-          maxItems={8}
-          handleWishlistToggle={handleWishlistToggle}
-          isProductInWishlist={isProductInWishlist}
-          addToCart={addToCart}
-        />
+<RecentViewedProducts
+  className="middle-content"
+  currentProductId={productId}
+  maxItems={8}
+  handleWishlistToggle={handleWishlistToggle}
+  isProductInWishlist={isProductInWishlist}
+  addToCart={addToCart}
+  handleCartClick={handleCartClick}
+/>
       </div>
 
       {/* 收藏選擇彈窗 */}
@@ -1283,6 +1341,66 @@ export default function PidPage({ params }) {
           </div>
         </>
       )}
+
+      {/* 購物車選擇彈窗 */}
+{showCartModal && (
+  <>
+    <div className="wishlist-modal-backdrop" onClick={() => { setShowCartModal(false); document.body.classList.remove('no-scroll'); }}></div>
+    <div className="wishlist-modal-container">
+      <div className="wishlist-modal-content">
+        <button className="wishlist-modal-close" onClick={() => { setShowCartModal(false); document.body.classList.remove('no-scroll'); }}>✕</button>
+        <div className="wishlist-modal-header">
+          <h5 className="wishlist-modal-title">加入購物車</h5>
+        </div>
+        <div className="wishlist-modal-body">
+          <div className="wishlist-product-image">
+            <img src={currentCartProduct ? getProductImage(currentCartProduct) : displayImages[selectedImage]} alt={(currentCartProduct || productData).name} />
+          </div>
+          <div className="wishlist-form-content">
+            <h6 className="wishlist-product-name">{(currentCartProduct || productData).name}</h6>
+            <p className="wishlist-product-price">NT$ {(currentCartProduct || productData).price?.toLocaleString()}</p>
+            
+            <div className="wishlist-form-group">
+              <label className="wishlist-form-label">選擇顏色</label>
+              <div className="wishlist-options">
+                {Array.isArray((currentCartProduct || productData)?.colors) && (currentCartProduct || productData).colors.map((color) => (
+                  <div key={color.id} onClick={() => setSelectedColor(color)} className={`wishlist-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}>
+                    <div className="wishlist-color-dot" style={{ backgroundColor: getColorCode(color.color_name) }}></div>
+                    <span>{color.color_name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="wishlist-form-group">
+              <label className="wishlist-form-label">選擇尺寸</label>
+              <div className="wishlist-options">
+                {Array.isArray((currentCartProduct || productData)?.sizes) && (currentCartProduct || productData).sizes.map((size) => (
+                  <div key={size.id} onClick={() => setSelectedSize(size)} className={`wishlist-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}>
+                    {size.size_label}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="wishlist-form-group">
+              <label className="wishlist-form-label">數量</label>
+              <div className="wishlist-quantity-controls">
+                <button onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))} disabled={cartQuantity <= 1} className="wishlist-quantity-btn">-</button>
+                <span className="wishlist-quantity-display">{cartQuantity}</span>
+                <button onClick={() => setCartQuantity(cartQuantity + 1)} className="wishlist-quantity-btn">+</button>
+              </div>
+            </div>
+            
+            <div className="wishlist-modal-footer">
+              <button onClick={addToCartFromModal} disabled={!selectedColor || !selectedSize} className="wishlist-submit-btn">加入購物車</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
+)}
 
       <div className="end-content">
         <img src="/img/lan/clean.jpg" alt="clean" />

@@ -34,20 +34,156 @@ const MainProduct = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [wishlistQuantity, setWishlistQuantity] = useState(1);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
-  // const { addToCart } = useCart();
+  const { addToCart } = useCart();
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [currentCartProduct, setCurrentCartProduct] = useState(null);
+  const [cartQuantity, setCartQuantity] = useState(1);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [showMobileSortDropdown, setShowMobileSortDropdown] = useState(false);
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMobileSortDropdown && !event.target.closest('.sort')) {
+        setShowMobileSortDropdown(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showMobileSortDropdown]);
+
+
+  // 獲取最新商品
+  const fetchLatestProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:3005/api/products/latest?limit=50');
+      const products = await response.json();
+
+      const productsWithNewFlag = products.map(product => ({
+        ...product,
+        isNew: true
+      }));
+
+      setProducts(productsWithNewFlag);
+      setCurrentPage(1);
+
+      // 設置頁面狀態為最新商品
+      setCurrentTitle('最新商品');
+      setCurrentHeroImage('/img/lan/new.jpg');
+      setSelectedCategory('');
+      setSelectedSubCategory('');
+      clearFilters();
+
+    } catch (error) {
+      console.error('獲取最新商品失敗:', error);
+    }
+  };
+
+  // 獲取熱賣商品
+const fetchHotProducts = async () => {
+  try {
+    const response = await fetch('http://localhost:3005/api/products/hot-products?limit=50');
+    const products = await response.json();
+
+    const productsWithHotFlag = products.map(product => ({
+      ...product,
+      isHot: true
+    }));
+
+    setProducts(productsWithHotFlag);
+    setCurrentPage(1);
+
+    // 設置頁面狀態為熱賣商品
+    setCurrentTitle('熱賣商品');
+    setCurrentHeroImage('/img/lan/hot.jpg');
+    setSelectedCategory('');
+    setSelectedSubCategory('');
+    clearFilters();
+
+  } catch (error) {
+    console.error('獲取熱賣商品失敗:', error);
+  }
+};
+
+
+
+  const toggleMobileFilter = () => {
+    setIsMobileFilterOpen(!isMobileFilterOpen);
+    if (!isMobileFilterOpen) {
+      document.body.classList.add('mobile-filter-open');
+    } else {
+      document.body.classList.remove('mobile-filter-open');
+    }
+  };
+
+  const closeMobileFilter = () => {
+    setIsMobileFilterOpen(false);
+    document.body.classList.remove('mobile-filter-open');
+  };
+
+  const handleMobileFilterApply = () => {
+    applyFilters();
+    closeMobileFilter();
+  };
+
+  const handleMobileFilterReset = () => {
+    clearFilters();
+    closeMobileFilter();
+  };
+
+  const handleCartClick = (product, e) => {
+    e.stopPropagation();
+    openCartModal(product);
+  };
+
+  const openCartModal = async (product) => {
+    setCurrentCartProduct(product);
+    setSelectedColor(product.colors?.[0] || null);
+    setSelectedSize(product.sizes?.[0] || null);
+    setCartQuantity(1);
+    setShowCartModal(true);
+    document.body.classList.add('no-scroll');
+
+    // 如果需要獲取完整商品資料
+    if (!product.colors || !product.sizes) {
+      try {
+        const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+        const result = await response.json();
+        if (result.status === 'success') {
+          setCurrentCartProduct(result.data);
+          setSelectedColor(result.data.colors?.[0] || null);
+          setSelectedSize(result.data.sizes?.[0] || null);
+        }
+      } catch (err) {
+        console.error('獲取商品詳細資料失敗:', err);
+      }
+    }
+  };
+
+  const addToCartFromModal = () => {
+    if (!selectedColor || !selectedSize) {
+      alert('請選擇顏色和尺寸');
+      return;
+    }
+
+    addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
+    setShowCartModal(false);
+    document.body.classList.remove('no-scroll');
+  };
 
   const getImageUrl = (product) => {
     if (!product || !product.images || product.images.length === 0) {
       return '/img/lan/placeholder.jpg';
     }
-    
+
     const firstImage = product.images[0];
     if (typeof firstImage === 'string') {
       return `http://localhost:3005${firstImage}`;
     } else if (firstImage && firstImage.url) {
       return `http://localhost:3005${firstImage.url}`;
     }
-    
+
     return '/img/lan/placeholder.jpeg';
   };
 
@@ -254,22 +390,18 @@ const MainProduct = () => {
       // console.log(`  价格: ${price}, 范围: ${filterPriceRange.min}-${filterPriceRange.max}, 匹配: ${priceMatch}`);
 
 
-
-      // 颜色篩選
       const productColor = colorMapping[product.colors];
       const colorMatch = !selectedFilters.colors?.length ||
         selectedFilters.colors.includes(productColor);
       // console.log(`  颜色ID: ${product.colors}, 颜色名稱: ${productColor}, 篩選条件: [${selectedFilters.colors}], 匹配: ${colorMatch}`);
 
 
-      // 材质篩選 - 通过 materials_id 映射到材质名稱
       const productMaterial = materialMapping[product.materials_id];
       const materialMatch = !selectedFilters.materials?.length ||
         selectedFilters.materials.includes(productMaterial);
       // console.log(`  材質ID: ${product.materials_id}, 材質名稱: ${productMaterial}, 篩選条件: [${selectedFilters.materials}], 匹配: ${materialMatch}`);
 
 
-      // 系列篩選 - 使用 style 字段
       const seriesMatch = !selectedFilters.series?.length ||
         selectedFilters.series.includes(product.style);
 
@@ -491,7 +623,7 @@ const MainProduct = () => {
 
   const openWishlistModal = async (product) => {
     console.log('openWishlistModal 被調用', product);
-    console.log('product.images:', product.images); // 添加這行調試    setCurrentWishlistProduct(product);
+    console.log('product.images:', product.images);
     setSelectedColor(product.colors?.[0] || null);
     setSelectedSize(product.sizes?.[0] || null);
     setWishlistQuantity(1);
@@ -507,7 +639,7 @@ const MainProduct = () => {
         const result = await response.json();
         if (result.status === 'success') {
           console.log('獲取到完整商品資料:', result.data);
-          console.log('完整商品的圖片資料:', result.data.images); // 添加這行
+          console.log('完整商品的圖片資料:', result.data.images);
 
 
           setCurrentWishlistProduct(result.data);
@@ -636,9 +768,23 @@ const MainProduct = () => {
       <div className="breadcrumb-nav-top">
         <div className="sub-nav-content">
           <div className="breadcrumb">
-            <a href="/">首頁</a>
+            <a href="/" onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory('');
+              setSelectedSubCategory('');
+              setCurrentTitle('全部商品');
+              setCurrentHeroImage('/img/lan/header.png');
+
+            }}>首頁</a>
             <div className="arrow">&gt;</div>
-            商品總頁
+            <a href="#" onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory('');
+              setSelectedSubCategory('');
+              setCurrentTitle('全部商品');
+              setCurrentHeroImage('/img/lan/header.png');
+            }}></a>
+            商品列表
           </div>
         </div>
       </div>
@@ -660,10 +806,18 @@ const MainProduct = () => {
       </section>
       <div className="sub-nav">
         <div className="sub-nav-links">
-          <a href="#" className="sub-nav-link">
+          <a href="#" className="sub-nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              fetchLatestProducts();
+            }}>
             最新商品
           </a>
-          <a href="#" className="sub-nav-link">
+          <a href="#" className="sub-nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              fetchHotProducts();
+            }}>
             熱賣
           </a>
           <div className="dropdown hover-dropdown">
@@ -776,6 +930,11 @@ const MainProduct = () => {
               setSelectedSubCategory('');
               setCurrentTitle('全部商品');
               setCurrentHeroImage('/img/lan/header.png');
+              fetch("http://localhost:3005/api/products")
+                .then(res => res.json())
+                .then(json => setProducts(Array.isArray(json) ? json : []))
+                .catch(err => console.error(err));
+
             }}>
               首頁
             </a>
@@ -786,8 +945,12 @@ const MainProduct = () => {
               setSelectedSubCategory('');
               setCurrentTitle('全部商品');
               setCurrentHeroImage('/img/lan/header.png');
+              fetch("http://localhost:3005/api/products")
+                .then(res => res.json())
+                .then(json => setProducts(Array.isArray(json) ? json : []))
+                .catch(err => console.error(err));
             }}>
-              商品總頁
+              商品列表
             </a>
             {selectedCategory && (
               <>
@@ -808,7 +971,8 @@ const MainProduct = () => {
       {/* 主要內容區域 */}
       <div className="content">
         <div className="mid-sec">
-          <div className="filter">
+          <div className="filter" onClick={toggleMobileFilter}>
+
             <svg
               width="11"
               height="10"
@@ -823,7 +987,7 @@ const MainProduct = () => {
             </svg>
             篩選
           </div>
-          <div className="sort">
+          <div className="sort" onClick={() => setShowMobileSortDropdown(!showMobileSortDropdown)}>
             排列方式
             <svg
               width="7"
@@ -831,12 +995,34 @@ const MainProduct = () => {
               viewBox="0 0 7 4"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              style={{ transform: showMobileSortDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
             >
               <path
                 d="M3.77203 3.89391L6.88731 0.960529C7.03756 0.819055 7.03756 0.58969 6.88731 0.448232L6.52397 0.106102C6.37398 -0.0351305 6.13088 -0.0354021 5.98054 0.105498L3.49999 2.43025L1.01946 0.105498C0.869116 -0.0354021 0.626024 -0.0351305 0.476033 0.106102L0.112686 0.448232C-0.0375618 0.589705 -0.0375618 0.81907 0.112686 0.960529L3.22797 3.89389C3.3782 4.03537 3.62179 4.03537 3.77203 3.89391Z"
                 fill="#8B8B8B"
               />
             </svg>
+
+            {/* 下拉菜單 */}
+            {showMobileSortDropdown && (
+              <div className="mobile-sort-dropdown">
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('default'); setShowMobileSortDropdown(false); }}>
+                  預設排序
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('price_asc'); setShowMobileSortDropdown(false); }}>
+                  售價 (由低到高)
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('price_desc'); setShowMobileSortDropdown(false); }}>
+                  售價 (由高到低)
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('created_asc'); setShowMobileSortDropdown(false); }}>
+                  上架時間 (由低到高)
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('created_desc'); setShowMobileSortDropdown(false); }}>
+                  上架時間 (由高到低)
+                </div>
+              </div>
+            )}
           </div>
           <div className="per-page-select">
             <select
@@ -962,7 +1148,6 @@ const MainProduct = () => {
             </aside>
 
             {/* 右側商品區域 */}
-
             <main className="products-section">
               <div className="per-page-select">
                 <select
@@ -1001,13 +1186,14 @@ const MainProduct = () => {
                     className="productcard"
                     onClick={() => handleProductClick(product.id)}
                     style={{ cursor: 'pointer' }}>
-                    <span className="badge-new">新品</span>
+                    {product.isNew && <span className="badge-new">新品</span>}
+                    {product.isHot && <span className="badge-hot">熱賣</span>}
                     <div className="image">
                       {product.images && product.images.length > 0 ? (
                         <img
-                        src={getImageUrl(product)}
-                        alt={product.name}
-                          style={{ maxWidth: "200px" ,}}
+                          src={getImageUrl(product)}
+                          alt={product.name}
+                          style={{ maxWidth: "200px", }}
                           onError={(e) => {
                             console.log('圖片載入失敗:', e.target.src);
                             e.target.src = '/img/lan/placeholder.jpeg';
@@ -1017,10 +1203,10 @@ const MainProduct = () => {
                         <div className="no-image-placeholder">
                           <span>暫無圖片</span>
                         </div>
-                        
+
                       )}
                     </div>
-                  
+
                     <div className="info" onClick={() => handleProductClick(product.id)}>
                       <h3 className="name">{product.name}</h3>
                       <p className="price">NT$ {product.price}</p>
@@ -1030,7 +1216,7 @@ const MainProduct = () => {
                     <div className="product-actions">
                       <button
                         className="action-btn add-to-cart"
-                        onClick={(e) => handleAddToCart(product, e)}
+                        onClick={(e) => handleCartClick(product, e)}
                       >
                         加入購物車
                       </button>
@@ -1089,7 +1275,7 @@ const MainProduct = () => {
                       <div className="wishlist-modal-body">
                         <div className="wishlist-product-image">
                           <img
-                             src={getImageUrl(currentWishlistProduct)}
+                            src={getImageUrl(currentWishlistProduct)}
                             alt={currentWishlistProduct?.name || ''}
                             onError={(e) => {
                               console.log('彈窗圖片載入失敗:', e.target.src);
@@ -1172,11 +1358,234 @@ const MainProduct = () => {
                   </div>
                 </>
               )}
+
+              {/* 購物車選擇彈窗 */}
+              {showCartModal && (
+                <>
+                  <div
+                    className="cart-modal-backdrop"
+                    onClick={() => {
+                      setShowCartModal(false);
+                      document.body.classList.remove('no-scroll');
+                    }}
+                  ></div>
+
+                  <div className="cart-modal-container">
+                    <div className="cart-modal-content">
+                      <button
+                        className="cart-modal-close"
+                        onClick={() => {
+                          setShowCartModal(false);
+                          document.body.classList.remove('no-scroll');
+                        }}
+                      >
+                        ✕
+                      </button>
+
+                      <div className="cart-modal-header">
+                        <h5 className="cart-modal-title">加入購物車</h5>
+                      </div>
+
+                      <div className="cart-modal-body">
+                        <div className="cart-product-image">
+                          <img
+                            src={getImageUrl(currentCartProduct)}
+                            alt={currentCartProduct?.name || ''}
+                            onError={(e) => {
+                              console.log('彈窗圖片載入失敗:', e.target.src);
+                              e.target.src = '/img/lan/placeholder.jpeg';
+                            }}
+                          />
+                        </div>
+                        <div className="cart-form-content">
+                          <h6 className="cart-product-name">{currentCartProduct?.name}</h6>
+                          <p className="cart-product-price">NT$ {currentCartProduct?.price?.toLocaleString()}</p>
+
+                          {/* 顏色選擇 */}
+                          <div className="cart-form-group">
+                            <label className="cart-form-label">選擇顏色</label>
+                            <div className="cart-options">
+                              {Array.isArray(currentCartProduct?.colors) && currentCartProduct.colors.map((color) => (
+                                <div
+                                  key={color.id}
+                                  onClick={() => setSelectedColor(color)}
+                                  className={`cart-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
+                                >
+                                  <div
+                                    className="cart-color-dot"
+                                    style={{ backgroundColor: getColorCode(color.color_name) }}
+                                  ></div>
+                                  <span>{color.color_name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 尺寸選擇 */}
+                          <div className="cart-form-group">
+                            <label className="cart-form-label">選擇尺寸</label>
+                            <div className="cart-options">
+                              {Array.isArray(currentCartProduct?.sizes) && currentCartProduct.sizes.map((size) => (
+                                <div
+                                  key={size.id}
+                                  onClick={() => setSelectedSize(size)}
+                                  className={`cart-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
+                                >
+                                  {size.size_label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 數量選擇 */}
+                          <div className="cart-form-group">
+                            <label className="cart-form-label">數量</label>
+                            <div className="cart-quantity-controls">
+                              <button
+                                onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
+                                disabled={cartQuantity <= 1}
+                                className="cart-quantity-btn"
+                              >
+                                -
+                              </button>
+                              <span className="cart-quantity-display">{cartQuantity}</span>
+                              <button
+                                onClick={() => setCartQuantity(cartQuantity + 1)}
+                                className="cart-quantity-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="cart-modal-footer">
+                            <button
+                              onClick={addToCartFromModal}
+                              disabled={!selectedColor || !selectedSize}
+                              className="cart-submit-btn"
+                            >
+                              加入購物車
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </main>
           </div>
         </div>
       </div>
+      {/* 手機版篩選側邊欄 */}
+      {isMobileFilterOpen && (
+        <>
+          <div className={`mobile-filter-overlay ${isMobileFilterOpen ? 'active' : ''}`} onClick={closeMobileFilter} />
+          <div className={`mobile-filter-sidebar ${isMobileFilterOpen ? 'active' : ''}`}>
+            {/* 標題區域 */}
+            <div className="mobile-filter-header">
+              <h3 className="mobile-filter-title">篩選條件</h3>
+              <button className="mobile-filter-close" onClick={closeMobileFilter}>
+                ×
+              </button>
+            </div>
 
+            {/* 篩選結果顯示 */}
+            <div className="mobile-filter-results">
+              找到 {filteredProducts.length} 項商品
+            </div>
+
+            {/* 篩選內容 */}
+            <div className="mobile-filter-content">
+              <div className="filter-sections">
+
+
+
+                {/* 價格篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">價格範圍</h4>
+                  <div className="price-range">
+                    <div className="price-slider">
+                      <input
+                        type="range"
+                        min="0"
+                        max="50000"
+                        step="1000"
+                        value={tempPriceRange.max}
+                        onChange={(e) => {
+                          const newMax = parseInt(e.target.value);
+                          setTempPriceRange({ min: 0, max: newMax });
+                        }}
+                      />
+                    </div>
+                    <span>NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* 顏色篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">顏色</h4>
+                  <div className="color-options">
+                    {colorOptions.map((color) => (
+                      <div
+                        key={color.value}
+                        className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
+                        style={{ backgroundColor: color.color }}
+                        onClick={() => handleColorFilter(color.value)}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* 材質篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">材質</h4>
+                  <div className="filter-options">
+                    {materialOptions.map((material) => (
+                      <div key={material} className="option">
+                        <input
+                          type="checkbox"
+                          checked={tempFilters?.materials?.includes(material) || false}
+                          onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
+                        />
+                        <span>{material}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 系列篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">系列</h4>
+                  <div className="filter-options">
+                    {seriesOptions.map((series) => (
+                      <div key={series} className="option">
+                        <input
+                          type="checkbox"
+                          checked={tempFilters?.series?.includes(series) || false}
+                          onChange={(e) => handleFilterChange('series', series, e.target.checked)}
+                        />
+                        <span>{series}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 底部按鈕 */}
+            <div className="mobile-filter-buttons">
+              <button className="mobile-filter-reset" onClick={handleMobileFilterReset}>
+                清除
+              </button>
+              <button className="mobile-filter-apply" onClick={handleMobileFilterApply}>
+                套用篩選
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

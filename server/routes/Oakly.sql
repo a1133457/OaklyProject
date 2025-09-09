@@ -162,6 +162,8 @@ CREATE TABLE article_tracking (
     FOREIGN KEY (article_id) REFERENCES articles (id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+UPDATE products SET is_valid = 0 WHERE id = 123;
+UPDATE products SET is_valid = 0 WHERE id = 162;
 
 -- 商品
 CREATE TABLE `products` (
