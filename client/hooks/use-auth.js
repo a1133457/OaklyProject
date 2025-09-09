@@ -136,8 +136,9 @@ export function AuthProvider({ children }) {
       updateUser.recipient = newData.recipient;
     }
     setUser(updateUser);
-    localStorage.setItem(userKey, JSON.stringify({ user: updateUser }));
+    localStorage.setItem(userKey, JSON.stringify({ updateUser }));
   };
+
 
   // 保護頁面------------------------------------
   // useEffect(() => {

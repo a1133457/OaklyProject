@@ -47,8 +47,8 @@ export default function CartCard({ type }) {
       return (
         <>
           <div className="cart-card">
-            {items.map((item) => (
-              <div key={item.id} className="cardAll">
+            {items.map((item, index) => (
+              <div key={index} className="cardAll">
                 <div className="cart-main">
                   <div className="card-left">
                     <input type="checkbox" />
@@ -76,7 +76,7 @@ export default function CartCard({ type }) {
                       <i className="fa-solid fa-xmark"></i>
                     </button>
                     <div className="price-num">
-                      <h4>{item.price}</h4>
+                      <h4>${item.price}</h4>
                       <div className="quantity">
                         <button
                           onClick={() => onDecrease(item.id)}
@@ -103,8 +103,8 @@ export default function CartCard({ type }) {
           {/* 手機-------------------------- */}
           <div className="cart-line phone"></div>
           <div className="cart-card phone">
-            {items.map((item) => (
-              <div key={item.id} className="cardAll">
+            {items.map((item,index) => (
+              <div key={index} className="cardAll">
                 <div className="cart-main phone">
                   <div className="card-left">
                     <input type="checkbox" />
@@ -164,8 +164,8 @@ export default function CartCard({ type }) {
       return (
         <>
           <div className="cart-card pc">
-            {items.map((item) => (
-              <div key={item.id} className="cart-main">
+            {items.map((item,index) => (
+              <div key={index} className="cart-main">
                 <div className="card-left">
                   <img
                     src={`/img/${item.img}`}

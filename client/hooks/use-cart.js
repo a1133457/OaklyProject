@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-
-
+import AddToCartSuccessModal from "@/app/products/_components/addToCartSuccessModal";
 
 // #region 1. 建立 CartContext
 const CartContext = createContext(null);
@@ -66,7 +65,7 @@ export function CartProvider({ children }) {
       // 先寫出要新增的物件值，因為商品(product)和購物車項目(cartItem)間差了一個數量(count)屬性，預設為 1
       const newItem = { ...product, quantity: 1 };
       // 1 // 2
-      const nextItems = [newItem, ...items]
+      const nextItems = [newItem, ...items];
       // 3
       setItems(nextItems);
     }
@@ -101,17 +100,43 @@ export function CartProvider({ children }) {
         // 如果讀取失敗，清空 localStorage 中的購物車資料
         localStorage.removeItem("cart");
         isInitialized.current = true;
-
       }
     } else {
       // 後續的 items 變更，寫入 localStorage
       try {
         localStorage.setItem("cart", JSON.stringify(items));
       } catch (error) {
-        console.error("儲存購物車資料失敗: ", error)
+        console.error("儲存購物車資料失敗: ", error);
       }
     }
-  }, [items])
+  }, [items]);
+
+  // 成功通知狀態
+  const [successModal, setSuccessModal] = useState({
+    isVisible: false,
+    product: null,
+    quantity: 0,
+    selectedColor: null,
+    selectedSize: null,
+  });
+
+  const openSuccessModal = (product, quantity, selectedColor, selectedSize) => {
+    setSuccessModal({
+      isVisible: true,
+      product,
+      quantity,
+      selectedColor,
+      selectedSize,
+    });
+  };
+  // 關閉成功通知
+  const closeSuccessModal = () => {
+    setSuccessModal({
+      isVisible: false,
+      product: null,
+      quantity: 0,
+    });
+  };
 
   return (
     <CartContext.Provider
@@ -124,11 +149,21 @@ export function CartProvider({ children }) {
         onDecrease,
         onIncrease,
         onRemove,
+        openSuccessModal,
+        closeSuccessModal,
       }}
     >
       {children}
+      <AddToCartSuccessModal
+        product={successModal.product}
+        quantity={successModal.quantity}
+        selectedColor={successModal.selectedColor}
+        selectedSize={successModal.selectedSize}
+        isVisible={successModal.isVisible}
+        onClose={closeSuccessModal}
+      />
     </CartContext.Provider>
-  )
+  );
 }
 // #endregion
 

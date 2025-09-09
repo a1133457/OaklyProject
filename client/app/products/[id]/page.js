@@ -5,7 +5,7 @@ import "@/styles/products/pid.css";
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
-// import { useCart } from '@/app/contexts/CartContext.js';
+// import { cartContext } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from "@/app/_components/CategoryDropdown.js";
 import { useCart } from "@/hooks/use-cart";
 // 導入吐司訊息用方法+元件
@@ -419,7 +419,7 @@ export default function PidPage({ params }) {
     return colorMap[colorName] || "#cccccc";
   };
   const [selectedImage, setSelectedImage] = useState(0);
-  // const { addToCart } = useCart();
+  // const { addToCart } = cartContext();
   // ------------------------
   const { onAdd } = useCart();
   // ------------------------

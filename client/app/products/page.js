@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart'
 
 
 
@@ -35,6 +36,8 @@ const MainProduct = () => {
   const [wishlistQuantity, setWishlistQuantity] = useState(1);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
   // const { addToCart } = useCart();
+
+  const { onAdd, openSuccessModal, closeSuccessModal } = useCart();
 
   const getImageUrl = (product) => {
     if (!product || !product.images || product.images.length === 0) {
@@ -611,7 +614,8 @@ const MainProduct = () => {
     const defaultColor = product.colors?.[0] || null;
     const defaultSize = product.sizes?.[0] || null;
 
-    addToCart(product, 1, defaultColor, defaultSize);
+    onAdd(product);
+    openSuccessModal(product, 1, defaultColor, defaultSize);
   };
 
   const getColorCode = (colorName) => {
