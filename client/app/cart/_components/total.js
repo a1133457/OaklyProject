@@ -154,7 +154,7 @@ export default function Total({ type }) {
         <div className="amount-list fin">
           <div className="pAmount">
             <p>商品總金額</p>
-            <h6>{totalAmount}</h6>
+            <h6>${totalAmount}</h6>
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>
@@ -163,7 +163,7 @@ export default function Total({ type }) {
           <div className="t-line"></div>
           <div className="total">
             <h6>總金額</h6>
-            <h6>{totalAmount}</h6>
+            <h6>${totalAmount}</h6>
           </div>
         </div>
       </>

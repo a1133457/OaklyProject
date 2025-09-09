@@ -127,8 +127,8 @@ export default function EditInfo({ type, onClose }) {
               }
             />
           </div>
-
-          {/* <div className="form-row">
+{/* 
+          <div className="form-row">
             <label>郵遞區號</label>
             <input
               type="text"
@@ -184,82 +184,81 @@ export default function EditInfo({ type, onClose }) {
         </div>
       </div>
     );
+  } else if (type === "recipient") {
+    return (
+      <div className="overlay">
+        <div className="list">
+          <h3 className="title">編輯資料</h3>
+
+          {/* 訂購人 --------------------*/}
+          {/* 表單欄位 */}
+          <h6>收件人</h6>
+          <div className="form-row">
+            <label>姓名</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-row">
+            <label>電話</label>
+            <input
+              type="text"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-row">
+            <label>郵遞區號</label>
+            <input
+              type="text"
+              value={formData.postcode}
+              onChange={(e) =>
+                setFormData({ ...formData, postcode: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-row">
+            <label>地區</label>
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) =>
+                setFormData({ ...formData, city: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-row">
+            <label>地址</label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
+            />
+          </div>
+
+          {/* 按鈕 */}
+          <div className="form-actions">
+            <button onClick={onClose} className="cancel">
+              取消
+            </button>
+            <button onClick={handleSave} className="save">
+              儲存
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
-  // else if (type === "recipient") {
-  //   return (
-  //     <div className="overlay">
-  //       <div className="list">
-  //         <h3 className="title">編輯資料</h3>
-
-  //         {/* 訂購人 --------------------*/}
-  //         {/* 表單欄位 */}
-  //         <h6>收件人</h6>
-  //         <div className="form-row">
-  //           <label>姓名</label>
-  //           <input
-  //             type="text"
-  //             value={formData.name}
-  //             onChange={(e) =>
-  //               setFormData({ ...formData, name: e.target.value })
-  //             }
-  //           />
-  //         </div>
-
-  //         <div className="form-row">
-  //           <label>電話</label>
-  //           <input
-  //             type="text"
-  //             value={formData.phone}
-  //             onChange={(e) =>
-  //               setFormData({ ...formData, phone: e.target.value })
-  //             }
-  //           />
-  //         </div>
-
-  //         <div className="form-row">
-  //           <label>郵遞區號</label>
-  //           <input
-  //             type="text"
-  //             value={formData.postcode}
-  //             onChange={(e) =>
-  //               setFormData({ ...formData, postcode: e.target.value })
-  //             }
-  //           />
-  //         </div>
-
-  //         <div className="form-row">
-  //           <label>地區</label>
-  //           <input
-  //             type="text"
-  //             value={formData.city}
-  //             onChange={(e) =>
-  //               setFormData({ ...formData, city: e.target.value })
-  //             }
-  //           />
-  //         </div>
-
-  //         <div className="form-row">
-  //           <label>地址</label>
-  //           <input
-  //             type="text"
-  //             value={formData.address}
-  //             onChange={(e) =>
-  //               setFormData({ ...formData, address: e.target.value })
-  //             }
-  //           />
-  //         </div>
-
-  //         {/* 按鈕 */}
-  //         <div className="form-actions">
-  //           <button onClick={onClose} className="cancel">
-  //             取消
-  //           </button>
-  //           <button onClick={handleSave} className="save">
-  //             儲存
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 }

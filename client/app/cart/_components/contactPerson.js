@@ -31,49 +31,39 @@ export default function ContactPerson() {
 
   // 從 localStorage 讀取用戶資料
   useEffect(() => {
-    if (!isClient) return;
+    
 
     try {
       const savedUser = localStorage.getItem("user");
       const savedBuyer = localStorage.getItem("buyer");
       if (savedBuyer) {
-        const buyerData = JSON.parse(savedUser);
-        console.log("從 localStorage 讀取的 buyer:", userData);
-
+        const buyerData = JSON.parse(savedBuyer);
+        console.log("從 localStorage 讀取的 buyer:", buyerData);
         setBuyer({
-          name: buyerData.name || userData.updateUser?.name || "",
-          phone: buyerData.phone || userData.updateUser?.phone || "",
-          email: buyerData.email || userData.updateUser?.email || "",
-          address: `${
-            buyerData.postcode || userData.updateUser?.postcode || ""
-          }${buyerData.city || userData.updateUser?.city || ""}${
-            buyerData.area || userData.updateUser?.area || ""
-          }${buyerData.address || userData.updateUser?.address || ""}`,
+          name: buyerData.name || "",
+          phone: buyerData.phone || "",
+          email: buyerData.email || "",
+          address: `${buyerData.postcode || ""}${buyerData.city || ""}${
+            buyerData.area || ""
+          }${buyerData.address || ""}`,
         });
-      }
-      if (savedUser) {
+      } else {
         const userData = JSON.parse(savedUser);
         console.log("從 localStorage 讀取的 user:", userData);
-
-        const buyerData = buyer || {};
-        const recipientData = userData.updateUser?.recipient || {};
-
         setBuyer({
-          name: buyerData.name || userData.updateUser?.name || "",
-          phone: buyerData.phone || userData.updateUser?.phone || "",
-          email: buyerData.email || userData.updateUser?.email || "",
-          address: `${
-            buyerData.postcode || userData.updateUser?.postcode || ""
-          }${buyerData.city || userData.updateUser?.city || ""}${
-            buyerData.area || userData.updateUser?.area || ""
-          }${buyerData.address || userData.updateUser?.address || ""}`,
+          name: userData.name || "",
+          phone: userData.phone || "",
+          email: userData.email || "",
+          address: `${userData.postcode || ""}${userData.city || ""}${
+            userData.area || ""
+          }${userData.address || ""}`,
         });
         console.log("從 localStorage 讀取的用戶資料:", userData);
       }
     } catch (error) {
       console.log("讀取 localStorage 失敗:", error);
     }
-  }, [isClient]);
+  }, []);
 
   // 同步 buyer 到 localStorage
   useEffect(() => {
@@ -140,6 +130,8 @@ export default function ContactPerson() {
   // }, [localStorageUser]);
 
   const handleSamePerson = (e) => {
+    const savedBuyer = localStorage.getItem("buyer");
+    const buyerData = JSON.parse(savedBuyer);
     if (!isClient) return; // 只在客戶端執行
 
     if (e.target.checked) {
