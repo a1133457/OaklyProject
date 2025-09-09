@@ -184,6 +184,7 @@ router.post("/login", upload.none(), async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // 1) 撈使用者
     const user = await pool
       .execute('SELECT * FROM users WHERE `email`= ?', [email])
       .then(([result]) => {
@@ -200,9 +201,10 @@ router.post("/login", upload.none(), async (req, res) => {
       throw err;
     }
 
+    // 2) 比對密碼
     // 測試完要改回來
-    // const isMatch = await bcrypt.compare(password, user.password);
-    const isMatch = password === user.password;
+    const isMatch = await bcrypt.compare(password, user.password);
+    // const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;
@@ -210,6 +212,7 @@ router.post("/login", upload.none(), async (req, res) => {
       throw err;
     }
 
+    // 3) 簽發 token（30 分鐘）
     const token = jwt.sign({
       id: user.id,
       name: user.name,
@@ -224,6 +227,7 @@ router.post("/login", upload.none(), async (req, res) => {
       secretKey,
       { expiresIn: "30m" }
     );
+    // 4) 回前端用的精簡使用者資料
     const newUser = {
       id: user.id,
       name: user.name,
@@ -243,15 +247,19 @@ router.post("/login", upload.none(), async (req, res) => {
     });
   } catch (error) {
     // 捕獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 400;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "登入失敗，請洽管理人員";
+    // console.log(error);
+    // const statusCode = error.code ?? 400;
+    // const statusText = error.status ?? "error";
+    // const message = error.message ?? "登入失敗，請洽管理人員";
 
-    res.status(statusCode).json({
-      status: statusText,
-      message
-    });
+    // res.status(statusCode).json({
+    //   status: statusText,
+    //   message
+    // });
+    console.error("LOGIN_ERROR:", error);
+    return res
+      .status(500)
+      .json({ status: "error", message: "登入失敗，請稍後再試" });
   }
 });
 

@@ -16,10 +16,10 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState([]);
 
-  // const router = useRouter();
-  // const pathname = usePathname();
-  const loginRoute = "/user/login";
-  const protectedRoutes = ["/user", "/order/detail",];
+  const router = useRouter();
+//   const pathname = usePathname();
+//   const loginRoute = "/auth/login";
+//   const protectedRoutes = ["/user", "/order/detail",];
 
   // login------------------------------------
   const login = async (email, password) => {
@@ -156,7 +156,7 @@ export function AuthProvider({ children }) {
 
     if (!token) {
       setUser(null);
-      //setIsLoading(false);
+      setIsLoading(false);
       return;
     }
     const checkToken = async () => {
@@ -172,13 +172,14 @@ export function AuthProvider({ children }) {
           const token = result.data.token; // 伺服器會回新的 30 分 token
           setUser(result.data.user);
           localStorage.setItem(appKey, token); // 覆蓋舊的 token
-          //setIsLoading(false);
+          setIsLoading(false);
         } else {
           //alert(result.message);
-          //setIsLoading(false);
+          setIsLoading(false);
           // setUser(null);
           // localStorage.removeItem(appKey);
           // router.push('/auth/login');
+          router.replace(loginRoute) // 失效就回登入
           // 接 吐司？
         }
       } catch (error) {
@@ -186,6 +187,7 @@ export function AuthProvider({ children }) {
         setUser(null);
         localStorage.removeItem(appKey);
         // router.push('/auth/login');
+        router.replace(loginRoute);   // 解析錯誤也回登入
       }
     };
     checkToken();
