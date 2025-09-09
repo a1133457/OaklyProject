@@ -25,20 +25,26 @@ export default function ContactPerson() {
   });
 
   useEffect(() => {
+    // 用 useAuth 抓資料
+    
+    // const savedBuyer = JSON.parse(localStorage.getItem("buyer"));
+    // const savedRecipient = JSON.parse(localStorage.getItem("recipient"));
+
+    // if (savedBuyer) setBuyer(savedBuyer);
+    // if (savedRecipient) setRecipient(savedRecipient);
+
     // 如果有 useAuth 的 user 資料，也可以更新
     if (user) {
       setBuyer({
         name: user.name || "",
         phone: user.phone || "",
         email: user.email || "",
-        address: `${user.postcode || ""}${user.city || ""}${user.area || ""}${
-          user.address || ""
-        }`,
+        address: `${user.postcode || ""}${user.city || ""}${user.area || ""}${user.address || ""}`,
       });
+
       setRecipient({
-        name: user.recipient?.name || "",
+        name:user.recipient?.name || "",
         phone: user.recipient?.phone || "",
-        email: user.recipient?.email || "",
         address: user.recipient?.address || "",
       });
     }
