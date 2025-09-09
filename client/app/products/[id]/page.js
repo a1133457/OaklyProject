@@ -867,7 +867,7 @@ const [cartLoading, setCartLoading] = useState(false);
           <div className="breadcrumb">
             <a href="/">首頁</a>
             <div className="arrow">&gt;</div>
-            商品總頁
+            商品列表
             <div className="arrow-name">&gt;</div>
             {productData.name}
           </div>

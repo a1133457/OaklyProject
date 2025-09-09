@@ -13,7 +13,7 @@ body {
   min-width: 1200px;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   box-sizing: border-box;
   background-color: #ffffff;
 }
@@ -1348,8 +1348,8 @@ span {
 
   html,
   body {
-    width: 100%;
-    min-height: 100%;
+    width: 100% !important;
+    min-height: 100% !important;
   }
 
   .sub-nav {
@@ -1357,9 +1357,153 @@ span {
   }
 
   .products-container {
-    padding: 0 32px;
-  }
+    padding: 0 32px !important;
+    background: white !important;
 
+  }
+    .mobile-filter-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer; /* 增加點擊指示 */
+
+    }
+    
+    .mobile-filter-overlay.active {
+      opacity: 1;
+      visibility: visible;
+      height: 100%;
+      width: 100%;
+    }
+    body.mobile-filter-open {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+    }
+    .mobile-filter-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      max-width: 85vw;
+      height: 100%;
+      background: white;
+      z-index: 9999;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mobile-filter-sidebar.active {
+      transform: translateX(0);
+    }
+    
+    .mobile-filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+    }
+    
+    .mobile-filter-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #6A6A6A;
+      margin: 0;
+    }
+    
+    .mobile-filter-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #8B8B8B;
+      cursor: pointer;
+      padding: 5px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .mobile-filter-results {
+      background: #f8f9fa;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      color: #6A6A6A;
+      text-align: center;
+    }
+    
+    .mobile-filter-content .filter-sections {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .mobile-filter-content .filter-section {
+      padding: 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .mobile-filter-content .filter-title {
+      color: #6A6A6A;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .mobile-filter-content .color-options {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 16px 0;
+    }
+    
+    .mobile-filter-buttons {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      padding: 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .mobile-filter-apply {
+      flex: 2;
+      background: #719A8B;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .mobile-filter-reset {
+      flex: 1;
+      background: #f8f9fa;
+      color: #6A6A6A;
+      border: 1px solid #dee2e6;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  
   .breadcrumb-nav-top {
     display: flex;
     color: white;
@@ -1379,13 +1523,52 @@ span {
     gap: 10px;
     justify-content: center;
     align-items: center;
+    font-size: 16px;
+
   }
 
   .sort {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px
+    gap: 10px;
+    font-size: 16px;
+    position: relative;
+
+  }
+  
+  .mobile-sort-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 200px;
+    background: white;
+    border: 1px solid #ddd;
+    transform: translateX(-50%);
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .mobile-sort-option {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    font-size: 14px;
+
+  }
+  
+  .mobile-sort-option:last-child {
+    border-bottom: none;
+  }
+  
+  .mobile-sort-option:hover {
+    background-color: #f5f5f5;
   }
 
   .per-page-selection {
@@ -1521,7 +1704,7 @@ span {
 
   .image {
     height: auto;
-    margin-bottom: 8px;
+    margin-bottom: 32px;
   }
 
   .image img {
@@ -1531,13 +1714,15 @@ span {
   }
 
   .wrapper {
-    width: 100%;
-    display: flex;
-    max-width: 1440px;
-    gap: 72px;
-    margin: 0px auto;
-    overflow: visible;
+    width: 100% !important;
+    display: block !important;
+    grid-template-columns: none !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    max-width: none !important;
   }
+  
 
   .products-grid.list {
     grid-template-columns: 1fr;
@@ -1592,6 +1777,10 @@ span {
     font-size: 16px;
     border-radius: 25px;
 }
+.mobile-filter-content {
+  padding-bottom: 20px;
+}
+
 }
 
 /* list 模式：圖片與文字橫向排列 */
@@ -1656,6 +1845,29 @@ span {
   word-wrap: break-word;
   z-index: 2;
 }
+
+.productcard .badge-hot {
+  display: inline-block;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  align-self: flex-start;
+  margin-bottom: 8px;
+  width: 44px;
+  height: 44px;
+  background: #c14545;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-family: Noto Sans TC;
+  font-weight: 900;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  z-index: 2;
+}
+
+
 
 /* list 模式也同樣位置 */
 .products-grid.list .badge-new {

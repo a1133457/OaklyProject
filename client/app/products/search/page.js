@@ -513,7 +513,7 @@ export default function SearchResultsPage() {
           <div className="breadcrumb">
             <Link href="/">首頁</Link>
             <div className="arrow">&gt;</div>
-            <Link href="/products">商品總頁</Link>
+            <Link href="/products">商品列表</Link>
             <div className="arrow">&gt;</div>
             搜尋結果
           </div>
@@ -593,7 +593,7 @@ export default function SearchResultsPage() {
           <div className="breadcrumb">
             <Link href="/">首頁</Link>
             <div className="arrow">&gt;</div>
-            <Link href="/products">商品總頁</Link>
+            <Link href="/products">商品列表</Link>
             <div className="arrow">&gt;</div>
             搜尋結果
           </div>

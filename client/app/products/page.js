@@ -38,6 +38,21 @@ const MainProduct = () => {
   const [showCartModal, setShowCartModal] = useState(false);
   const [currentCartProduct, setCurrentCartProduct] = useState(null);
   const [cartQuantity, setCartQuantity] = useState(1);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [showMobileSortDropdown, setShowMobileSortDropdown] = useState(false);
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMobileSortDropdown && !event.target.closest('.sort')) {
+        setShowMobileSortDropdown(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showMobileSortDropdown]);
+
 
   // 獲取最新商品
   const fetchLatestProducts = async () => {
@@ -63,6 +78,58 @@ const MainProduct = () => {
     } catch (error) {
       console.error('獲取最新商品失敗:', error);
     }
+  };
+
+  // 獲取熱賣商品
+const fetchHotProducts = async () => {
+  try {
+    const response = await fetch('http://localhost:3005/api/products/hot-products?limit=50');
+    const products = await response.json();
+
+    const productsWithHotFlag = products.map(product => ({
+      ...product,
+      isHot: true
+    }));
+
+    setProducts(productsWithHotFlag);
+    setCurrentPage(1);
+
+    // 設置頁面狀態為熱賣商品
+    setCurrentTitle('熱賣商品');
+    setCurrentHeroImage('/img/lan/hot.jpg');
+    setSelectedCategory('');
+    setSelectedSubCategory('');
+    clearFilters();
+
+  } catch (error) {
+    console.error('獲取熱賣商品失敗:', error);
+  }
+};
+
+
+
+  const toggleMobileFilter = () => {
+    setIsMobileFilterOpen(!isMobileFilterOpen);
+    if (!isMobileFilterOpen) {
+      document.body.classList.add('mobile-filter-open');
+    } else {
+      document.body.classList.remove('mobile-filter-open');
+    }
+  };
+
+  const closeMobileFilter = () => {
+    setIsMobileFilterOpen(false);
+    document.body.classList.remove('mobile-filter-open');
+  };
+
+  const handleMobileFilterApply = () => {
+    applyFilters();
+    closeMobileFilter();
+  };
+
+  const handleMobileFilterReset = () => {
+    clearFilters();
+    closeMobileFilter();
   };
 
   const handleCartClick = (product, e) => {
@@ -701,9 +768,23 @@ const MainProduct = () => {
       <div className="breadcrumb-nav-top">
         <div className="sub-nav-content">
           <div className="breadcrumb">
-            <a href="/">首頁</a>
+            <a href="/" onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory('');
+              setSelectedSubCategory('');
+              setCurrentTitle('全部商品');
+              setCurrentHeroImage('/img/lan/header.png');
+
+            }}>首頁</a>
             <div className="arrow">&gt;</div>
-            商品總頁
+            <a href="#" onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory('');
+              setSelectedSubCategory('');
+              setCurrentTitle('全部商品');
+              setCurrentHeroImage('/img/lan/header.png');
+            }}></a>
+            商品列表
           </div>
         </div>
       </div>
@@ -732,7 +813,11 @@ const MainProduct = () => {
             }}>
             最新商品
           </a>
-          <a href="#" className="sub-nav-link">
+          <a href="#" className="sub-nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              fetchHotProducts();
+            }}>
             熱賣
           </a>
           <div className="dropdown hover-dropdown">
@@ -845,7 +930,11 @@ const MainProduct = () => {
               setSelectedSubCategory('');
               setCurrentTitle('全部商品');
               setCurrentHeroImage('/img/lan/header.png');
-              
+              fetch("http://localhost:3005/api/products")
+                .then(res => res.json())
+                .then(json => setProducts(Array.isArray(json) ? json : []))
+                .catch(err => console.error(err));
+
             }}>
               首頁
             </a>
@@ -856,8 +945,12 @@ const MainProduct = () => {
               setSelectedSubCategory('');
               setCurrentTitle('全部商品');
               setCurrentHeroImage('/img/lan/header.png');
+              fetch("http://localhost:3005/api/products")
+                .then(res => res.json())
+                .then(json => setProducts(Array.isArray(json) ? json : []))
+                .catch(err => console.error(err));
             }}>
-              商品總頁
+              商品列表
             </a>
             {selectedCategory && (
               <>
@@ -878,7 +971,8 @@ const MainProduct = () => {
       {/* 主要內容區域 */}
       <div className="content">
         <div className="mid-sec">
-          <div className="filter">
+          <div className="filter" onClick={toggleMobileFilter}>
+
             <svg
               width="11"
               height="10"
@@ -893,7 +987,7 @@ const MainProduct = () => {
             </svg>
             篩選
           </div>
-          <div className="sort">
+          <div className="sort" onClick={() => setShowMobileSortDropdown(!showMobileSortDropdown)}>
             排列方式
             <svg
               width="7"
@@ -901,12 +995,34 @@ const MainProduct = () => {
               viewBox="0 0 7 4"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              style={{ transform: showMobileSortDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
             >
               <path
                 d="M3.77203 3.89391L6.88731 0.960529C7.03756 0.819055 7.03756 0.58969 6.88731 0.448232L6.52397 0.106102C6.37398 -0.0351305 6.13088 -0.0354021 5.98054 0.105498L3.49999 2.43025L1.01946 0.105498C0.869116 -0.0354021 0.626024 -0.0351305 0.476033 0.106102L0.112686 0.448232C-0.0375618 0.589705 -0.0375618 0.81907 0.112686 0.960529L3.22797 3.89389C3.3782 4.03537 3.62179 4.03537 3.77203 3.89391Z"
                 fill="#8B8B8B"
               />
             </svg>
+
+            {/* 下拉菜單 */}
+            {showMobileSortDropdown && (
+              <div className="mobile-sort-dropdown">
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('default'); setShowMobileSortDropdown(false); }}>
+                  預設排序
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('price_asc'); setShowMobileSortDropdown(false); }}>
+                  售價 (由低到高)
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('price_desc'); setShowMobileSortDropdown(false); }}>
+                  售價 (由高到低)
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('created_asc'); setShowMobileSortDropdown(false); }}>
+                  上架時間 (由低到高)
+                </div>
+                <div className="mobile-sort-option" onClick={(e) => { e.stopPropagation(); setSortBy('created_desc'); setShowMobileSortDropdown(false); }}>
+                  上架時間 (由高到低)
+                </div>
+              </div>
+            )}
           </div>
           <div className="per-page-select">
             <select
@@ -1071,6 +1187,7 @@ const MainProduct = () => {
                     onClick={() => handleProductClick(product.id)}
                     style={{ cursor: 'pointer' }}>
                     {product.isNew && <span className="badge-new">新品</span>}
+                    {product.isHot && <span className="badge-hot">熱賣</span>}
                     <div className="image">
                       {product.images && product.images.length > 0 ? (
                         <img
@@ -1360,7 +1477,115 @@ const MainProduct = () => {
           </div>
         </div>
       </div>
+      {/* 手機版篩選側邊欄 */}
+      {isMobileFilterOpen && (
+        <>
+          <div className={`mobile-filter-overlay ${isMobileFilterOpen ? 'active' : ''}`} onClick={closeMobileFilter} />
+          <div className={`mobile-filter-sidebar ${isMobileFilterOpen ? 'active' : ''}`}>
+            {/* 標題區域 */}
+            <div className="mobile-filter-header">
+              <h3 className="mobile-filter-title">篩選條件</h3>
+              <button className="mobile-filter-close" onClick={closeMobileFilter}>
+                ×
+              </button>
+            </div>
 
+            {/* 篩選結果顯示 */}
+            <div className="mobile-filter-results">
+              找到 {filteredProducts.length} 項商品
+            </div>
+
+            {/* 篩選內容 */}
+            <div className="mobile-filter-content">
+              <div className="filter-sections">
+
+
+
+                {/* 價格篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">價格範圍</h4>
+                  <div className="price-range">
+                    <div className="price-slider">
+                      <input
+                        type="range"
+                        min="0"
+                        max="50000"
+                        step="1000"
+                        value={tempPriceRange.max}
+                        onChange={(e) => {
+                          const newMax = parseInt(e.target.value);
+                          setTempPriceRange({ min: 0, max: newMax });
+                        }}
+                      />
+                    </div>
+                    <span>NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* 顏色篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">顏色</h4>
+                  <div className="color-options">
+                    {colorOptions.map((color) => (
+                      <div
+                        key={color.value}
+                        className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
+                        style={{ backgroundColor: color.color }}
+                        onClick={() => handleColorFilter(color.value)}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* 材質篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">材質</h4>
+                  <div className="filter-options">
+                    {materialOptions.map((material) => (
+                      <div key={material} className="option">
+                        <input
+                          type="checkbox"
+                          checked={tempFilters?.materials?.includes(material) || false}
+                          onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
+                        />
+                        <span>{material}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 系列篩選 */}
+                <div className="filter-section">
+                  <h4 className="filter-title">系列</h4>
+                  <div className="filter-options">
+                    {seriesOptions.map((series) => (
+                      <div key={series} className="option">
+                        <input
+                          type="checkbox"
+                          checked={tempFilters?.series?.includes(series) || false}
+                          onChange={(e) => handleFilterChange('series', series, e.target.checked)}
+                        />
+                        <span>{series}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 底部按鈕 */}
+            <div className="mobile-filter-buttons">
+              <button className="mobile-filter-reset" onClick={handleMobileFilterReset}>
+                清除
+              </button>
+              <button className="mobile-filter-apply" onClick={handleMobileFilterApply}>
+                套用篩選
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
