@@ -1,57 +1,67 @@
 'use client'
 
-import { useState } from 'react'
-import Sidebar from '../_components/sidebar'
-import HeaderImg from '../_components/HeaderImg'
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import styles from '../user.module.css'
 
-const datas = [
-    { id: 1, name: 'LISABO 桌子', price: 4999, img: '/img/ting/桌子.webp' },
-    { id: 2, name: 'LISABO 桌子', price: 4999, img: '/img/ting/桌子.webp' },
-]
+// const datas = [
+//     { id: 1, name: 'LISABO 桌子', price: 4999, img: '/img/ting/桌子.webp' },
+//     { id: 2, name: 'LISABO 桌子', price: 4999, img: '/img/ting/桌子.webp' },
+// ]
 
 export default function FavoritesPage() {
     // 管理清單
-    const [list, setList] = useState(datas)
+    const { getFavorites, removeFavorite } = useAuth();
+    const [list, setList] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // 點擊時「真的移除」：把 id 不等於的留下
-    const removeFavorites = (id) => {
-        setList(prev => prev.filter(a => a.id !== id))
-    }
+    useEffect(() => {
+        (async () => {
+            const result = await getFavorites();
+            if (result.success) setList(result.data || []);
+            setLoading(false);
+        })();
+    }, [getFavorites]);
+
+    const onRemove = async (productId) => {
+        const result = await removeFavorite(productId);
+        if (result.status === 'success') {
+            setList(prev => prev.filter(item => item.product_id !== productId));
+        }
+    };
+
+    // if (loading) return <div>載入中…</div>;
+    if (loading) return <>載入中…</>;
+
+    if (!list.length) return (
+        <>
+            目前沒有收藏。去逛逛商品，點愛心加入吧！
+        </>
+    );
 
     return (
         <div>
-            {/* <HeaderImg title="FAVORITES" />
-            <div className={`container-fluid ${styles.userContainer}`}>
-                <div className={styles.layout}>
-                    <div className={styles.sidebarWrapper}>
-                    <Sidebar />
-                    </div> */}
-
-            {/* 右右右 */}
-            {/* <div className={styles.content}> */}
-            {datas.map(p => (
-                <div key={p.id} className={styles.favoritesRow}>
-                    <img src={p.img} alt="" width={140} height={120} style={{ objectFit: 'cover' }} />
-                    {/* <img src={p.img} alt="" width={100} height={100} /> */}
-                    <div className={styles.productName}>{p.name}</div>
-                    <div className={styles.productPrice}>${p.price.toLocaleString()}</div>
+            {list.map(item => (
+                <div key={item.product_id} className={styles.favoritesRow}>
+                    <img
+                        src={item.product_img}
+                        alt={item.name}
+                        width={140}
+                        height={120}
+                        style={{ objectFit: 'cover' }}
+                    />
+                    <div className={styles.productName}>{item.name}</div>
+                    <div className={styles.productPrice}>${Number(item.price).toLocaleString()}</div>
                     <div className={styles.iconActions}>
-                        <i className={`bi bi-heart-fill ${styles.heart}`} />
-                        <i className="bi bi-cart" />
-                        <img
-                            src="/img/ting/icon-heart-fill.svg"
-                            alt="favoritesicon"
-                            className={styles.bookmarkIcon}
-                            onClick={() => removeFavorites(p.id)}
+                        <i
+                            className={`bi bi-heart-fill ${styles.heart}`}
+                            onClick={() => onRemove(item.product_id)}
                             role="button"
                             title="取消收藏"
                         />
-                        <img
-                            src="/img/ting/icon-cart.svg"
-                            alt="favoritesicon"
-                            className={styles.bookmarkIcon}
-                            onClick={() => removeFavorites(p.id)}
+                        <i
+                            className={`bi bi-cart ${styles.cart}`}
+                            onClick={() => console.log("加入購物車")}
                             role="button"
                             title="加入購物車"
                         />
@@ -59,8 +69,5 @@ export default function FavoritesPage() {
                 </div>
             ))}
         </div>
-        // </div>
-        //     </div>
-        // </div>
     )
 }

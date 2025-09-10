@@ -7,9 +7,10 @@
     color: #919191;
     /* 內容最大寬，但不超出視窗 */
     max-width: min(1440px, 100%);
-    margin-inline: auto; /* 置中 */
+    margin-inline: auto;
+    /* 置中 */
     /* 上方距離 */
-    padding-block: 40px; 
+    padding-block: 40px;
     /* RWD 左右留白：16px ~ 40px，會隨螢幕寬度平滑變化 */
     padding-inline: clamp(16px, 4vw, 60px);
 }
@@ -24,7 +25,7 @@
 
 /* Sidebar：固定寬度 + 與表單間距（依設計稿調整數值） */
 .sidebarWrapper {
-    
+
     /* padding: 60px; */
     /* 側欄固定 220px；想更寬就改 */
     flex: 0 0 256px;
@@ -114,6 +115,11 @@
 
 .heart {
     color: #d4a373;
+    cursor: pointer;
+}
+
+.cart {
+    cursor: pointer;
 }
 
 

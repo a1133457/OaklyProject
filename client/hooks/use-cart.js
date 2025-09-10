@@ -145,7 +145,7 @@ export function CartProvider({ children }) {
         items,
         totalAmount,
         totalQty,
-        onAdd,
+        addToCart: onAdd, 
         onDecrease,
         onIncrease,
         onRemove,

@@ -13,23 +13,22 @@ import MemberCard from "./_components/MemberCard";
 import { useRouter } from "next/navigation";
 
 export default function CouponPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [coupons, setCoupons] = useState([]);
-
 
   const handleClaimCoupon = async (couponId) => {
     // 領取時的登入檢查
-    const token = localStorage.getItem('reactLoginToken')
-    const userStr = localStorage.getItem('user')
+    const token = localStorage.getItem("reactLoginToken");
+    const userStr = localStorage.getItem("user");
 
     //沒登入的跳轉
-    if(!token || !userStr){
-      alert('請先登入')
-      router.push('/auth/login')
-      return
+    if (!token || !userStr) {
+      alert("請先登入");
+      router.push("/auth/login");
+      return;
     }
-    
-    const user = JSON.parse(userStr)
+
+    const user = JSON.parse(userStr);
     const userId = user.id;
 
     try {
@@ -40,13 +39,13 @@ export default function CouponPage() {
         }
       );
       const data = await result.json();
-      if(data.status === 'success'){
-        alert('領取成功')
-      }else{
-        alert(data.message)
+      if (data.status === "success") {
+        alert("領取成功");
+      } else {
+        alert(data.message);
       }
     } catch (err) {
-      console.log('優惠券領取失敗',err);
+      console.log("優惠券領取失敗", err);
     }
   };
 
@@ -99,9 +98,11 @@ export default function CouponPage() {
                 <CouponCard
                   key={coupon.id}
                   tag={`適用${
-                    coupon.category_ids.split(",").length === 6
-                      ? "全站商品"
-                      : `${coupon.category_names}類`
+                    coupon.category_ids
+                      ? coupon.category_ids.split(",").length === 6
+                        ? "全站商品"
+                        : `${coupon.category_names}類`
+                      : "未分類"
                   }`}
                   date={`領取後 ${coupon.valid_days} 天有效`}
                   discountNumber={

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
-import { useCart } from '@/hooks/use-cart'
+import { useCart } from '@/hooks/use-cart';
+
 
 
 
@@ -27,20 +28,21 @@ const MainProduct = () => {
   const [tempPriceRange, setTempPriceRange] = useState({ min: 0, max: 50000 });
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
-  const [currentTitle, setCurrentTitle] = useState('全部商品');
-  const [currentHeroImage, setCurrentHeroImage] = useState('/img/lan/header.png');
+  const [currentTitle, setCurrentTitle] = useState('');
+  const [currentHeroImage, setCurrentHeroImage] = useState('');
   const [isWishlisted, setIsWishlisted] = useState({});
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [wishlistQuantity, setWishlistQuantity] = useState(1);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
-  const { addToCart } = useCart();
+  const { addToCart, openSuccessModal } = useCart();
   const [showCartModal, setShowCartModal] = useState(false);
   const [currentCartProduct, setCurrentCartProduct] = useState(null);
   const [cartQuantity, setCartQuantity] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showMobileSortDropdown, setShowMobileSortDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
 
   useEffect(() => {
@@ -82,30 +84,30 @@ const MainProduct = () => {
   };
 
   // 獲取熱賣商品
-const fetchHotProducts = async () => {
-  try {
-    const response = await fetch('http://localhost:3005/api/products/hot-products?limit=50');
-    const products = await response.json();
+  const fetchHotProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:3005/api/products/hot-products?limit=50');
+      const products = await response.json();
 
-    const productsWithHotFlag = products.map(product => ({
-      ...product,
-      isHot: true
-    }));
+      const productsWithHotFlag = products.map(product => ({
+        ...product,
+        isHot: true
+      }));
 
-    setProducts(productsWithHotFlag);
-    setCurrentPage(1);
+      setProducts(productsWithHotFlag);
+      setCurrentPage(1);
 
-    // 設置頁面狀態為熱賣商品
-    setCurrentTitle('熱賣商品');
-    setCurrentHeroImage('/img/lan/hot.jpg');
-    setSelectedCategory('');
-    setSelectedSubCategory('');
-    clearFilters();
+      // 設置頁面狀態為熱賣商品
+      setCurrentTitle('熱賣商品');
+      setCurrentHeroImage('/img/lan/hot.jpg');
+      setSelectedCategory('');
+      setSelectedSubCategory('');
+      clearFilters();
 
-  } catch (error) {
-    console.error('獲取熱賣商品失敗:', error);
-  }
-};
+    } catch (error) {
+      console.error('獲取熱賣商品失敗:', error);
+    }
+  };
 
 
 
@@ -169,11 +171,10 @@ const fetchHotProducts = async () => {
     }
 
     addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
+    openSuccessModal(currentCartProduct, cartQuantity, selectedColor, selectedSize);
     setShowCartModal(false);
     document.body.classList.remove('no-scroll');
   };
-
-  const { onAdd, openSuccessModal, closeSuccessModal } = useCart();
 
   const getImageUrl = (product) => {
     if (!product || !product.images || product.images.length === 0) {
@@ -524,8 +525,51 @@ const fetchHotProducts = async () => {
   };
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = decodeURIComponent(urlParams.get('category') || '');
+    const subcategory = decodeURIComponent(urlParams.get('subcategory') || '');
+    const type = urlParams.get('type') || '';
+
+    console.log('URL 參數:', { category, subcategory, type });
+
+    if (type === 'latest') {
+      fetchLatestProducts();
+      return;
+    }
+
+    if (type === 'hot') {
+      fetchHotProducts();
+      return;
+    }
+
+    if (category) {
+      setSelectedCategory(category);
+      const categoryInfo = categoryData[category] || categoryData[''];
+      setCurrentTitle(categoryInfo.title);
+      setCurrentHeroImage(categoryInfo.image);
+
+      if (subcategory) {
+        setSelectedSubCategory(subcategory);
+      } else {
+        setSelectedSubCategory('');
+      }
+
+      clearFilters();
+    } else {
+      setIsLoading(false);
+      setCurrentTitle('全部商品');
+      setCurrentHeroImage('/img/lan/header.png');  // 沒有參數時才停止載入
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchProducts = async () => {
+      if (!isLoading && !selectedCategory && !selectedSubCategory) {
+        // 只有在不是載入狀態且沒有選擇分類時才載入全部商品
+        return;
+      }
       try {
+        setIsLoading(true); // 開始載入
         let url = "http://localhost:3005/api/products";
         let allProducts = [];
 
@@ -558,6 +602,8 @@ const fetchHotProducts = async () => {
       } catch (err) {
         console.error("產品 API 請求錯誤：", err);
         setProducts([]);
+      } finally {
+        setIsLoading(false); // 結束載入
       }
     };
 
@@ -746,8 +792,7 @@ const fetchHotProducts = async () => {
     const defaultColor = product.colors?.[0] || null;
     const defaultSize = product.sizes?.[0] || null;
 
-    onAdd(product);
-    openSuccessModal(product, 1, defaultColor, defaultSize);
+    addToCart(product, 1, defaultColor, defaultSize);
   };
 
   const getColorCode = (colorName) => {
@@ -800,14 +845,15 @@ const fetchHotProducts = async () => {
           讓家的每個角落都充滿溫度與品味。立即探索，找尋屬於你的生活風格。
         </div>
       </div>
-      {/* Hero 區域 */}
-      <section className="hero">
-        <img src={currentHeroImage} alt="hero" />
-        <div className="hero-content">
-          <h1 className="hero-title">{currentTitle}</h1>
-
-        </div>
-      </section>
+      {/* Hero  */}
+      {currentHeroImage && (
+        <section className="hero">
+          <img src={currentHeroImage} alt="hero" style={{ filter: 'brightness(0.7)' }} />
+          <div className="hero-content">
+            <h1 className="hero-title">{currentTitle}</h1>
+          </div>
+        </section>
+      )}
       <div className="sub-nav">
         <div className="sub-nav-links">
           <a href="#" className="sub-nav-link"
@@ -976,7 +1022,6 @@ const fetchHotProducts = async () => {
       <div className="content">
         <div className="mid-sec">
           <div className="filter" onClick={toggleMobileFilter}>
-
             <svg
               width="11"
               height="10"
@@ -1039,6 +1084,7 @@ const fetchHotProducts = async () => {
             </select>
           </div>
         </div>
+
         <div className="products-container">
           <div className="wrapper">
             {/* 左側邊欄 */}
@@ -1185,58 +1231,67 @@ const fetchHotProducts = async () => {
               {/* 商品網格 */}
 
               <div className={`products-grid ${viewMode}`} key={viewMode}>
-                {currentProducts.map((product) => (
-                  <div key={product.id}
-                    className="productcard"
-                    onClick={() => handleProductClick(product.id)}
-                    style={{ cursor: 'pointer' }}>
-                    {product.isNew && <span className="badge-new">新品</span>}
-                    {product.isHot && <span className="badge-hot">熱賣</span>}
-                    <div className="image">
-                      {product.images && product.images.length > 0 ? (
-                        <img
-                          src={getImageUrl(product)}
-                          alt={product.name}
-                          style={{ maxWidth: "200px", }}
-                          onError={(e) => {
-                            console.log('圖片載入失敗:', e.target.src);
-                            e.target.src = '/img/lan/placeholder.jpeg';
-                          }}
-                        />
-                      ) : (
-                        <div className="no-image-placeholder">
-                          <span>暫無圖片</span>
-                        </div>
+                {isLoading ? (
+                  <div className="pulse-loading">
+                    <div className="pulse-circle"></div>
+                    <p className="loading-text">載入中</p>
+                  </div>
+                ) :
+                  currentProducts.map((product, index) => (
+                    <div key={product.id}
+                      className="productcard fade-in-item"
+                      onClick={() => handleProductClick(product.id)}
+                      style={{
+                        cursor: 'pointer',
+                        animationDelay: `${index * 0.1}s`
+                      }}>
+                      {product.isNew && <span className="badge-new">新品</span>}
+                      {product.isHot && <span className="badge-hot">熱賣</span>}
+                      <div className="image">
+                        {product.images && product.images.length > 0 ? (
+                          <img
+                            src={getImageUrl(product)}
+                            alt={product.name}
+                            style={{ maxWidth: "200px", }}
+                            onError={(e) => {
+                              console.log('圖片載入失敗:', e.target.src);
+                              e.target.src = '/img/lan/placeholder.jpeg';
+                            }}
+                          />
+                        ) : (
+                          <div className="no-image-placeholder">
+                            <span>暫無圖片</span>
+                          </div>
 
-                      )}
-                    </div>
+                        )}
+                      </div>
 
-                    <div className="info" onClick={() => handleProductClick(product.id)}>
-                      <h3 className="name">{product.name}</h3>
-                      <p className="price">NT$ {product.price}</p>
-                    </div>
+                      <div className="info" onClick={() => handleProductClick(product.id)}>
+                        <h3 className="name">{product.name}</h3>
+                        <p className="price">NT$ {product.price}</p>
+                      </div>
 
-                    {/* 操作按鈕區域 */}
-                    <div className="product-actions">
+                      {/* 操作按鈕區域 */}
+                      <div className="product-actions">
+                        <button
+                          className="action-btn add-to-cart"
+                          onClick={(e) => handleCartClick(product, e)}
+                        >
+                          加入購物車
+                        </button>
+                      </div>
+
+                      {/* 右上角愛心按鈕 */}
                       <button
-                        className="action-btn add-to-cart"
-                        onClick={(e) => handleCartClick(product, e)}
+                        className={`wishlist-heart-btn ${isWishlisted[product.id] ? 'active' : ''}`}
+                        onClick={(e) => {
+                          handleWishlistToggle(product, e);
+                        }}
                       >
-                        加入購物車
+                        <i className={`fa-${isWishlisted[product.id] ? 'solid' : 'regular'} fa-heart`}></i>
                       </button>
                     </div>
-
-                    {/* 右上角愛心按鈕 */}
-                    <button
-                      className={`wishlist-heart-btn ${isWishlisted[product.id] ? 'active' : ''}`}
-                      onClick={(e) => {
-                        handleWishlistToggle(product, e);
-                      }}
-                    >
-                      <i className={`fa-${isWishlisted[product.id] ? 'solid' : 'regular'} fa-heart`}></i>
-                    </button>
-                  </div>
-                ))}
+                  ))}
               </div>
               <div className="page-info">
                 顯示 {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)} - {Math.min(currentPage * itemsPerPage, filteredProducts.length)} 項，共 {filteredProducts.length} 項
@@ -1481,115 +1536,132 @@ const fetchHotProducts = async () => {
           </div>
         </div>
       </div>
-      {/* 手機版篩選側邊欄 */}
-      {isMobileFilterOpen && (
-        <>
-          <div className={`mobile-filter-overlay ${isMobileFilterOpen ? 'active' : ''}`} onClick={closeMobileFilter} />
-          <div className={`mobile-filter-sidebar ${isMobileFilterOpen ? 'active' : ''}`}>
-            {/* 標題區域 */}
-            <div className="mobile-filter-header">
-              <h3 className="mobile-filter-title">篩選條件</h3>
-              <button className="mobile-filter-close" onClick={closeMobileFilter}>
-                ×
-              </button>
+      <div className={`modal fade ${isMobileFilterOpen ? 'show' : ''}`}
+        style={{ display: isMobileFilterOpen ? 'block' : 'none' }}
+        tabIndex="-1"
+        aria-labelledby="mobileFilterModalLabel"
+        aria-hidden={!isMobileFilterOpen}>
+
+        <div className="modal-dialog modal-dialog-end mobile-filter-modal">
+          <div className="modal-content h-100">
+
+            {/* Modal 頭部 */}
+            <div className="modal-header">
+              <h5 className="modal-title" id="mobileFilterModalLabel">篩選</h5>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Close"
+                onClick={closeMobileFilter}
+              ></button>
             </div>
 
-            {/* 篩選結果顯示 */}
-            <div className="mobile-filter-results">
-              找到 {filteredProducts.length} 項商品
-            </div>
+            {/* Modal 內容 */}
+            <div className="modal-body flex-grow-1 overflow-auto p-0">
+             
+              {/* 價格 */}
+              <div className="filter-section">
+                <h6 className="filter-title">價格</h6>
+                <div className="px-3 py-2">
+                  <input
+                    type="range"
+                    className="form-range"
+                    min="0"
+                    max="50000"
+                    step="1000"
+                    value={tempPriceRange.max}
+                    onChange={(e) => setTempPriceRange({ min: 0, max: parseInt(e.target.value) })}
+                  />
+                  <div className="text-center text-muted small">
+                    NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}
+                  </div>
+                </div>
+              </div>
 
-            {/* 篩選內容 */}
-            <div className="mobile-filter-content">
-              <div className="filter-sections">
+              {/* 顏色 */}
+              <div className="filter-section">
+                <h6 className="filter-title">顏色</h6>
+                <div className="color-grid px-3 py-2">
+                  {colorOptions.map((color) => (
+                    <div
+                      key={color.value}
+                      className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
+                      style={{ backgroundColor: color.color }}
+                      onClick={() => handleColorFilter(color.value)}
+                      title={color.name}
+                    ></div>
+                  ))}
+                </div>
+              </div>
 
-
-
-                {/* 價格篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">價格範圍</h4>
-                  <div className="price-range">
-                    <div className="price-slider">
+              {/* 材質 */}
+              <div className="filter-section">
+                <h6 className="filter-title">材質</h6>
+                <div className="px-3 py-2">
+                  {materialOptions.map((material) => (
+                    <div key={material} className="form-check mb-2">
                       <input
-                        type="range"
-                        min="0"
-                        max="50000"
-                        step="1000"
-                        value={tempPriceRange.max}
-                        onChange={(e) => {
-                          const newMax = parseInt(e.target.value);
-                          setTempPriceRange({ min: 0, max: newMax });
-                        }}
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`material-${material}`}
+                        checked={tempFilters?.materials?.includes(material) || false}
+                        onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
                       />
+                      <label className="form-check-label" htmlFor={`material-${material}`}>
+                        {material}
+                      </label>
                     </div>
-                    <span>NT$ 0 - NT$ {tempPriceRange.max.toLocaleString()}</span>
-                  </div>
+                  ))}
                 </div>
+              </div>
 
-                {/* 顏色篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">顏色</h4>
-                  <div className="color-options">
-                    {colorOptions.map((color) => (
-                      <div
-                        key={color.value}
-                        className={`color-option ${tempFilters?.colors?.includes(color.value) ? 'selected' : ''}`}
-                        style={{ backgroundColor: color.color }}
-                        onClick={() => handleColorFilter(color.value)}
-                        title={color.name}
+              {/* 系列 */}
+              <div className="filter-section">
+                <h6 className="filter-title">系列</h6>
+                <div className="px-3 py-2">
+                  {seriesOptions.map((series) => (
+                    <div key={series} className="form-check mb-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`series-${series}`}
+                        checked={tempFilters?.series?.includes(series) || false}
+                        onChange={(e) => handleFilterChange('series', series, e.target.checked)}
                       />
-                    ))}
-                  </div>
-                </div>
-
-                {/* 材質篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">材質</h4>
-                  <div className="filter-options">
-                    {materialOptions.map((material) => (
-                      <div key={material} className="option">
-                        <input
-                          type="checkbox"
-                          checked={tempFilters?.materials?.includes(material) || false}
-                          onChange={(e) => handleFilterChange('materials', material, e.target.checked)}
-                        />
-                        <span>{material}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 系列篩選 */}
-                <div className="filter-section">
-                  <h4 className="filter-title">系列</h4>
-                  <div className="filter-options">
-                    {seriesOptions.map((series) => (
-                      <div key={series} className="option">
-                        <input
-                          type="checkbox"
-                          checked={tempFilters?.series?.includes(series) || false}
-                          onChange={(e) => handleFilterChange('series', series, e.target.checked)}
-                        />
-                        <span>{series}</span>
-                      </div>
-                    ))}
-                  </div>
+                      <label className="form-check-label" htmlFor={`series-${series}`}>
+                        {series}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* 底部按鈕 */}
-            <div className="mobile-filter-buttons">
-              <button className="mobile-filter-reset" onClick={handleMobileFilterReset}>
-                清除
-              </button>
-              <button className="mobile-filter-apply" onClick={handleMobileFilterApply}>
+            {/* Modal 底部 */}
+            <div className="modal-footer">
+         
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleMobileFilterApply}
+                style={{ backgroundColor: '#719A8B', borderColor: '#719A8B' }}
+              >
                 套用篩選
+              </button>
+                   <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={handleMobileFilterReset}
+              >
+                清除
               </button>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+
+      {/* Modal 背景遮罩 */}
+      {isMobileFilterOpen && <div className="modal-backdrop fade show"></div>}
     </div>
   );
 };

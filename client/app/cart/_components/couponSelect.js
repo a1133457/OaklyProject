@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import "@/styles/cart/couponSelect.css";
-import CanUseCoupon from "@/app/user/coupon/_components/CanUseCoupon";
+import CartCoupon from "@/app/user/coupon/_components/CartCoupon";
 
 export default function CouponSelect({ coupons, onSelect }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +42,9 @@ export default function CouponSelect({ coupons, onSelect }) {
                                 </li>
                             ))}
                         </ul> */}
-                        <CanUseCoupon />
+                        <button>
+                        <CartCoupon />
+                        </button>
                         
                     </div>
                 </div>

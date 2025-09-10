@@ -50,13 +50,12 @@
 .icon-group button {
   border: none;
   background-color: #fff;
-  color: var(--color-gray-700)
+  color: var(--color-gray-700);
 }
 
 .icon-group a {
-  color: var(--color-gray-700)
+  color: var(--color-gray-700);
 }
-
 
 /* 購物車樣式 */
 .cart-link {
@@ -135,15 +134,13 @@
   outline: none;
   border: none;
   background-color: #ededed;
-  border:2px solid #fff;
+  border: 2px solid #fff;
   color: #8b8b8b;
-
-  
 }
 
 .search-input:hover {
   background: #e3e3e3;
-  border:2px solid #fff;
+  border: 2px solid #fff;
 }
 
 .search-input:focus {
@@ -356,6 +353,20 @@
     background: none;
     border: none;
   }
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .user-info img {
+    width: 75px;
+    height: 75px;
+    border-radius: 50px;
+    border: 1px solid var(--color-gray-400);
+  }
 
   .user-log {
     display: none !important;
@@ -420,17 +431,35 @@
 
   .menu-item {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 15px;
-    padding: 15px 30px;
+    padding: 15px 20px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: var(--color-gray-900);
+  }
+
+  .menu-item a {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .menu-item p {
+    font-size: 16px;
+    color: var(--color-gray-600);
+    font-weight: 500;
+  }
+
+  .menu-item p, i {
+    color: var(--color-gray-600);
   }
 
   .menu-item:hover {
-    background: rgba(113, 154, 139, 0.05);
-    background-color: var(--primary-04);
+    background: rgba(113, 154, 139, 0.1);
+    /* background-color: var(--primary-04); */
+    border-left: 3px solid #719a8b;
   }
 
   .menu-item.active {
@@ -458,7 +487,7 @@
     width: 250px;
     margin: 25px 0;
     height: 1px;
-    background-color: var(--color-gray-900, #ccc);
+    background-color: var(--color-gray-400, #ccc);
   }
 
   .form-control {
@@ -479,15 +508,15 @@
     color: var(--color-gray-900, #333);
   }
 
-  .auth-menu {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e5e5e5;
-  }
-
   .menu-item a,
   .auth-menu .menu-item {
     text-decoration: none;
     color: var(--color-gray-900);
+  }
+
+  .auth-user {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 }

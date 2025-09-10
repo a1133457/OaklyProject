@@ -25,14 +25,72 @@ body {
     overflow-x: hidden;
 
 }
-body.no-scroll,
+
+/* .no-scroll {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 9999 !important;
+  } */
+/* body.no-scroll,
 body.body-no-scroll {
     overflow: hidden !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-}
+} */
+.pulse-loading {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    gap: 20px;
+    min-height: 300px;
+  }
+  
+  .pulse-circle {
+    width: 50px;
+    height: 50px;
+    background: #9FA79A;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.7;
+    }
+  }
+  
+  .loading-text {
+    color: #666;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  .fade-in-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
 .detail-product-page {
     background-color: #ffffff;
     width: 100%;
@@ -166,7 +224,6 @@ body.body-no-scroll {
     color: #494949;
 }
 
-/* 基本 hover 行為 */
 .dropdown-toggle {
     cursor: pointer;
 }
@@ -189,16 +246,17 @@ body.body-no-scroll {
 
 .dropdown-menu {
     position: absolute;
-    top: 120%;
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
+    padding-top: 10px; 
+
 }
 
 
 /* 多欄式下拉選單設定 */
 .dropdown-megamenu {
     display: none;
-    color: #494949;
     position: absolute;
     background-color: white;
     padding: 20px;
@@ -207,9 +265,8 @@ body.body-no-scroll {
     border: none;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-
-
-}
+  }
+  
 
 /* 每一欄 */
 .megamenu-column {
@@ -220,15 +277,16 @@ body.body-no-scroll {
 
 /* 標題樣式 */
 .dropdown-header {
-    font-weight: 500;
     font-size: 16px;
     text-align: left;
     padding: 0;
-    padding-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px solid #EDEDED;
     color: #6A6A6A;
-
-}
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
 
 /* 子項目樣式微調） */
 .dropdown-item {
@@ -1846,14 +1904,12 @@ body.modal-open {
 }
 
 .wishlist-modal-container {
-    position: fixed;
-    z-index: 9999;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+    position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
+    z-index: 9999 !important;
+    overflow: visible !important;
 }
 
 .wishlist-modal-content {
@@ -2069,6 +2125,190 @@ body.modal-open {
 .wishlist-submit-btn:disabled:hover {
     background-color: #ededed;
 }
+
+.cart-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+  }
+  
+  .cart-modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+  }
+  
+  .cart-modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 800px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .cart-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cart-modal-header {
+    padding: 30px 30px 20px 30px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .cart-modal-title {
+    margin: 0;
+    color: #6A6A6A;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  .cart-modal-body {
+    padding: 30px;
+    display: flex;
+    gap: 24px;
+  }
+  
+  .cart-product-image img {
+    width: 280px;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .cart-form-content {
+    flex: 1;
+  }
+  
+  .cart-form-group {
+    margin-bottom: 20px;
+  }
+  
+  .cart-form-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #6A6A6A;
+  }
+  
+  .cart-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .cart-color-option, .cart-size-option {
+    padding: 8px 12px;
+    border: 1px solid #ededed;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #8B8B8B;
+  }
+  
+  .cart-color-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .cart-color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+  }
+  
+  .cart-color-option.selected, .cart-size-option.selected {
+    border-color: #719A8B;
+    background-color: #f8f9fa;
+  }
+  
+  .cart-quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .cart-quantity-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cart-quantity-display {
+    min-width: 40px;
+    text-align: center;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .cart-submit-btn {
+    background-color: #719A8B;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 2px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+  }
+  
+  .cart-submit-btn:hover {
+    background-color: #5d8570;
+  }
+  
+  .cart-submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .cart-product-name {
+    margin: 0 0 8px 0;
+    color: #494949;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .cart-product-price {
+    color: #8B8B8B;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  .cart-modal-footer {
+    text-align: center;
+  }
 /* 修正 RecentViewedProducts 的按鈕位置 */
 .recent-product-card {
     position: relative;
@@ -2420,6 +2660,11 @@ body.modal-open {
 
 /* 手機版樣式調整 - 430px 以下 */
 @media (max-width: 430px) {
+    html,body{
+        max-width: 430px;
+        width: 100%;
+        height: 100%;
+    }
     .container {
         padding: 0 15px;
     }
