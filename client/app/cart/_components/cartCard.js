@@ -76,7 +76,7 @@ export default function CartCard({ type }) {
                       <i className="fa-solid fa-xmark"></i>
                     </button>
                     <div className="price-num">
-                      <h4>${item.price}</h4>
+                      <h5>${item.price}</h5>
                       <div className="quantity">
                         <button
                           onClick={() => onDecrease(item.id)}

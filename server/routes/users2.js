@@ -3,7 +3,7 @@ import multer from "multer";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
-import pool from "../connect.js"
+import pool from "../connect.js";
 import fs from "fs/promises";
 import path from "path";
 
@@ -12,8 +12,6 @@ const upload = multer();
 const secretKey = process.env.JWT_SECRET_KEY;
 // 預設頭像
 const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
-
-
 
 // 把route(s)(路由規則) 整理在 routers(路由物件器) 裡
 // 取得收藏清單-------------------------------------------
@@ -37,7 +35,10 @@ router.post("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
     const { productId } = req.body;
-    await pool.execute("INSERT INTO favorites (user_id, product_id) VALUES (?, ?)", [userId, productId]);
+    await pool.execute(
+      "INSERT INTO favorites (user_id, product_id) VALUES (?, ?)",
+      [userId, productId]
+    );
     res.json({ status: "success", message: "已加入收藏" });
   } catch (err) {
     res.status(500).json({ status: "error", message: "加入收藏失敗" });
@@ -49,96 +50,13 @@ router.delete("/favorites/:productId", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
     const productId = req.params.productId;
-    await pool.execute("DELETE FROM favorites WHERE user_id = ? AND product_id = ?", [userId, productId]);
+    await pool.execute(
+      "DELETE FROM favorites WHERE user_id = ? AND product_id = ?",
+      [userId, productId]
+    );
     res.json({ status: "success", message: "已取消收藏" });
   } catch (err) {
     res.status(500).json({ status: "error", message: "取消收藏失敗" });
-  }
-});
-
-// 獲取所有使用者------------------------------
-router.get("/", async (req, res) => {
-  try {
-    const sql = "SELECT * FROM `users` ";
-    let [users] = await pool.execute(sql);
-
-    res.status(200).json({
-      status: "success",
-      data: users,
-      message: "已 獲取所有使用者"
-    });
-  } catch (error) {
-    // 捕獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 401;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
-
-    res.status(statusCode).json({
-      status: statusText,
-      message
-    });
-  }
-});
-
-// 搜尋使用者----------------------------------
-router.get("/search", (req, res) => {
-  // 網址參數 (查詢參數)會被整理到 req 中的 query 裡
-  const key = req.query.key;
-  res.status(200).json({
-    status: "success",
-    data: { key },
-    message: "搜尋使用者 成功 "
-  });
-});
-
-// 獲取特定 ID的使用者----------------------------------
-// 獲取特定 ID的使用者----------------------------------
-router.get("/:id", async (req, res) => {
-  // 路由參數
-
-  try {
-    const id = req.params.id;
-    if (!id) {
-    const id = req.params.id;
-    if (!id) {
-      const err = new Error("請提供使用者 ID");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
-    }
-    const sqlCheck1 = "SELECT * FROM `users` WHERE `id` = ?;";
-    let user = await pool.execute(sqlCheck1, [id]).then(([result]) => {
-      return result[0];
-    });
-    if (!user) {
-      const err = new Error("找不到使用者");
-      err.code = 404;
-      err.status = "fail";
-      throw err;
-    }
-
-    // 剩餘參數 （不顯示出來的資料）
-    const { id: userId, password, is_valid, created_at, updated_at, ...data } = user;
-    const { id: userId, password, is_valid, created_at, updated_at, ...data } = user;
-
-
-    res.status(200).json({
-      status: "success",
-      data,
-      message: "查詢成功"
-    });
-  } catch (error) {
-    // 捕獲錯誤
-    console.log(error);
-    const statusCode = error.code ?? 401;
-    const statusText = error.status ?? "error";
-    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
-
-    res.status(statusCode).json({
-      status: statusText,
-      message
-    });
   }
 });
 
@@ -169,29 +87,28 @@ router.post("/", upload.none(), async (req, res) => {
     // 檢查 XX 有沒有使用過
     // const sqlCheck2 = "SELECT * FROM `users` WHERE `email` = ?;";
     // user = await pool.execute(sqlCheck1, [email]).then(([result])=>{
-    //   return result[0]; 
+    //   return result[0];
     // });
     // if(user){
-    //   const err = new Error("提供的註冊資料已被使用"); 
-    //   err.code = 400; 
-    //   err.status = "fail"; 
+    //   const err = new Error("提供的註冊資料已被使用");
+    //   err.code = 400;
+    //   err.status = "fail";
     //   throw err;
-    // } 
+    // }
 
     // 3) 產生頭像（可能為 null)(取用下面function Randomuser.me)
     const avatar = DEFAULT_AVATAR;
     // 4) 壓縮密碼
     const hashedPassword = await bcrypt.hash(password, 10);
     // 5) 建立 SQL 語法,寫入資料（undefined 一律轉成 null）
-    const sql = "INSERT INTO `users` (name, email, password, avatar) VALUES(?, ?, ?, ?);";
-    await pool.execute(
-      sql, [name, email, hashedPassword, avatar]
-    );
+    const sql =
+      "INSERT INTO `users` (name, email, password, avatar) VALUES(?, ?, ?, ?);";
+    await pool.execute(sql, [name, email, hashedPassword, avatar]);
 
     res.status(201).json({
       status: "success",
       data: {},
-      message: "註冊成功"
+      message: "註冊成功",
     });
   } catch (error) {
     // 捕獲錯誤
@@ -202,10 +119,101 @@ router.post("/", upload.none(), async (req, res) => {
 
     res.status(statusCode).json({
       status: statusText,
-      message
+      message,
     });
   }
 });
+
+// 獲取所有使用者------------------------------
+router.get("/", async (req, res) => {
+  try {
+    const sql = "SELECT * FROM `users` ";
+    let [users] = await pool.execute(sql);
+
+    res.status(200).json({
+      status: "success",
+      data: users,
+      message: "已 獲取所有使用者",
+    });
+  } catch (error) {
+    // 捕獲錯誤
+    console.log(error);
+    const statusCode = error.code ?? 401;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
+
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  }
+});
+
+// 搜尋使用者----------------------------------
+router.get("/search", (req, res) => {
+  // 網址參數 (查詢參數)會被整理到 req 中的 query 裡
+  const key = req.query.key;
+  res.status(200).json({
+    status: "success",
+    data: { key },
+    message: "搜尋使用者 成功 ",
+  });
+});
+
+// 獲取特定 ID的使用者----------------------------------
+router.get("/:id", async (req, res) => {
+  // 路由參數
+
+  try {
+    const id = req.params.id;
+    if (!id) {
+      const err = new Error("請提供使用者 ID");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
+    const sqlCheck1 = "SELECT * FROM `users` WHERE `id` = ?;";
+    let user = await pool.execute(sqlCheck1, [id]).then(([result]) => {
+      return result[0];
+    });
+    if (!user) {
+      const err = new Error("找不到使用者");
+      err.code = 404;
+      err.status = "fail";
+      throw err;
+    }
+
+    // 剩餘參數 （不顯示出來的資料）
+    const {
+      id: userId,
+      password,
+      is_valid,
+      created_at,
+      updated_at,
+      ...data
+    } = user;
+
+    res.status(200).json({
+      status: "success",
+      data,
+      message: "查詢成功",
+    });
+  } catch (error) {
+    // 捕獲錯誤
+    console.log(error);
+    const statusCode = error.code ?? 401;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
+
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  }
+});
+
+
+
 
 // 更新(特定 ID 的)使用者-------------------------------
 // 1️⃣ 更新一般資料
@@ -226,12 +234,30 @@ router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
     let values = []; // 用陣列來記錄要更新的欄位的值
 
     // 如果有 這個欄位 / 欄位部份的 SQL / 問號對應的值
-    if (name) { updateFields.push("name = ?"); values.push(name); }
-    if (phone) { updateFields.push("phone = ?"); values.push(phone); }
-    if (city) { updateFields.push("city = ?"); values.push(city); }
-    if (area) { updateFields.push("area = ?"); values.push(area); }
-    if (address) { updateFields.push("address = ?"); values.push(address); }
-    if (birthday) { updateFields.push("birthday = ?"); values.push(birthday); }
+    if (name) {
+      updateFields.push("name = ?");
+      values.push(name);
+    }
+    if (phone) {
+      updateFields.push("phone = ?");
+      values.push(phone);
+    }
+    if (city) {
+      updateFields.push("city = ?");
+      values.push(city);
+    }
+    if (area) {
+      updateFields.push("area = ?");
+      values.push(area);
+    }
+    if (address) {
+      updateFields.push("address = ?");
+      values.push(address);
+    }
+    if (birthday) {
+      updateFields.push("birthday = ?");
+      values.push(birthday);
+    }
 
     values.push(id); // SQL 的最後有用 id 來查詢
 
@@ -256,7 +282,6 @@ router.put("/:id/edit", checkToken, upload.none(), async (req, res) => {
     // 補獲錯誤
     // console.log(error);
     sendError(res, error);
-
   }
 });
 
@@ -274,7 +299,10 @@ router.put("/:id/password", checkToken, upload.none(), async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const [result] = await pool.execute("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, id]);
+    const [result] = await pool.execute(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, id]
+    );
 
     if (!result.affectedRows) {
       const err = new Error("更新失敗，請洽管理人員");
@@ -290,58 +318,65 @@ router.put("/:id/password", checkToken, upload.none(), async (req, res) => {
 });
 
 // 3️⃣ 更新頭像
-router.put("/:id/avatar", checkToken, upload.single("avatar"), async (req, res) => {
-  try {
-    const id = req.params.id;
-    if (!req.file) {
-      const err = new Error("請上傳頭像");
-      err.code = 400;
-      err.status = "fail";
-      throw err;
+router.put(
+  "/:id/avatar",
+  checkToken,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      if (!req.file) {
+        const err = new Error("請上傳頭像");
+        err.code = 400;
+        err.status = "fail";
+        throw err;
+      }
+
+      // 建立avatar存放資料夾路徑
+      const avatarUploadPath = path.resolve("public/uploads/avatars");
+      await fs.mkdir(avatarUploadPath, { recursive: true });
+      // 取得目前的時間戳(毫秒)，將使用者上傳檔，用來確保每次上傳檔案都能有「唯一性」
+      const filename = `${Date.now()}-${req.file.originalname}`;
+      // 將 資料夾路徑＋生成檔名合併成完整路徑 並把 avatar存入後端
+      const filepath = path.join(avatarUploadPath, filename);
+      await fs.writeFile(filepath, req.file.buffer);
+      // 給前端用的網址路徑
+      const ORIGIN =
+        process.env.SERVER_PUBLIC_ORIGIN || "http://localhost:3005";
+      const publicPath = `${ORIGIN}/uploads/avatars/${filename}`;
+      // 更新頭像
+      const [result] = await pool.execute(
+        "UPDATE users SET avatar = ? WHERE id = ?",
+        [publicPath, id]
+      );
+
+      if (!result.affectedRows) {
+        const err = new Error("頭像更新失敗，請洽管理人員");
+        err.code = 400;
+        err.status = "fail";
+        throw err;
+      }
+
+      return res.status(200).json({
+        status: "success",
+        message: "頭像更新成功",
+        data: { avatar: publicPath },
+      });
+    } catch (error) {
+      return sendError(res, error);
     }
-
-    // 建立avatar存放資料夾路徑
-    const avatarUploadPath = path.resolve("public/uploads/avatars");
-    await fs.mkdir(avatarUploadPath, { recursive: true });
-    // 取得目前的時間戳(毫秒)，將使用者上傳檔，用來確保每次上傳檔案都能有「唯一性」
-    const filename = `${Date.now()}-${req.file.originalname}`;
-    // 將 資料夾路徑＋生成檔名合併成完整路徑 並把 avatar存入後端
-    const filepath = path.join(avatarUploadPath, filename);
-    await fs.writeFile(filepath, req.file.buffer);
-    // 給前端用的網址路徑
-    const ORIGIN = process.env.SERVER_PUBLIC_ORIGIN || "http://localhost:3005";
-    const publicPath = `${ORIGIN}/uploads/avatars/${filename}`;
-    // 更新頭像
-    const [result] = await pool.execute(
-      "UPDATE users SET avatar = ? WHERE id = ?",
-      [publicPath, id]);
-
-
-    if (!result.affectedRows) {
-      const err = new Error("頭像更新失敗，請洽管理人員");
-      err.code = 400; err.status = "fail"; throw err;
-    }
-
-    return res.status(200).json({
-      status: "success",
-      message: "頭像更新成功",
-      data: { avatar: publicPath }
-    });
-  } catch (error) {
-    return sendError(res, error);
   }
-});
+);
 
 // 共用：錯誤回傳
 function sendError(res, error) {
   const statusCode = error.code ?? 500;
   const statusText = error.status ?? "error";
   const message = error.message ?? "更新失敗，請洽管理人員";
-  return res.status(statusCode)
-    .json({
-      status: statusText,
-      message
-    });
+  return res.status(statusCode).json({
+    status: statusText,
+    message,
+  });
 }
 
 // 刪除(特定 ID)的使用者------------------------------------
@@ -350,18 +385,18 @@ router.delete("/:id", (req, res) => {
   res.status(200).json({
     status: "success",
     data: { id },
-    message: "刪除(特定 ID)的使用者 成功 "
+    message: "刪除(特定 ID)的使用者 成功 ",
   });
 });
 
 // 使用者登入-----------------------------------------------
 router.post("/login", upload.none(), async (req, res) => {
-
   try {
     const { email, password } = req.body;
 
     // 1) 撈使用者
-    const user = await pool.execute('SELECT * FROM users WHERE `email`= ?', [email])
+    const user = await pool
+      .execute("SELECT * FROM users WHERE `email`= ?", [email])
       .then(([result]) => {
         // console.log(result);
         return result[0];
@@ -371,15 +406,15 @@ router.post("/login", upload.none(), async (req, res) => {
 
     if (!user) {
       const err = new Error("帳號或密碼錯誤1"); // Error 物件只能在小括號中自訂錯誤訊息
-      err.code = 400;   // 利用物件的自訂屬性把 HTTP 狀態碼帶到 catch
+      err.code = 400; // 利用物件的自訂屬性把 HTTP 狀態碼帶到 catch
       err.status = "error "; // 利用物件的自訂屬性把status字串帶到 catch
       throw err;
     }
 
     // 2) 比對密碼
     // 測試完要改回來
-    // const isMatch = await bcrypt.compare(password, user.password);
-    const isMatch = password === user.password;
+    const isMatch = await bcrypt.compare(password, user.password);
+    // const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;
@@ -388,18 +423,19 @@ router.post("/login", upload.none(), async (req, res) => {
     }
 
     // 3) 簽發 token（30 分鐘）
-    const token = jwt.sign({
-      id: user.id,
-      name: user.name,
-      birthday: user.birthday,
-      email: user.email,
-      phone: user.phone,
-      postcode: user.postcode,
-      city: user.city,
-      area: user.area,
-      address: user.address,
-      avatar: user.avatar,
-    },
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        birthday: user.birthday,
+        email: user.email,
+        phone: user.phone,
+        postcode: user.postcode,
+        city: user.city,
+        area: user.area,
+        address: user.address,
+        avatar: user.avatar,
+      },
       secretKey,
       { expiresIn: "30m" }
     );
@@ -415,7 +451,7 @@ router.post("/login", upload.none(), async (req, res) => {
       area: user.area,
       address: user.address,
       avatar: user.avatar,
-    }
+    };
 
     res.status(200).json({
       status: "success",
@@ -440,7 +476,6 @@ router.post("/login", upload.none(), async (req, res) => {
   }
 });
 
-
 // 使用者登出-----------------------------------------------
 router.post("/logout", checkToken, async (req, res) => {
   try {
@@ -457,13 +492,17 @@ router.post("/logout", checkToken, async (req, res) => {
       throw err;
     }
 
-    const token = jwt.sign({
-      message: "過期的token"
-    }, secretKey, { expiresIn: "-10s" });
+    const token = jwt.sign(
+      {
+        message: "過期的token",
+      },
+      secretKey,
+      { expiresIn: "-10s" }
+    );
     res.status(200).json({
       status: "success",
       message: "登出成功",
-      data: token
+      data: token,
     });
   } catch (error) {
     // 捕獲錯誤
@@ -474,7 +513,7 @@ router.post("/logout", checkToken, async (req, res) => {
 
     res.status(statusCode).json({
       status: statusText,
-      message
+      message,
     });
   }
 });
@@ -485,10 +524,9 @@ router.post("/status", checkToken, async (req, res) => {
     const { email } = req.decoded;
 
     const sqlCheck1 = "SELECT * FROM `users` WHERE `email` = ?;";
-    let user = await pool.execute(sqlCheck1, [email])
-      .then(([result]) => {
-        return result[0];
-      });
+    let user = await pool.execute(sqlCheck1, [email]).then(([result]) => {
+      return result[0];
+    });
 
     if (!user) {
       const err = new Error("請登入");
@@ -497,18 +535,22 @@ router.post("/status", checkToken, async (req, res) => {
       throw err;
     }
 
-    const token = jwt.sign({
-      id: user.id,
-      name: user.name,
-      birthday: user.birthday,
-      email: user.email,
-      phone: user.phone,
-      postcode: user.postcode,
-      city: user.city,
-      area: user.area,
-      address: user.address,
-      avatar: user.avatar,
-    }, secretKey, { expiresIn: "30m" });
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        birthday: user.birthday,
+        email: user.email,
+        phone: user.phone,
+        postcode: user.postcode,
+        city: user.city,
+        area: user.area,
+        address: user.address,
+        avatar: user.avatar,
+      },
+      secretKey,
+      { expiresIn: "30m" }
+    );
 
     const newUser = {
       id: user.id,
@@ -521,7 +563,7 @@ router.post("/status", checkToken, async (req, res) => {
       area: user.area,
       address: user.address,
       avatar: user.avatar,
-    }
+    };
 
     res.status(200).json({
       status: "success",
@@ -537,12 +579,10 @@ router.post("/status", checkToken, async (req, res) => {
 
     res.status(statusCode).json({
       status: statusText,
-      message
+      message,
     });
   }
 });
-
-
 
 function checkToken(req, res, next) {
   // console.log("checkToken");
@@ -575,7 +615,6 @@ function checkToken(req, res, next) {
       message: "無登入驗證資訊,請重新登入",
     });
   }
-
 }
 
 // async function getRandomAvatar() {

@@ -76,7 +76,7 @@
 }
 
 .card-right .buttonX {
-    font-size: 30px;
+    font-size: 20px;
     color: var(--primary-05);
     border: none;
     background-color: var(--white);
@@ -114,8 +114,7 @@
 .minus {
     display: flex;
     width: 30px;
-    height: 35px;
-    padding: 17px;
+    height: 30px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -135,8 +134,7 @@
 .plus {
     display: flex;
     width: 30px;
-    height: 35px;
-    padding: 17px;
+    height: 30px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -174,8 +172,11 @@
 
 
 .card-right {
+    height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
     height: 100%;
     width: 100%;
 }

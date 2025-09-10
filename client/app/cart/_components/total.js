@@ -83,7 +83,7 @@ export default function Total({ type }) {
         <div className="amount-list">
           <div className="pAmount">
             <p>商品總金額</p>
-            <h6>{totalAmount}</h6>
+            <h6>${totalAmount}</h6>
           </div>
           <div className="choose-cp">
             <p>選擇優惠券</p>
@@ -96,11 +96,11 @@ export default function Total({ type }) {
           <div className="t-line"></div>
           <div className="total">
             <h5>總金額</h5>
-            <h4>{totalAmount}</h4>
+            <h4>${totalAmount}</h4>
           </div>
           <div className="total phone">
             <h3>總金額</h3>
-            <h3>{totalAmount}</h3>
+            <h3>${totalAmount}</h3>
           </div>
         </div>
         <div className="nextOrBack">
@@ -122,7 +122,7 @@ export default function Total({ type }) {
         <div className="amount-list">
           <div className="pAmount">
             <p>商品總金額</p>
-            <h6>{totalAmount}</h6>
+            <h6>${totalAmount}</h6>
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>
@@ -131,11 +131,11 @@ export default function Total({ type }) {
           <div className="t-line"></div>
           <div className="total">
             <h6>總金額</h6>
-            <h4>{totalAmount}</h4>
+            <h4>${totalAmount}</h4>
           </div>
           <div className="total phone">
             <h6>總金額</h6>
-            <h5>{totalAmount}</h5>
+            <h5>${totalAmount}</h5>
           </div>
         </div>
         <div className="nextOrBack">
