@@ -16,6 +16,46 @@ const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 
 
 // 把route(s)(路由規則) 整理在 routers(路由物件器) 裡
+// 取得收藏清單-------------------------------------------
+router.get("/favorites", checkToken, async (req, res) => {
+  try {
+    const userId = req.decoded.id;
+    const sql = `
+      SELECT f.product_id, p.name, p.price, p.product_img
+      FROM favorites f
+      JOIN products p ON f.product_id = p.id
+      WHERE f.user_id = ?`;
+    const [rows] = await pool.execute(sql, [userId]);
+    res.json({ status: "success", data: rows });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: "無法取得收藏清單" });
+  }
+});
+
+// 加入收藏
+router.post("/favorites", checkToken, async (req, res) => {
+  try {
+    const userId = req.decoded.id;
+    const { productId } = req.body;
+    await pool.execute("INSERT INTO favorites (user_id, product_id) VALUES (?, ?)", [userId, productId]);
+    res.json({ status: "success", message: "已加入收藏" });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: "加入收藏失敗" });
+  }
+});
+
+// 移除收藏
+router.delete("/favorites/:productId", checkToken, async (req, res) => {
+  try {
+    const userId = req.decoded.id;
+    const productId = req.params.productId;
+    await pool.execute("DELETE FROM favorites WHERE user_id = ? AND product_id = ?", [userId, productId]);
+    res.json({ status: "success", message: "已取消收藏" });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: "取消收藏失敗" });
+  }
+});
+
 // 獲取所有使用者------------------------------
 router.get("/", async (req, res) => {
   try {
@@ -497,6 +537,8 @@ router.post("/status", checkToken, async (req, res) => {
     });
   }
 });
+
+
 
 function checkToken(req, res, next) {
   // console.log("checkToken");

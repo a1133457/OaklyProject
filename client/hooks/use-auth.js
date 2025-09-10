@@ -204,7 +204,7 @@ export function AuthProvider({ children }) {
         const newUser = result.data?.user
           ? result.data.user
           : (result.data?.avatar ? { ...user, avatar: result.data.avatar } : user);
-          
+
         setUser(newUser);
         localStorage.setItem(userKey, JSON.stringify(newUser));
         return { success: true, message: result.message || "頭像更新成功" };
@@ -214,8 +214,6 @@ export function AuthProvider({ children }) {
       return { success: false, message: "伺服器錯誤" };
     }
   };
-
-
 
   // 更新訂購人跟收件人---------------------------
   const updateUser = (newData) => {
@@ -294,11 +292,72 @@ export function AuthProvider({ children }) {
     checkToken();
   }, []);
 
+  // 收藏 API ------------------------------
+  const API_FAVORITES = "http://localhost:3005/api/users/favorites";
+
+  // 取得收藏清單
+  const getFavorites = async () => {
+    const token = localStorage.getItem(appKey);
+    
+    try {
+      const res = await fetch(API_FAVORITES, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        return { success: true, data: result.data };
+      }
+      return { success: false, message: result.message };
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: "伺服器錯誤" };
+    }
+  };
+
+  // 加入收藏
+  const addFavorite = async (productId) => {
+    const token = localStorage.getItem(appKey);
+    
+    try {
+      const res = await fetch(API_FAVORITES, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId }),
+      });
+      const result = await res.json();
+      return result;
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: "伺服器錯誤" };
+    }
+  };
+
+  // 取消收藏
+  const removeFavorite = async (productId) => {
+    const token = localStorage.getItem(appKey);
+    
+    try {
+      const res = await fetch(`${API_FAVORITES}/${productId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      return result;
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: "伺服器錯誤" };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user, register, login, logout, isLoading, users,
-        updateUser, updateUserEdit, updateUserPassword, updateUserAvatar
+        updateUser, updateUserEdit, updateUserPassword, updateUserAvatar,
+        getFavorites, addFavorite, removeFavorite
       }}>
       {children}
     </AuthContext.Provider>
