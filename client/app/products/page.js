@@ -5,11 +5,16 @@ import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
 import { useCart } from '@/hooks/use-cart';
+import { useAuth } from "@/hooks/use-auth";
+import Swal from 'sweetalert2';
+
+
 
 
 
 
 const MainProduct = () => {
+  const { addFavorite, removeFavorite } = useAuth();
   const [selectedFilters, setSelectedFilters] = useState({
     colors: [],
     materials: [],
@@ -43,7 +48,98 @@ const MainProduct = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showMobileSortDropdown, setShowMobileSortDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [wishlistSuccessModal, setWishlistSuccessModal] = useState({
+    isVisible: false,
+    product: null,
+    quantity: 0,
+    selectedColor: null,
+    selectedSize: null
+  });
 
+  // 收藏成功通知組件
+  const AddToWishlistSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
+    useEffect(() => {
+      if (isVisible) {
+        const timer = setTimeout(() => {
+          onClose();
+        }, 4000);
+
+        return () => clearTimeout(timer);
+      }
+    }, [isVisible, onClose]);
+
+    if (!isVisible || !product) return null;
+
+    const getProductImage = (product) => {
+      if (product.images && product.images.length > 0) {
+        const image = product.images[0];
+        if (typeof image === 'object' && image.url) {
+          return image.url.startsWith('http') ? image.url : `http://localhost:3005${image.url}`;
+        }
+        if (typeof image === 'string') {
+          return image.startsWith('http') ? image : `http://localhost:3005${image}`;
+        }
+      }
+      return "/img/lan/nana.webp";
+    };
+
+    return (
+      <div className="wishlist-success-overlay" onClick={onClose}>
+        <div className="wishlist-success-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="wishlist-success-header">
+            <div className="success-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="12" fill="#DBA783" />
+                <path d="M16.5 8.5l-8 8-4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h3>成功加入收藏清單！</h3>
+            <button className="close-btn" onClick={onClose}>
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="wishlist-success-content">
+            <div className="product-image2">
+              <img
+                src={getProductImage(product)}
+                alt={product.name}
+                onError={(e) => {
+                  e.target.src = "/img/lan/nana.webp";
+                }}
+              />
+            </div>
+            <div className="product-details">
+              <h4 className="product-name-m">{product.name}</h4>
+              <p className="product-price-p">NT$ {product.price?.toLocaleString()}</p>
+              <div className="product-info-o">
+                {selectedColor && (
+                  <span className="color-label">顏色: {selectedColor.color_name}</span>
+                )}
+                {selectedSize && (
+                  <span className="size-label">尺寸: {selectedSize.size_label}</span>
+                )}
+                <span className="quantity-info">數量: {quantity}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="wishlist-success-actions">
+            <button className="continue-shopping" onClick={onClose}>
+              繼續瀏覽
+            </button>
+            <button className="view-wishlist" onClick={() => {
+              window.location.href = '/user/favorites';
+            }}>
+              查看收藏清單
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -166,8 +262,12 @@ const MainProduct = () => {
 
   const addToCartFromModal = () => {
     if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
-      return;
+      Swal.fire({
+        title: "請選擇商品規格",
+        text: "請選擇顏色和尺寸後再加入收藏",
+        icon: "info",
+        button: "我知道了"
+      });      return;
     }
 
     addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
@@ -189,6 +289,17 @@ const MainProduct = () => {
     }
 
     return '/img/lan/placeholder.jpeg';
+  };
+
+  // 關閉收藏成功通知
+  const closeWishlistSuccessModal = () => {
+    setWishlistSuccessModal({
+      isVisible: false,
+      product: null,
+      quantity: 0,
+      selectedColor: null,
+      selectedSize: null
+    });
   };
 
   // 新增分類資料映射
@@ -660,14 +771,35 @@ const MainProduct = () => {
     e.stopPropagation();
     e.preventDefault();
 
-    console.log('handleWishlistToggle 被調用', product.id);
-    console.log('isWishlisted 狀態:', isWishlisted[product.id]);
+    const colorId = product.colors?.[0]?.id;
+    const sizeId = product.sizes?.[0]?.id;
 
-    if (isWishlisted[product.id]) {
-      await removeFromWishlist(product.id);
-    } else {
-      openWishlistModal(product);
-    }
+    
+  if (checkWishlistStatus(product.id, colorId, sizeId)) {
+    // 已收藏，詢問是否要移除
+    Swal.fire({
+      title: "已在收藏清單中",
+      text: "此商品已在您的收藏清單中，是否要移除收藏？",
+      icon: "info",
+      buttons: {
+        cancel: {
+          text: "取消",
+          visible: true,
+          className: "Swal.fire-button--cancel"
+        },
+        confirm: {
+          text: "移除收藏",
+          className: "Swal.fire-button--confirm"
+        }
+      }
+    }).then((willRemove) => {
+      if (willRemove) {
+        removeFromWishlist(product.id, colorId, sizeId);
+      }
+    });
+  } else {
+    openWishlistModal(product);
+  }
   };
 
   const openWishlistModal = async (product) => {
@@ -702,88 +834,103 @@ const MainProduct = () => {
   };
 
   const addToWishlist = async () => {
+    const token = localStorage.getItem('reactLoginToken');
+    console.log('準備發送的 token:', token);
+
+    if (!token) {
+      alert('請先登入');
+      return;
+    }
+
     if (!selectedColor || !selectedSize) {
       alert('請選擇顏色和尺寸');
       return;
     }
 
     try {
-      const userId = localStorage.getItem('userId') || 1;
       const wishlistData = {
-        userId: userId,
         productId: currentWishlistProduct.id,
         colorId: selectedColor.id,
         sizeId: selectedSize.id,
         quantity: wishlistQuantity
       };
 
-      const response = await fetch('http://localhost:3005/api/wishlist', {
+      const response = await fetch('http://localhost:3005/api/users/favorites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
         },
         body: JSON.stringify(wishlistData)
       });
 
       const result = await response.json();
+
       if (result.status === 'success') {
+        const key = `${currentWishlistProduct.id}_${selectedColor.id}_${selectedSize.id}`;
         setIsWishlisted(prev => ({
           ...prev,
-          [currentWishlistProduct.id]: true
+          [key]: true
         }));
         setShowWishlistModal(false);
         document.body.classList.remove('no-scroll');
 
-        // 顯示成功通知
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #9FA79A;
-        color: white;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        font-size: 14px;
-      `;
-        notification.textContent = '已加入收藏';
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 3000);
-      }
+        setWishlistSuccessModal({
+          isVisible: true,
+          product: currentWishlistProduct,
+          quantity: wishlistQuantity,
+          selectedColor: selectedColor,
+          selectedSize: selectedSize
+        });
+      } else {
+        Swal.fire({
+          title: "加入收藏失敗",
+          text: result.message || "請稍後再試或聯絡客服",
+          icon: "error",
+          button: "確定"
+        });      }
     } catch (err) {
       console.error('加入收藏失敗:', err);
-      alert('加入收藏時發生錯誤');
+      Swal.fire({
+        title: "發生錯誤",
+        text: "加入收藏時發生錯誤，請稍後再試",
+        icon: "error",
+        button: "確定"
+      });
     }
   };
 
-  const removeFromWishlist = async (productId) => {
+  const removeFromWishlist = async (productId, colorId, sizeId) => {
     try {
-      const userId = localStorage.getItem('userId') || 1;
-      const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productId}`, {
+      const response = await fetch(`http://localhost:3005/api/users/favorites/${productId}/${colorId}/${sizeId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
         }
       });
 
       const result = await response.json();
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
+        const key = `${productId}_${colorId}_${sizeId}`;
         setIsWishlisted(prev => ({
           ...prev,
-          [productId]: false
+          [key]: false
         }));
-      }
+        Swal.fire({
+          title: "已移除收藏",
+          text: "商品已從收藏清單中移除",
+          icon: "success",
+          button: "確定",
+          timer: 2000
+        });      }
     } catch (err) {
-      console.error('移除收藏失敗:', err);
-    }
+      Swal.fire({
+        title: "移除失敗",
+        text: result.message || "請稍後再試",
+        icon: "error",
+        button: "確定"
+      });    }
   };
 
   const handleAddToCart = (product, e) => {
@@ -794,7 +941,11 @@ const MainProduct = () => {
 
     addToCart(product, 1, defaultColor, defaultSize);
   };
-
+  // 收藏狀態檢查函數
+  const checkWishlistStatus = (productId, colorId, sizeId) => {
+    const key = `${productId}_${colorId}_${sizeId}`;
+    return isWishlisted[key] || false;
+  };
   const getColorCode = (colorName) => {
     const colorMap = {
       '白色': '#ffffff',
@@ -1283,12 +1434,10 @@ const MainProduct = () => {
 
                       {/* 右上角愛心按鈕 */}
                       <button
-                        className={`wishlist-heart-btn ${isWishlisted[product.id] ? 'active' : ''}`}
-                        onClick={(e) => {
-                          handleWishlistToggle(product, e);
-                        }}
+                        className={`wishlist-heart-btn ${checkWishlistStatus(product.id, product.colors?.[0]?.id, product.sizes?.[0]?.id) ? 'active' : ''}`}
+                        onClick={(e) => handleWishlistToggle(product, e)}
                       >
-                        <i className={`fa-${isWishlisted[product.id] ? 'solid' : 'regular'} fa-heart`}></i>
+                        <i className={`fa-${checkWishlistStatus(product.id, product.colors?.[0]?.id, product.sizes?.[0]?.id) ? 'solid' : 'regular'} fa-heart`}></i>
                       </button>
                     </div>
                   ))}
@@ -1558,7 +1707,7 @@ const MainProduct = () => {
 
             {/* Modal 內容 */}
             <div className="modal-body flex-grow-1 overflow-auto p-0">
-             
+
               {/* 價格 */}
               <div className="filter-section">
                 <h6 className="filter-title">價格</h6>
@@ -1639,7 +1788,7 @@ const MainProduct = () => {
 
             {/* Modal 底部 */}
             <div className="modal-footer">
-         
+
               <button
                 type="button"
                 className="btn btn-primary"
@@ -1648,7 +1797,7 @@ const MainProduct = () => {
               >
                 套用篩選
               </button>
-                   <button
+              <button
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={handleMobileFilterReset}
@@ -1662,6 +1811,15 @@ const MainProduct = () => {
 
       {/* Modal 背景遮罩 */}
       {isMobileFilterOpen && <div className="modal-backdrop fade show"></div>}
+      {/* 收藏成功通知 */}
+      <AddToWishlistSuccessModal
+        product={wishlistSuccessModal.product}
+        quantity={wishlistSuccessModal.quantity}
+        selectedColor={wishlistSuccessModal.selectedColor}
+        selectedSize={wishlistSuccessModal.selectedSize}
+        isVisible={wishlistSuccessModal.isVisible}
+        onClose={closeWishlistSuccessModal}
+      />
     </div>
   );
 };

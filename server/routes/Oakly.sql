@@ -61,10 +61,24 @@ CREATE TABLE IF NOT EXISTS favorites (
     FOREIGN KEY (product_id) REFERENCES products(id)
     ON UPDATE CASCADE ON DELETE CASCADE
 );
+ALTER TABLE favorites 
+ADD COLUMN color_id INT NULL,
+ADD COLUMN size_id INT NULL,
+ADD COLUMN quantity INT DEFAULT 1;
 -- UNSIGNED 不一致
 -- product_id → INT UNSIGNED
 -- id → INT
 -- 必須一致，否則會錯。 
+ALTER TABLE favorites
+DROP COLUMN id;
+
+ALTER TABLE favorites 
+ADD COLUMN color_name VARCHAR(50);
+
+-- 複合唯一索引（防止重複收藏同商品同顏色）
+DROP INDEX IF EXISTS idx_favorites_unique;
+CREATE UNIQUE INDEX idx_favorites_unique 
+ON favorites(user_id, product_id, color_id);
 
 -- 收藏文章
 CREATE TABLE IF NOT EXISTS bookmarks (

@@ -9,7 +9,14 @@ import path from "path";
 
 const router = express.Router();
 const upload = multer();
-const secretKey = process.env.JWT_SECRET_KEY;
+//測試用的 JWT 密鑰
+const secretKey = "myTestSecretKey123";
+
+
+
+// const secretKey = process.env.JWT_SECRET_KEY;
+// console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
+
 // 預設頭像
 const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 
@@ -19,10 +26,11 @@ router.get("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
     const sql = `
-      SELECT f.product_id, p.name, p.price, p.product_img
-      FROM favorites f
-      JOIN products p ON f.product_id = p.id
-      WHERE f.user_id = ?`;
+    SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
+           p.name, p.price, p.product_img
+    FROM favorites f
+    JOIN products p ON f.product_id = p.id
+    WHERE f.user_id = ?`;
     const [rows] = await pool.execute(sql, [userId]);
     res.json({ status: "success", data: rows });
   } catch (err) {
@@ -34,29 +42,68 @@ router.get("/favorites", checkToken, async (req, res) => {
 router.post("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
-    const { productId } = req.body;
-    await pool.execute(
-      "INSERT INTO favorites (user_id, product_id) VALUES (?, ?)",
-      [userId, productId]
+    const { productId, colorId, sizeId, quantity } = req.body;
+    
+    // 檢查是否已收藏同商品同顏色同尺寸
+    const [existing] = await pool.execute(
+      "SELECT * FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
     );
+    
+    if (existing.length > 0) {
+      return res.status(400).json({ status: "error", message: "此顏色尺寸已在收藏清單中" });
+    }
+    
+    // 取得顏色名稱
+    const [colorResult] = await pool.execute("SELECT color_name FROM colors WHERE id = ?", [colorId]);
+    const colorName = colorResult[0]?.color_name || null;
+    
+    await pool.execute(
+      "INSERT INTO favorites (user_id, product_id, color_id, size_id, color_name, quantity) VALUES (?, ?, ?, ?, ?, ?)",
+      [userId, productId, colorId || null, sizeId || null, colorName, quantity || 1]
+    );
+    
     res.json({ status: "success", message: "已加入收藏" });
   } catch (err) {
+    console.error("加入收藏錯誤:", err);
     res.status(500).json({ status: "error", message: "加入收藏失敗" });
   }
 });
 
 // 移除收藏
-router.delete("/favorites/:productId", checkToken, async (req, res) => {
+router.delete("/favorites/:productId/:colorId/:sizeId", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
-    const productId = req.params.productId;
+    const { productId, colorId, sizeId } = req.params;
     await pool.execute(
-      "DELETE FROM favorites WHERE user_id = ? AND product_id = ?",
-      [userId, productId]
+      "DELETE FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
     );
     res.json({ status: "success", message: "已取消收藏" });
   } catch (err) {
     res.status(500).json({ status: "error", message: "取消收藏失敗" });
+  }
+});
+// 檢查收藏狀態
+router.get("/favorites/:productId/:colorId/:sizeId/check", checkToken, async (req, res) => {
+  try {
+    const userId = req.decoded.id;
+    const { productId, colorId, sizeId } = req.params;
+    
+    const [result] = await pool.execute(
+      "SELECT COUNT(*) as count FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
+    );
+    
+    const isWishlisted = result[0].count > 0;
+    
+    res.json({ 
+      status: "success", 
+      data: { isWishlisted } 
+    });
+  } catch (err) {
+    console.error("檢查收藏狀態錯誤:", err);
+    res.status(500).json({ status: "error", message: "檢查收藏狀態失敗" });
   }
 });
 

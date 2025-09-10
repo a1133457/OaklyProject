@@ -81,6 +81,8 @@ export function AuthProvider({ children }) {
         localStorage.setItem(appKey, token);
         localStorage.setItem(userKey, JSON.stringify(user));
         console.log("成功");
+        router.push("/");
+
         return { success: true, message: result.message };
       } else {
         console.log("失敗");
@@ -298,7 +300,7 @@ export function AuthProvider({ children }) {
   // 取得收藏清單
   const getFavorites = async () => {
     const token = localStorage.getItem(appKey);
-    
+
     try {
       const res = await fetch(API_FAVORITES, {
         headers: { Authorization: `Bearer ${token}` },
@@ -317,7 +319,7 @@ export function AuthProvider({ children }) {
   // 加入收藏
   const addFavorite = async (productId) => {
     const token = localStorage.getItem(appKey);
-    
+
     try {
       const res = await fetch(API_FAVORITES, {
         method: "POST",
@@ -338,7 +340,7 @@ export function AuthProvider({ children }) {
   // 取消收藏
   const removeFavorite = async (productId) => {
     const token = localStorage.getItem(appKey);
-    
+
     try {
       const res = await fetch(`${API_FAVORITES}/${productId}`, {
         method: "DELETE",
@@ -351,13 +353,25 @@ export function AuthProvider({ children }) {
       return { success: false, message: "伺服器錯誤" };
     }
   };
-
+  // 在收藏 API 區塊最後面加入
+  const checkFavoriteStatus = async (productId) => {
+    const token = localStorage.getItem(appKey);
+    try {
+      const res = await fetch(`${API_FAVORITES}/${productId}/check`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      return result.status === "success" ? { success: true, isWishlisted: result.data.isWishlisted } : { success: false, isWishlisted: false };
+    } catch (err) {
+      return { success: false, isWishlisted: false };
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
         user, register, login, logout, isLoading, users,
         updateUser, updateUserEdit, updateUserPassword, updateUserAvatar,
-        getFavorites, addFavorite, removeFavorite
+        getFavorites, addFavorite, removeFavorite, checkFavoriteStatus
       }}>
       {children}
     </AuthContext.Provider>

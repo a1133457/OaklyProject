@@ -5,7 +5,7 @@
   box-sizing: border-box;
 }
 
-html{
+html {
   /* height: 100%; 移除這行 */
   width: 100%;
   max-width: 1920px;
@@ -44,7 +44,7 @@ html{
   height: 100%;
   object-fit: cover;
   transition: opacity 0.3s ease-in-out;
-  
+
 
 
 
@@ -255,9 +255,10 @@ html{
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-    padding-top: 10px; 
+  padding-top: 10px;
 
 }
+
 .pulse-loading {
   grid-column: 1 / -1;
   display: flex;
@@ -276,10 +277,13 @@ html{
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.2);
     opacity: 0.7;
@@ -302,6 +306,7 @@ html{
     transform: translateY(0);
   }
 }
+
 /* 多欄式下拉選單設定 */
 .dropdown-megamenu {
   display: none;
@@ -1160,6 +1165,237 @@ span {
   text-align: center;
 }
 
+
+/* 收藏成功通知動畫 */
+@keyframes wishlistSlideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wishlistSlideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes wishlistFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes wishlistFadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* 收藏成功通知組件樣式 */
+.wishlist-success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  z-index: 1000;
+  animation: wishlistFadeIn 0.3s ease-out;
+}
+
+.wishlist-success-modal {
+  background-color: white;
+  border-radius: 2px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin: 20px;
+  max-width: 400px;
+  width: 100%;
+  animation: wishlistSlideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wishlist-success-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.wishlist-success-header .success-icon {
+  margin-right: 12px;
+}
+
+.wishlist-success-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-family: 'Noto Sans TC';
+  font-weight: 600;
+  color: #6A6A6A;
+  flex: 1;
+}
+
+.wishlist-success-header .close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.wishlist-success-header .close-btn:hover {
+  color: #333;
+}
+
+.wishlist-success-content {
+  display: flex;
+  padding: 20px;
+  align-items: center;
+}
+
+.wishlist-success-content .product-image2 {
+  width: 80px;
+  height: 80px;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.wishlist-success-content .product-image2 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.wishlist-success-content .product-details {
+  flex: 1;
+}
+
+.wishlist-success-content .product-name-m {
+  color: #333;
+  font-family: 'Noto Sans TC';
+  font-weight: 900;
+  color: #8B8B8B;
+  letter-spacing: 1px;
+}
+
+.wishlist-success-content .product-price-p {
+  margin: 0 0 8px 0;
+  font-family: 'Noto Sans TC';
+  font-weight: 700;
+  color: #6A6A6A;
+}
+
+.wishlist-success-content .product-info-o {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wishlist-success-content .color-label,
+.wishlist-success-content .size-label,
+.wishlist-success-content .quantity-info {
+  font-size: 12px;
+  color: #888;
+}
+
+.wishlist-success-actions {
+  font-family: 'Noto Sans TC';
+  font-weight: 600;
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #ededed;
+}
+
+.wishlist-success-actions .continue-shopping {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.wishlist-success-actions .continue-shopping:hover {
+  border-color: #bbb;
+  background-color: #f8f8f8;
+}
+
+.wishlist-success-actions .view-wishlist {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background-color: #DBA783;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.wishlist-success-actions .view-wishlist:hover {
+  background-color: #d68f5b;
+}
+
+/* 響應式設計 */
+@media (max-width: 480px) {
+  .wishlist-success-modal {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .wishlist-success-header,
+  .wishlist-success-content,
+  .wishlist-success-actions {
+    padding: 15px;
+  }
+
+  .wishlist-success-content .product-image2 {
+    width: 60px;
+    height: 60px;
+    margin-right: 12px;
+  }
+
+  .wishlist-success-header h3 {
+    font-size: 16px;
+  }
+
+  .wishlist-success-actions {
+    flex-direction: column;
+  }
+
+  .wishlist-success-actions .continue-shopping,
+  .wishlist-success-actions .view-wishlist {
+    flex: none;
+  }
+}
+
 .cart-modal-backdrop {
   position: fixed;
   top: 0;
@@ -1456,7 +1692,7 @@ span {
 }
 
 @media (max-width: 768px) {
-  
+
   .content-wrapper {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -1503,7 +1739,7 @@ span {
     margin: 0px 20px;
 
   }
-  
+
   .breadcrumb-nav-top {
     display: flex;
     color: white;
@@ -1539,7 +1775,7 @@ span {
 
 
   }
-  
+
   .mobile-sort-dropdown {
     position: absolute;
     top: 100%;
@@ -1549,7 +1785,7 @@ span {
     border: 1px solid #ddd;
     transform: translateX(-50%);
     border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     margin-top: 5px;
     display: flex;
@@ -1557,7 +1793,7 @@ span {
     justify-content: center;
     align-items: center;
   }
-  
+
   .mobile-sort-option {
     padding: 12px 16px;
     border-bottom: 1px solid #eee;
@@ -1568,11 +1804,11 @@ span {
     text-align: center;
 
   }
-  
+
   .mobile-sort-option:last-child {
     border-bottom: none;
   }
-  
+
   .mobile-sort-option:hover {
     background-color: #f5f5f5;
   }
@@ -1702,8 +1938,7 @@ span {
 
   .products-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap:60px
-
+    gap: 60px
   }
 
   .productcard {
@@ -1717,8 +1952,8 @@ span {
   }
 
   .image img {
-    width:400px;
-    height:400px;
+    width: 400px;
+    height: 400px;
     object-fit: cover;
     overflow: visible;
 
@@ -1733,71 +1968,76 @@ span {
     background: white !important;
     max-width: none !important;
   }
-  
-.main-product-page{
-  height: 100%;
-  width: 100%;
-}
+
+  .main-product-page {
+    height: 100%;
+    width: 100%;
+  }
+
   .products-grid.list {
     grid-template-columns: 1fr;
-    gap:80px;
+    gap: 80px;
     height: 100% !important;
   }
+
   .products-grid.list .productcard {
     padding: 15px 10px;
     flex-direction: row !important;
     align-items: stretch !important;
     justify-content: flex-start !important;
     height: 200px !important
-}
+  }
 
-.products-grid.list .image {
+  .products-grid.list .image {
     text-align: center;
-    max-width :200px;
+    max-width: 200px;
     height: 100%;
     padding: 0;
     margin: 0;
-}
+  }
 
-.products-grid.list .image img {
+  .products-grid.list .image img {
     max-width: 250px;
     max-height: 250px;
     height: 100%;
-    margin: 0;padding: 0;
+    margin: 0;
+    padding: 0;
     height: auto;
     object-fit: cover;
     border-radius: 8px;
-}
+  }
 
-.products-grid.list .info {
+  .products-grid.list .info {
     align-items: center;
     text-align: center;
     margin-bottom: 15px;
-}
+  }
 
-.products-grid.list .name {
+  .products-grid.list .name {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
     line-height: 1.4;
-}
+  }
 
-.products-grid.list .price {
+  .products-grid.list .price {
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 15px;
-}
+  }
 
-.products-grid.list .add-to-cart {
+  .products-grid.list .add-to-cart {
     width: 100%;
     max-width: 100px;
     margin: 0 auto;
     font-size: 14px;
     border-radius: 25px;
-}
-  .pagination{
-    padding-bottom:80px;
   }
+
+  .pagination {
+    padding-bottom: 80px;
+  }
+
   /* Modal 從右側滑入 */
   .mobile-filter-modal {
     position: fixed;
@@ -1810,7 +2050,7 @@ span {
     transform: translateX(100%);
     transition: transform 0.3s ease;
   }
-  
+
   .modal.show .mobile-filter-modal {
     transform: translateX(0);
     height: 100%;
