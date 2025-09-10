@@ -61,42 +61,42 @@ export default function IndexPage(props) {
             <div className="row justify-content-center">
               <div className={`${styles.cateIcons}`}>
                 <Link
-                  href="/livingroom"
+                  href="/products"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.livingroom}`} />
                   <h6>客 廳</h6>
                 </Link>
                 <a
-                  href="#"
+                  href="/products"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.kitchen}`} />
                   <h6>餐廚空間</h6>
                 </a>
                 <a
-                  href="#"
+                  href="/products"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.bedroom}`} />
                   <h6>臥 室</h6>
                 </a>
                 <a
-                  href="#"
+                  href="/products"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.kidroom}`} />
                   <h6>兒童房</h6>
                 </a>
                 <a
-                  href="#"
+                  href="/products"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.office}`} />
                   <h6>辦公空間</h6>
                 </a>
                 <a
-                  href="#"
+                  href="/products"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.storage}`} />
@@ -303,6 +303,7 @@ export default function IndexPage(props) {
         </div>
       </section>
       {/* section-05: 編輯推薦文章 */}
+      {false &&
       <section>
         <div className="section-fluid d-flex flex-column gap-xxxl align-items-center">
           <div className="gap-md text-center d-flex flex-column">
@@ -372,6 +373,7 @@ export default function IndexPage(props) {
           </Link>
         </div>
       </section>
+      }
     </>
   );
 }
