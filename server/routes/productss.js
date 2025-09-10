@@ -67,7 +67,7 @@ router.get("/", async (req, res) => {
 router.get("/search", async (req, res) => {
   let { q, page = 1, limit = 10 } = req.query;
 
-  console.log("🔍 搜尋API被呼叫:", { q, page, limit });
+  console.log("搜尋API被呼叫:", { q, page, limit });
 
   q = q ? q.trim() : "";
   page = parseInt(page, 10);
@@ -124,13 +124,33 @@ router.get("/search", async (req, res) => {
 
     console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
 
+
     if (paginatedResults.length > 0) {
       console.log("找到的產品:", paginatedResults.map(r => r.name));
     }
+    
+    const latestQuery = `
+  SELECT id FROM products 
+  WHERE is_valid = 1 
+  ORDER BY create_at DESC 
+  LIMIT 50
+`;
+    const [latestProducts] = await db.execute(latestQuery);
+    const latestProductIds = latestProducts.map(p => p.id);
 
+    const resultsWithBadges = paginatedResults.map(product => {
+      const isNew = latestProductIds.includes(product.id);
+      const isHot = product.quantity <= 20 && product.quantity > 0;
+
+      return {
+        ...product,
+        isNew,
+        isHot
+      };
+    });
     res.json({
       status: "success",
-      data: paginatedResults,
+      data: resultsWithBadges,
       pagination: {
         total: filteredProducts.length,
         page,

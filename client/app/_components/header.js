@@ -113,7 +113,6 @@ export default function Header() {
           />
         </Link>
         <div className="side-right">
-          {/* 搜尋功能
             <div className="search-container">
               <button onClick={handleSearchToggle} className="search-btn">
                 <i className="fa-solid fa-magnifying-glass"></i>
@@ -134,7 +133,7 @@ export default function Header() {
                   />
                 </div>
               )}
-            </div> */}
+            </div>
 
           <a href="/cart" className="cart-link">
             <i className="fa-solid fa-cart-shopping"></i>

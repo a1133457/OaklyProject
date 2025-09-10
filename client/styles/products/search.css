@@ -248,13 +248,59 @@ body {
   cursor: pointer;
 
 
+
+}
+.pulse-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px;
+  gap: 20px;
 }
 
+.pulse-circle {
+  width: 50px;
+  height: 50px;
+  background: #9FA79A;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.products-fade-in {
+  display: contents;
+}
+
+.fade-in-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
+  padding-top: 10px; 
+
 }
 
 /* 多欄式下拉選單設定 */
@@ -268,8 +314,8 @@ body {
   border: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-
 }
+
 
 /* 每一欄 */
 .megamenu-column {
@@ -289,7 +335,6 @@ body {
   text-decoration: none;
   cursor: pointer;
   font-weight: bold;
-
 }
 
 .filter-option.active {
@@ -915,9 +960,13 @@ span {
   opacity: 1 !important;
   visibility: visible !important;
 }
-/* 收藏彈窗樣式 */
+
 .no-scroll {
-  overflow: hidden !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
 }
 
 .wishlist-modal-backdrop {
@@ -1641,6 +1690,26 @@ span {
   width: 44px;
   height: 44px;
   background: #DBA783;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-family: Noto Sans TC;
+  font-weight: 900;
+  line-height: 24px;
+  letter-spacing: 1px;
+  word-wrap: break-word;
+  z-index: 2;
+}
+.productcard .badge-hot {
+  display: inline-block;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  align-self: flex-start;
+  margin-bottom: 8px;
+  width: 44px;
+  height: 44px;
+  background: #c14545;
   color: #fff;
   border-radius: 50%;
   font-size: 12px;

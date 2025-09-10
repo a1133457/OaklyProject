@@ -7,11 +7,8 @@ import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
 
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
-// import { cartContext } from '@/app/contexts/CartContext.js';
 import CategoryDropdown from "@/app/_components/CategoryDropdown.js";
 import { useCart } from "@/hooks/use-cart";
-// 導入吐司訊息用方法+元件
-import { toast, ToastContainer } from "react-toastify";
 
 // 跟隨指針移動的滾動條類別
 class CustomThumbnailScrollbar {
@@ -421,10 +418,7 @@ export default function PidPage({ params }) {
     return colorMap[colorName] || "#cccccc";
   };
   const [selectedImage, setSelectedImage] = useState(0);
-  // const { addToCart } = cartContext();
-  // ------------------------
-  const { onAdd } = useCart();
-  // ------------------------
+  const { addToCart, openSuccessModal } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -438,11 +432,53 @@ export default function PidPage({ params }) {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [currentWishlistProduct, setCurrentWishlistProduct] = useState(null);
   const [showCartModal, setShowCartModal] = useState(false);
-const [currentCartProduct, setCurrentCartProduct] = useState(null);
-const [cartQuantity, setCartQuantity] = useState(1);
-const [cartLoading, setCartLoading] = useState(false);
+  const [currentCartProduct, setCurrentCartProduct] = useState(null);
+  const [cartQuantity, setCartQuantity] = useState(1);
+  const [cartLoading, setCartLoading] = useState(false);
 
+  const categoryMapping = {
+    // 客廳分類
+    '邊桌': '客廳',
+    '單椅': '客廳',
+    '茶几': '客廳',
+    '書櫃': '客廳',
+    '書桌': '客廳',
+    '邊櫃': '客廳',
+    // 廚房分類
+    '實木餐桌': '廚房',
+    '餐椅': '廚房',
+    '吧台桌': '廚房',
+    '吧台椅': '廚房',
+    // 臥室分類
+    '床架': '臥室',
+    '床邊桌': '臥室',
+    '化妝台': '臥室',
+    '全身鏡': '臥室',
+    '衣櫃': '臥室',
+    // 兒童房分類
+    '桌椅組': '兒童房',
+    '衣櫃': '兒童房',
+    '收納櫃': '兒童房',
+    // 收納用品分類
+    '收納盒': '收納用品',
+    '收納箱': '收納用品'
+  };
 
+  const handleCategoryClick = (e, categoryName) => {
+    e.preventDefault();
+
+    if (categoryMapping[categoryName]) {
+      // 子分類
+      const mainCategory = categoryMapping[categoryName];
+
+      window.location.href = `/products?category=${encodeURIComponent(mainCategory)}&subcategory=${encodeURIComponent(categoryName)}`;
+      console.log('跳轉到:', `/products?category=${mainCategory}&subcategory=${categoryName}`); // 加這行
+
+    } else {
+      // 主分類
+      window.location.href = `/products?category=${encodeURIComponent(categoryName)}`;
+    }
+  };
 
 
 
@@ -491,6 +527,8 @@ const [cartLoading, setCartLoading] = useState(false);
 
     fetchProductData();
   }, [productId]);
+
+
 
   // useEffect(() => {
   //   const checkWishlistStatus = async () => {
@@ -766,7 +804,16 @@ const [cartLoading, setCartLoading] = useState(false);
       </div>
     </div>
   );
-
+  if (loading) {
+    return (
+      <div className="detail-product-page">
+        <div className="pulse-loading">
+          <div className="pulse-circle"></div>
+          <p className="loading-text">載入商品詳情中...</p>
+        </div>
+      </div>
+    );
+  }
   if (error) {
     return (
       <div className="detail-product-page">
@@ -833,7 +880,7 @@ const [cartLoading, setCartLoading] = useState(false);
     const product = targetProduct || productData;
     openCartModal(product, event);
   };
-  
+
   const openCartModal = async (product, clickEvent = null) => {
     setCurrentCartProduct(product);
     setSelectedColor(product.colors?.[0] || null);
@@ -841,7 +888,7 @@ const [cartLoading, setCartLoading] = useState(false);
     setCartQuantity(1);
     setShowCartModal(true);
     document.body.classList.add('no-scroll');
-  
+
     if (product.id !== parseInt(productId) && (!product.colors || !product.sizes)) {
       try {
         setCartLoading(true);
@@ -861,34 +908,138 @@ const [cartLoading, setCartLoading] = useState(false);
       }
     }
   };
-  
-  const addToCartFromModal = async () => {
+
+
+  const addToCartFromModal = () => {
     if (!selectedColor || !selectedSize) {
       alert('請選擇顏色和尺寸');
       return;
     }
-  
-    const product = currentCartProduct || productData;
-    onAdd(product, cartQuantity, selectedColor, selectedSize);
+
+    addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
+    openSuccessModal(currentCartProduct, cartQuantity, selectedColor, selectedSize);
     setShowCartModal(false);
     document.body.classList.remove('no-scroll');
-    
-
   };
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation();
 
+    const defaultColor = product.colors?.[0] || null;
+    const defaultSize = product.sizes?.[0] || null;
 
+    addToCart(product, 1, defaultColor, defaultSize);
+  };
   return (
     <div className="detail-product-page">
       {/* 麵包屑導航 */}
       <div className="sub-nav">
         <div className="sub-nav-links">
-          <a href="#" className="sub-nav-link">
+          <a href="#" className="sub-nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = '/products?type=latest';
+            }}>
             最新商品
           </a>
-          <a href="#" className="sub-nav-link">
+          <a href="#" className="sub-nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = '/products?type=hot';
+            }}>
             熱賣
           </a>
-          <CategoryDropdown />
+          <div className="dropdown hover-dropdown">
+            <div
+              className="sub-nav-link dropdown-toggle"
+              aria-expanded="false"
+            >
+              空間<i className="fas fa-chevron-down fa-sm"></i>
+            </div>
+            <div className="dropdown-menu dropdown-megamenu">
+              <div className="megamenu-column">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '客廳')}>
+                  客廳
+                </a>                    <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '邊桌')}>
+                  邊桌
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '單椅')}>
+                  單椅/單人沙發
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '茶几')}>
+                  茶几
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '書櫃')}>
+                  書櫃 / 書架
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '書桌')}>
+                  書桌 / 書桌椅
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '邊櫃')}>
+                  邊櫃 / 收納櫃
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '廚房')}>
+                  廚房
+                </a>                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '實木餐桌')}>
+                  實木餐桌
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '餐椅')}>
+                  餐椅 / 椅子
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '吧台桌')}>
+                  吧台桌
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '吧台椅')}>
+                  吧台椅
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '臥室')}>
+                  臥室
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
+                  床架
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床邊桌')}>
+                  床邊桌
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '化妝台')}>
+                  化妝台
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '全身鏡')}>
+                  全身鏡 / 鏡子
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '衣櫃')}>
+                  衣櫃 / 衣架
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '兒童房')}>
+                  兒童房
+                </a>                      <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '桌椅組')}>
+                  桌椅組
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '衣櫃')}>
+                  衣櫃
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '床架')}>
+                  床架
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納櫃')}>
+                  收納櫃
+                </a>
+              </div>
+              <div className="megamenu-column">
+                <a href="#" className="dropdown-header" onClick={(e) => handleCategoryClick(e, '收納用品')}>
+                  收納用品
+                </a>
+                <a className="dropdown-item" href="#" onClick={(e) => handleCategoryClick(e, '收納盒')}>
+                  收納盒 / 收納箱
+                </a>
+              </div>
+            </div>
+          </div>
 
           <a href="#" className="sub-nav-link">
             It's Oakly
@@ -919,9 +1070,8 @@ const [cartLoading, setCartLoading] = useState(false);
               {displayImages.map((image, index) => (
                 <div
                   key={index}
-                  className={`thumbnail ${
-                    selectedImage === index ? "active" : ""
-                  }`}
+                  className={`thumbnail ${selectedImage === index ? "active" : ""
+                    }`}
                   onClick={() => setSelectedImage(index)}
                 >
                   <img src={image} alt={`${productData.name} ${index + 1}`} />
@@ -1020,7 +1170,7 @@ const [cartLoading, setCartLoading] = useState(false);
                 <div
                   className="modal-backdrop fade show"
                   onClick={() => {
-                    setShowModal(false); 
+                    setShowModal(false);
                     document.body.classList.remove('modal-open');
 
                   }}
@@ -1040,9 +1190,8 @@ const [cartLoading, setCartLoading] = useState(false);
                   {productData.colors?.map((color) => (
                     <div
                       key={color.id}
-                      className={`color ${
-                        selectedColor?.id === color.id ? "selected" : ""
-                      }`}
+                      className={`color ${selectedColor?.id === color.id ? "selected" : ""
+                        }`}
                       style={{
                         backgroundColor: getColorCode(color.color_name),
                       }}
@@ -1076,9 +1225,8 @@ const [cartLoading, setCartLoading] = useState(false);
                   }}
                 >
                   <i
-                    className={`fa-${
-                      isWishlisted ? "solid" : "regular"
-                    } fa-heart`}
+                    className={`fa-${isWishlisted ? "solid" : "regular"
+                      } fa-heart`}
                   ></i>
                 </div>
               </div>
@@ -1089,14 +1237,17 @@ const [cartLoading, setCartLoading] = useState(false);
               <button
                 className="add-to-cart-btn"
                 onClick={() => {
-                  // console.log("商品資料：", productData);
-                  // addToCart(productData, quantity, selectedColor, selectedSize);
-                  // ------------------------
-                  onAdd(productData, quantity, selectedColor, selectedSize);
-                  // handleAddToCart();
-                  // 跳出訊息(呼叫吐司訊息)
-                  toast.success(`${productData.name} 已成功加入購物車！`);
-                  // ------------------------
+                  if (!selectedColor) {
+                    toast.error('請選擇顏色');
+                    return;
+                  }
+
+                  if (!selectedSize) {
+                    toast.error('請選擇尺寸');
+                    return;
+                  }
+                  addToCart(productData, quantity, selectedColor, selectedSize);
+                  openSuccessModal(productData, quantity, selectedColor, selectedSize);
                 }}
               >
                 加入購物車
@@ -1246,35 +1397,35 @@ const [cartLoading, setCartLoading] = useState(false);
           </div>
         </div>
 
-        <SimilarProducts 
-  currentProductId={parseInt(productId)}
-  handleWishlistToggle={handleWishlistToggle}
-  isProductInWishlist={isProductInWishlist}
-  addToCart={onAdd}
-  handleCartClick={handleCartClick}
-/>
+        <SimilarProducts
+          currentProductId={parseInt(productId)}
+          handleWishlistToggle={handleWishlistToggle}
+          isProductInWishlist={isProductInWishlist}
+          addToCart={addToCart}
+          handleCartClick={handleCartClick}
+        />
 
 
         <RandomShowcaseSection />
 
 
-        <Bestseller 
-  currentProductId={parseInt(productId)}
-  handleWishlistToggle={handleWishlistToggle}
-  isProductInWishlist={isProductInWishlist}
-  addToCart={onAdd}
-  handleCartClick={handleCartClick}
-/>
+        <Bestseller
+          currentProductId={parseInt(productId)}
+          handleWishlistToggle={handleWishlistToggle}
+          isProductInWishlist={isProductInWishlist}
+          addToCart={addToCart}
+          handleCartClick={handleCartClick}
+        />
 
-<RecentViewedProducts
-  className="middle-content"
-  currentProductId={productId}
-  maxItems={8}
-  handleWishlistToggle={handleWishlistToggle}
-  isProductInWishlist={isProductInWishlist}
-  addToCart={onAdd}
-  handleCartClick={handleCartClick}
-/>
+        <RecentViewedProducts
+          className="middle-content"
+          currentProductId={productId}
+          maxItems={8}
+          handleWishlistToggle={handleWishlistToggle}
+          isProductInWishlist={isProductInWishlist}
+          addToCart={addToCart}
+          handleCartClick={handleCartClick}
+        />
       </div>
       {/* 收藏選擇彈窗 */}
       {showWishlistModal && (
@@ -1337,9 +1488,8 @@ const [cartLoading, setCartLoading] = useState(false);
                             <div
                               key={color.id}
                               onClick={() => setSelectedColor(color)}
-                              className={`wishlist-color-option ${
-                                selectedColor?.id === color.id ? "selected" : ""
-                              }`}
+                              className={`wishlist-color-option ${selectedColor?.id === color.id ? "selected" : ""
+                                }`}
                             >
                               <div
                                 className="wishlist-color-dot"
@@ -1355,7 +1505,6 @@ const [cartLoading, setCartLoading] = useState(false);
                         )}
                     </div>
                   </div>
-
                   {/* 尺寸選擇 */}
                   <div className="wishlist-form-group">
                     <label className="wishlist-form-label">選擇尺寸</label>
@@ -1368,9 +1517,8 @@ const [cartLoading, setCartLoading] = useState(false);
                             <div
                               key={size.id}
                               onClick={() => setSelectedSize(size)}
-                              className={`wishlist-size-option ${
-                                selectedSize?.id === size.id ? "selected" : ""
-                              }`}
+                              className={`wishlist-size-option ${selectedSize?.id === size.id ? "selected" : ""
+                                }`}
                             >
                               {size.size_label}
                             </div>
@@ -1378,7 +1526,6 @@ const [cartLoading, setCartLoading] = useState(false);
                         )}
                     </div>
                   </div>
-
                   {/* 數量選擇 */}
                   <div className="wishlist-form-group">
                     <label className="wishlist-form-label">數量</label>
@@ -1416,65 +1563,113 @@ const [cartLoading, setCartLoading] = useState(false);
                   </div>
                 </div>
               </div>
-
-
             </div>
           </div>
         </>
       )}
 
-      {/* 購物車選擇彈窗 */}
+
+     {/* 購物車選擇彈窗 */}
 {showCartModal && (
   <>
-    <div className="wishlist-modal-backdrop" onClick={() => { setShowCartModal(false); document.body.classList.remove('no-scroll'); }}></div>
-    <div className="wishlist-modal-container">
-      <div className="wishlist-modal-content">
-        <button className="wishlist-modal-close" onClick={() => { setShowCartModal(false); document.body.classList.remove('no-scroll'); }}>✕</button>
-        <div className="wishlist-modal-header">
-          <h5 className="wishlist-modal-title">加入購物車</h5>
+    <div 
+      className="cart-modal-backdrop" 
+      onClick={() => { 
+        setShowCartModal(false); 
+        document.body.classList.remove('no-scroll'); 
+      }}
+    ></div>
+    
+    <div className="cart-modal-container">
+      <div className="cart-modal-content">
+        <button 
+          className="cart-modal-close" 
+          onClick={() => { 
+            setShowCartModal(false); 
+            document.body.classList.remove('no-scroll'); 
+          }}
+        >
+          ✕
+        </button>
+        
+        <div className="cart-modal-header">
+          <h5 className="cart-modal-title">加入購物車</h5>
         </div>
-        <div className="wishlist-modal-body">
-          <div className="wishlist-product-image">
-            <img src={currentCartProduct ? getProductImage(currentCartProduct) : displayImages[selectedImage]} alt={(currentCartProduct || productData).name} />
+        
+        <div className="cart-modal-body">
+          <div className="cart-product-image">
+            <img 
+              src={currentCartProduct ? getProductImage(currentCartProduct) : displayImages[selectedImage]} 
+              alt={(currentCartProduct || productData).name} 
+            />
           </div>
-          <div className="wishlist-form-content">
-            <h6 className="wishlist-product-name">{(currentCartProduct || productData).name}</h6>
-            <p className="wishlist-product-price">NT$ {(currentCartProduct || productData).price?.toLocaleString()}</p>
+          
+          <div className="cart-form-content">
+            <h6 className="cart-product-name">{(currentCartProduct || productData).name}</h6>
+            <p className="cart-product-price">NT$ {(currentCartProduct || productData).price?.toLocaleString()}</p>
             
-            <div className="wishlist-form-group">
-              <label className="wishlist-form-label">選擇顏色</label>
-              <div className="wishlist-options">
+            <div className="cart-form-group">
+              <label className="cart-form-label">選擇顏色</label>
+              <div className="cart-options">
                 {Array.isArray((currentCartProduct || productData)?.colors) && (currentCartProduct || productData).colors.map((color) => (
-                  <div key={color.id} onClick={() => setSelectedColor(color)} className={`wishlist-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}>
-                    <div className="wishlist-color-dot" style={{ backgroundColor: getColorCode(color.color_name) }}></div>
+                  <div 
+                    key={color.id} 
+                    onClick={() => setSelectedColor(color)} 
+                    className={`cart-color-option ${selectedColor?.id === color.id ? 'selected' : ''}`}
+                  >
+                    <div 
+                      className="cart-color-dot" 
+                      style={{ backgroundColor: getColorCode(color.color_name) }}
+                    ></div>
                     <span>{color.color_name}</span>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="wishlist-form-group">
-              <label className="wishlist-form-label">選擇尺寸</label>
-              <div className="wishlist-options">
+            
+            <div className="cart-form-group">
+              <label className="cart-form-label">選擇尺寸</label>
+              <div className="cart-options">
                 {Array.isArray((currentCartProduct || productData)?.sizes) && (currentCartProduct || productData).sizes.map((size) => (
-                  <div key={size.id} onClick={() => setSelectedSize(size)} className={`wishlist-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}>
+                  <div 
+                    key={size.id} 
+                    onClick={() => setSelectedSize(size)} 
+                    className={`cart-size-option ${selectedSize?.id === size.id ? 'selected' : ''}`}
+                  >
                     {size.size_label}
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="wishlist-form-group">
-              <label className="wishlist-form-label">數量</label>
-              <div className="wishlist-quantity-controls">
-                <button onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))} disabled={cartQuantity <= 1} className="wishlist-quantity-btn">-</button>
-                <span className="wishlist-quantity-display">{cartQuantity}</span>
-                <button onClick={() => setCartQuantity(cartQuantity + 1)} className="wishlist-quantity-btn">+</button>
+            
+            <div className="cart-form-group">
+              <label className="cart-form-label">數量</label>
+              <div className="cart-quantity-controls">
+                <button 
+                  onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))} 
+                  disabled={cartQuantity <= 1} 
+                  className="cart-quantity-btn"
+                >
+                  -
+                </button>
+                <span className="cart-quantity-display">{cartQuantity}</span>
+                <button 
+                  onClick={() => setCartQuantity(cartQuantity + 1)} 
+                  className="cart-quantity-btn"
+                >
+                  +
+                </button>
               </div>
             </div>
             
-            <div className="wishlist-modal-footer">
-              <button onClick={addToCartFromModal} disabled={!selectedColor || !selectedSize} className="wishlist-submit-btn">加入購物車</button>
+            <div className="cart-modal-footer">
+              <button 
+                onClick={addToCartFromModal} 
+                disabled={!selectedColor || !selectedSize} 
+                className="cart-submit-btn"
+              >
+                加入購物車
+              </button>
             </div>
           </div>
         </div>
@@ -1494,13 +1689,9 @@ const [cartLoading, setCartLoading] = useState(false);
           </div>
           <div className="end-content-btn">
             <button>立即預約</button>
-            <button>查看案例</button>
           </div>
         </div>
       </div>
-      {/* 吐司訊息用元件(會先隱藏在這頁面內容裡不顯示*/}
-      <ToastContainer />
-      // ------------------------
     </div>
   );
 }
