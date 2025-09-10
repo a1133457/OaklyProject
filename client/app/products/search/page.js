@@ -790,8 +790,11 @@ export default function SearchResultsPage() {
                         cursor: 'pointer',
                         animationDelay: `${index * 0.1}s`
                       }}>
+                      <div className="badges">
                       {product.isNew && <span className="badge-new">新品</span>}
-                      {product.isHot && <span className="badge-hot">熱賣</span>}                      <div className="image">
+                      {product.isHot && <span className="badge-hot">熱賣</span>}
+                      </div>
+                      <div className="image">
                         {product.images && product.images.length > 0 ? (
                           <img
                             src={getImageUrl(product)}
