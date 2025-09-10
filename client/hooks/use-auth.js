@@ -100,6 +100,7 @@ export function AuthProvider({ children }) {
     const API = "http://localhost:3005/api/users/logout";
     const appKey = "reactLoginToken";
     const userKey = "user";
+    const cart = "cart";
     const token = localStorage.getItem(appKey);
     try {
       if (!token) throw new Error("Token 不存在");
@@ -116,6 +117,7 @@ export function AuthProvider({ children }) {
         //localStorage.setItem(appKey, token);
         localStorage.removeItem(appKey);
         localStorage.removeItem(userKey);
+        localStorage.removeItem(cart);
         router.push("/");
         // return { success: true };
       } else {

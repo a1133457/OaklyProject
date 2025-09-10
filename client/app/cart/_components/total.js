@@ -12,42 +12,99 @@ import CouponSelect from "./couponSelect";
 import { useEffect, useState } from "react";
 
 export default function Total({ type }) {
-  const [coupons, setCoupons] = useState([]);
+  const [coupon, setCoupon] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } =
     useCart();
   const [userId, setUserId] = useState(null);
 
-  const fetchCoupons = async () => {
-    try {
-      const res = await fetch(`http://localhost:3000/api/counpons/${userId}`);
-      const data = await res.json();
-      setCoupons(data);
-    } catch (error) {
-      setError("無法載入優惠券");
-      console.log(error);
-    }
-  };
+
+  // const fetchCoupons = async () => {
+  //   try {
+  //     const res = await fetch(`http://localhost:3000/api/counpons/${userId}`);
+  //     const data = await res.json();
+  //     setCoupons(data);
+  //   } catch (error) {
+  //     setError("無法載入優惠券");
+  //     console.log(error);
+  //   }
+  // };
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     setUserId(storedUser.id);
   }, []);
 
-  console.log(userId); // 1
-
+  // 讀取並處理優惠券
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchCoupons()]);
-    };
-    loadData();
-  }, [userId]);
+    const loadCouponData = () => {
+      try {
+        // 檢查是否有選中優惠券
+        const storedCoupon = localStorage.getItem("selectedCoupon");
+
+        if (storedCoupon && storedCoupon === "null" && storedCoupon === "undefined") {
+          const couponData = JSON.parse(storedCoupon);
+          console.log("找到優惠券:", couponData);
+
+          setSelectedCoupon(couponData);
+          calculatedDiscount(couponData);
+        } else {
+          // 沒有優惠券，重置折扣
+          setSelectedCoupon(null);
+          setDiscountAmount(0);
+        }
+      } catch (error) {
+        console.log("讀取優惠券失敗:", error);
+        setSelectedCoupon(null);
+        setDiscountAmount(0);
+
+      }
+    }
+    loadCouponData();
+  }, [totalAmount]);
+
+  const calculateDiscount = (coupon) => {
+    if (!coupon || !totalAmount) {
+      setDiscountAmount(0);
+      return;
+    }
+    let discount = 0;
+
+    // 根據優惠券類型計算折扣
+    if (coupon.discountType === 'percentage') {
+      // 百分比折扣 (例如：10% = 0.1)
+      discount = Math.floor(totalAmount * coupon.discountValue);
+    } else if (coupon.discountType === 'fixed') {
+      // 固定金額折扣
+      discount = Math.min(coupon.discountValue, totalAmount);
+    } else if (coupon.discountType === 'freeShipping') {
+      // 免運費折扣
+      discount = coupon.shippingDiscount || 0;
+    }
+
+    setDiscountAmount(discount);
+  }
+  // 移除優惠券
+  const removeCoupon = () => {
+    localStorage.removeItem("selectedCoupon");
+    setSelectedCoupon(null);
+    setDiscountAmount(0);
+  };
+
+  // 計算最終金額
+  const finalAmount = Math.max(0, totalAmount - discountAmount);
 
   const handleSelectCoupon = (coupon) => {
     console.log("選擇的優惠券:", coupon);
+    // 將選中的優惠券存到 localStorage
+    localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
+    setSelectedCoupon(coupon);
+    calculateDiscount(coupon);
   };
+
 
   const handleNext = async () => {
     if (paymentMethod === "信用卡") {
@@ -87,7 +144,7 @@ export default function Total({ type }) {
           </div>
           <div className="choose-cp">
             <p>選擇優惠券</p>
-            <CouponSelect coupons={coupons} onSelect={handleSelectCoupon} />
+            <CouponSelect />
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>

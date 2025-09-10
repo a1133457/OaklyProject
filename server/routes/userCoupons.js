@@ -41,6 +41,65 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+// GET /api/user/coupons/status/canUse/[id] - 有效的優惠券
+router.get("/status/canUse/:userId", async (req, res) => {
+  console.log("=== API 被呼叫 ==="); // 添加這行來確認
+  try {
+    const { userId } = req.params; // 取得路由參數
+    const sql = `SELECT
+    uc.*,
+      uc.get_at,      
+      uc.expire_at,      
+      c.name,
+      c.discount,
+      c.discount_type,
+      c.min_discount,
+      c.start_at,
+      c.end_at,
+      GROUP_CONCAT(pc.category_name) as category_names
+    FROM user_coupons uc
+    JOIN coupons c ON uc.coupon_id = c.id
+    LEFT JOIN coupon_categories cc ON c.id = cc.coupon_id
+    LEFT JOIN products_category pc ON cc.category_id = pc.category_id
+    WHERE uc.user_id = ? AND uc.status = 1
+    GROUP BY uc.id
+    ORDER BY uc.status ASC`;
+
+    const [coupons] = await pool.execute(sql, [userId]);
+    res.status(200).json({
+      status: "success",
+      data: coupons,
+      message: "取得使用者的優惠券資料",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "獲取失敗，請洽管理人員",
+    });
+  }
+});
+
+// UPDATE /api/user/:userId/status/used
+router.put("/:userId/status/used", async (req, res) => {
+  try {
+    const { userId } = req.params; // 取得路由參數
+    const sql = `UPDATE user_coupons SET status = 0 WHERE user_id = ? AND status = 1`;
+    const [coupons] = await pool.execute(sql, [userId]);
+    res.status(200).json({
+      status: "success",
+      data: coupons,
+      message: "取得使用者的優惠券資料",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: error.message ?? "獲取失敗，請洽管理人員",
+    });
+  }
+})
+
 // POST /api/user/:userId/:couponId - 領取優惠券
 router.post("/:userId/:couponId", async (req, res) => {
   try {
@@ -116,6 +175,10 @@ router.post("/:userId/:couponId", async (req, res) => {
       message: error.message ?? "領取失敗，請洽管理人員",
     });
   }
+});
+
+router.get("/test", (req, res) => {
+  res.json({ message: "User coupons router is working!" });
 });
 
 export default router;
