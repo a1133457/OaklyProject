@@ -100,7 +100,7 @@
     padding: 20px;
     border-bottom: 1px solid #9db8af; */
     display: grid;
-    grid-template-columns: 140px 1fr 120px 80px; 
+    grid-template-columns: 140px 1fr 120px 80px;
     /* 140px 放圖片，1fr 放商品名，120px 放價錢，80px 放 icon 區 */
     align-items: center;
     padding: 20px 0;
@@ -215,23 +215,48 @@
 
 
 
-/* 手機版：側欄改到上面、去掉分隔線與間距，表單全寬 */
-@media (max-width: 768px) {
+/* 手機版 (<= 430px) */
+@media (max-width: 430px) {
+    .userContainer {
+        padding-block: 50px;
+        /* 上下間距縮小 */
+        padding-inline: 50px;
+        /* 左右固定邊距，避免太擠 */
+    }
+
     .layout {
         flex-direction: column;
+        gap: 0px;
     }
 
     .sidebarWrapper {
-        margin-right: 0;
-        margin-bottom: 20px;
-        flex-basis: auto;
-        border-right: none;
-        padding-right: 0;
+        display: none;
+        /* 手機版隱藏側欄 */
     }
 
-    .formContainer {
-        max-width: 100%;
-        padding: 0 15px;
-        /* 手機左右留白 */
+    .content {
+        flex: 1;
+        min-width: 100%;
+        /* 表單內容滿版 */
     }
+
+    .avatarImg {
+        width: 120px;
+        /* 頭像縮小 */
+        height: 120px;
+    }
+
+    .formButtons {
+        margin-top: 50px;
+        /* 上方間隔加大 */
+        gap: 4px;
+        /* 兩顆按鈕之間縮小一點 */
+    }
+
+    .favoritesRow {
+        grid-template-columns: 100px 1fr;
+        /* 收藏清單：縮圖 + 內容 */
+        gap: 12px;
+    }
+
 }
