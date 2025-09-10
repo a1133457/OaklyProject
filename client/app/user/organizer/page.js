@@ -7,21 +7,50 @@ import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 // 自訂組件 (專用)
 import ItemTab from "./_components/ItemTab";
 import { useFetch } from "@/hooks/use-fetch";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTab } from "@/contexts/TabContext";
+import { useRouter } from "next/navigation";
 
 export default function UserOrganizerPage() {
-
+  const router = useRouter();
   const { currentTab, setCurrentTab } = useTab();  // ← 使用 Context
   // const [currentTab, setCurrentTab] = useState(1);
+  const [token, setToken] = useState(null);
+  const [userStr, setUserStr] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userId = user?.id;
+
   // 抓取使用者的預約列表
   const userOrganizersResult = useFetch(
-    "http://localhost:3005/api/user/organizers/1"
+    `http://localhost:3005/api/user/organizers/${userId}`
   );
 
 
   const userOrganizers = userOrganizersResult?.data?.data || [];
 
+  // 處理登入
+  useEffect(() => {
+    const tokenFromStorage = localStorage.getItem("reactLoginToken");
+    const userFromStorage = localStorage.getItem("user");
+
+    setToken(tokenFromStorage);
+    setUserStr(userFromStorage);
+
+    //沒登入的跳轉
+    if (!tokenFromStorage || !userFromStorage) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setIsLoading(false);
+  }, [router]);
+
+  //解析token
+  if (isLoading || !token || !userStr) {
+    return <div>載入中...</div>;
+  }
 
 
   // tab切換資料

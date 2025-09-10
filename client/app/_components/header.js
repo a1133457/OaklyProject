@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import "@/styles/header.css";
-// import { useCart } from "@/app/contexts/CartContext";
+import UserSidebarPage from "../user/_components/sidebar";
+import styles from "../user/_components/sidebar.module.css";
 
 export default function Header() {
   const { user, logout, isLoading } = useAuth();
@@ -19,15 +20,15 @@ export default function Header() {
   // if (isLoading) return null; // 或 loading skeleton
   const router = useRouter();
 
-  const handleLogout = async () => {
-    const result = await logout();
-    if (result.success) {
-      router.push("/");
-      router.refresh();
-    } else {
-      alert(result.message || "登出失敗");
-    }
-  };
+  // const handleLogout = async () => {
+  //   const result = await logout();
+  //   if (result?.success) {
+  //     router.push("/");
+  //     router.refresh();
+  //   } else {
+  //     alert(result?.message || "登出失敗");
+  //   }
+  // };
 
   const searchInputRef = useRef(null);
 
@@ -75,11 +76,12 @@ export default function Header() {
   };
 
   // 登入/註冊頁，不顯示 header
-  if (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) {
+  if (
+    pathname.startsWith("/auth/login") ||
+    pathname.startsWith("/auth/register")
+  ) {
     return null;
   }
-
-// >>>>>>> origin/lan
 
   return (
     <div className="container-fluid header">
@@ -95,12 +97,12 @@ export default function Header() {
           <Link className="nav-items" href="/organizer">
             <h6>預約整理師</h6>
           </Link>
-          <Link className="nav-items" href="/article">
+          {/* <Link className="nav-items" href="/article">
             <h6>精選文章</h6>
-          </Link>
-          <Link className="nav-items" href="/faq">
+          </Link> */}
+          {/* <Link className="nav-items" href="/faq">
             <h6>常見問題</h6>
-          </Link>
+          </Link> */}
         </div>
       </div>
 
@@ -113,27 +115,27 @@ export default function Header() {
           />
         </Link>
         <div className="side-right">
-            <div className="search-container">
-              <button onClick={handleSearchToggle} className="search-btn">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
+          <div className="search-container">
+            <button onClick={handleSearchToggle} className="search-btn">
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </button>
 
-              {isSearchOpen && (
-                <div className="search-input-container">
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    placeholder="搜尋產品..."
-                    className="search-input"
-                  />
-                </div>
-              )}
-            </div>
+            {isSearchOpen && (
+              <div className="search-input-container">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  placeholder="搜尋產品..."
+                  className="search-input"
+                />
+              </div>
+            )}
+          </div>
 
           <a href="/cart" className="cart-link">
             <i className="fa-solid fa-cart-shopping"></i>
@@ -146,9 +148,11 @@ export default function Header() {
           {user ? (
             <div className="user-log">
               <button>
-                <i className="fa-solid fa-circle-user"></i>
+                <Link href="/user/edit">
+                  <i className="fa-solid fa-circle-user"></i>
+                </Link>
               </button>
-              <button onClick={handleLogout}>
+              <button onClick={logout}>
                 <h6>登出</h6>
               </button>
             </div>
@@ -199,31 +203,6 @@ export default function Header() {
 
             <div className="offcanvas-body">
               <div className="user-menu">
-                <div className="menu-item">
-                  <i></i>
-                  <a href="/products">
-                    <span>商品列表</span>
-                  </a>
-                </div>
-                <div className="menu-item">
-                  <i>📰</i>
-                  <a href="/organizer">
-                    <span>預約整理師</span>
-                  </a>
-                </div>
-                <div className="menu-item">
-                  <i>📰</i>
-                  <a href="/article">
-                    <span>精選文章</span>
-                  </a>
-                </div>
-                <div className="menu-item">
-                  <i>⚙️</i>
-                  <a href="/">
-                    <span>常見問題</span>
-                  </a>
-                </div>
-
                 {user ? (
                   <div className="auth-user">
                     <div className="user-info">
@@ -232,52 +211,116 @@ export default function Header() {
                         alt="頭像"
                         className="avatar"
                       />
-                      <span>{user.name}</span>
+                      <h5>{user.name}</h5>
                     </div>
-                    <div className="user-submenu">
-                      <a href="/user/profile" className="menu-item">
-                        <i>👤</i>
-                        <span>個人資料</span>
-                      </a>
-                      <a href="/dashboard/order" className="menu-item">
-                        <i>📦</i>
-                        <span>我的訂單</span>
-                      </a>
-                      <a href="/dashboard/coupon" className="menu-item">
-                        <i>📦</i>
-                        <span>我的優惠券</span>
-                      </a>
-                      <a href="/dashboard/favorite" className="menu-item">
-                        <i>📦</i>
-                        <span>我的最愛</span>
-                      </a>
-                      <a href="/dashboard/bookmark" className="menu-item">
-                        <i>📦</i>
-                        <span>收藏文章</span>
-                      </a>
-                      <button onClick={handleLogout} className="menu-item">
-                        <i>🚪</i>
-                        <span>登出</span>
+                    <div className={styles.sidebar}>
+                      <Link
+                        href="/user/edit"
+                        className={`${styles.user} ${
+                          pathname === "/user/edit" ? styles.active : ""
+                        }`}
+                      >
+                        <i className="fas fa-user"></i>
+                        我的資料
+                      </Link>
+
+                      <Link
+                        href="/user/order"
+                        className={`${styles.order} ${
+                          pathname === "/user/order" ? styles.active : ""
+                        }`}
+                      >
+                        <i className="fas fa-list-alt"></i>
+                        訂單查詢
+                      </Link>
+
+                      <Link
+                        href="/user/coupon"
+                        className={`${styles.coupon} ${
+                          pathname === "/user/coupon" ? styles.active : ""
+                        }`}
+                      >
+                        <i className="fas fa-ticket-alt"></i>
+                        我的優惠券
+                      </Link>
+
+                      <Link
+                        href="/user/favorites"
+                        className={`${styles.heart} ${
+                          pathname === "/user/favorites" ? styles.active : ""
+                        }`}
+                      >
+                        <i className="fas fa-heart"></i>
+                        願望清單
+                      </Link>
+
+                      <Link
+                        href="/user/bookmarks"
+                        className={`${styles.bookmark} ${
+                          pathname === "/user/bookmarks" ? styles.active : ""
+                        }`}
+                      >
+                        <i className="fas fa-bookmark"></i>
+                        收藏文章
+                      </Link>
+                      <Link
+                        href="/user/organizer"
+                        className={`${styles.reservation} ${
+                          pathname.startsWith("/user/organizer")
+                            ? styles.active
+                            : ""
+                        }`}
+                      >
+                        <i className="fas fa-calendar-alt"></i>
+                        預約紀錄
+                      </Link>
+                      <button onClick={logout} className="menu-item">
+                        <i className="fa-solid fa-right-from-bracket"></i>
+                        <p>登出</p>
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="auth-menu">
                     <a href="/auth/register" className="menu-item">
-                      <i>📝</i>
-                      <span>註冊</span>
+                      <i className="fa-solid fa-user-pen"></i>
+                      <p>註冊</p>
                     </a>
                     <a href="/auth/login" className="menu-item">
-                      <i>🔑</i>
-                      <span>登入</span>
+                      <i className="fa-solid fa-circle-user"></i>
+                      <p>登入</p>
                     </a>
                   </div>
                 )}
+                <div className="line"></div>
+                <div className="menu-item">
+                  <a href="/products">
+                    <i className="fa-solid fa-couch"></i>
+                    <p>商品列表</p>
+                  </a>
+                </div>
+                <div className="menu-item">
+                  <a href="/organizer">
+                    <i className="fa-solid fa-pen-to-square"></i>
+                    <p>預約整理師</p>
+                  </a>
+                </div>
+
+                {/* <div className="menu-item">
+                  <a href="/article">
+                    <span>精選文章</span>
+                  </a>
+                </div> */}
+                {/* <div className="menu-item">
+                  <a href="/">
+                    <span>常見問題</span>
+                  </a>
+                </div> */}
               </div>
             </div>
           </div>
         </div>
-        </div>
       </div>
+    </div>
   );
 }

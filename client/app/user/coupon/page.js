@@ -14,15 +14,51 @@ import UsedCoupon from "./_components/UsedCoupon";
 import Link from "next/link";
 
 export default function UserCouponPage() {
+  /////// 完整的檢查9/9
+  const router = useRouter();
   // 控制優惠券顯示
   const [activeTab, setActiveTab] = useState("canUse");
+  const [token, setToken] = useState(null);
+  const [userStr, setUserStr] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 抓取使用者的優惠券資料
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userId = user?.id;
+
   const userCouponsResult = useFetch(
-    "http://localhost:3005/api/user/coupons/1"
+    userId ? `http://localhost:3005/api/user/coupons/${userId}` : null
   );
+
+
+  // 處理登入
+  useEffect(() => {
+    const tokenFromStorage = localStorage.getItem("reactLoginToken");
+    const userFromStorage = localStorage.getItem("user");
+
+    setToken(tokenFromStorage);
+    setUserStr(userFromStorage);
+
+    //沒登入的跳轉
+    if (!tokenFromStorage || !userFromStorage) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setIsLoading(false);
+  }, [router]);
+
+  //解析token
+  if (isLoading || !token || !userStr) {
+    return <div>載入中...</div>;
+  }
+
+  // 使用者 fetch
   const userCoupons = userCouponsResult.data ? userCouponsResult.data.data : [];
   console.log("使用者的優惠券資料", userCoupons);
+
+  if (userCouponsResult.error && !userCouponsResult.data) {
+    console.error("載入使用者優惠券失敗:", userCouponsResult.error);
+  }
 
   return (
     <>
@@ -77,7 +113,7 @@ export default function UserCouponPage() {
                     }
                     costCate2={coupon.discount_type === 1 ? "" : " 折"}
                   />
-                ))}            
+                ))}
             {activeTab === "used" &&
               userCoupons
                 .filter((coupon) => coupon.status === 1)
@@ -92,8 +128,11 @@ export default function UserCouponPage() {
                     }
                     name={coupon.name}
                     smallCost={`滿 $${coupon.min_discount} 使用`}
-                    usedDate={`${coupon.used_at.split("T")[0]} 使用完畢
-                  `}
+                    usedDate={
+                      coupon.used_at
+                        ? `${coupon.used_at.split("T")[0]} 使用完畢`
+                        : "使用完畢"
+                    }
                     costCate1={coupon.discount_type === 1 ? "$ " : ""}
                     cost={
                       coupon.discount_type === 1
