@@ -63,3 +63,35 @@
         display: block;
     }
 }
+
+/* 手機版 (<= 430px) */
+@media (max-width: 430px) {
+    .full {
+        display: flex;
+        flex-direction: column;
+        padding: 100px 50px;
+        /* 讓內容不要貼邊 */
+    }
+
+    .right {
+        padding: 0;
+        /* 減少左右留白 */
+        justify-content: flex-start;
+    }
+
+    .form {
+        max-width: 100%;
+        /* 滿版寬度 */
+    }
+
+    .title {
+        font-size: 32px;
+        /* 標題稍微縮小 */
+        margin-bottom: 50px;
+    }
+
+    .links {
+        justify-content: left;
+        font-size: 0.85rem;
+    }
+}
