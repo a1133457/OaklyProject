@@ -50,10 +50,13 @@ router.get("/search", (req, res) => {
 });
 
 // 獲取特定 ID的使用者----------------------------------
+// 獲取特定 ID的使用者----------------------------------
 router.get("/:id", async (req, res) => {
   // 路由參數
 
   try {
+    const id = req.params.id;
+    if (!id) {
     const id = req.params.id;
     if (!id) {
       const err = new Error("請提供使用者 ID");
@@ -73,6 +76,7 @@ router.get("/:id", async (req, res) => {
     }
 
     // 剩餘參數 （不顯示出來的資料）
+    const { id: userId, password, is_valid, created_at, updated_at, ...data } = user;
     const { id: userId, password, is_valid, created_at, updated_at, ...data } = user;
 
 
