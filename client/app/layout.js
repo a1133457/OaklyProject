@@ -8,6 +8,7 @@ import "@/styles/globalsHui.css"
 import Header from "./_components/header";
 import Footer from "./_components/footer"
 import { CartProvider } from "@/hooks/use-cart";
+import 'bootstrap-icons/font/bootstrap-icons.css';
 // import { CartProvider } from './contexts/CartContext.js';
 
 

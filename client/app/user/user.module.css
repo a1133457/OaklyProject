@@ -94,10 +94,16 @@
 }
 
 .favoritesRow {
-    display: flex;
+    /* display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 20px;
+    border-bottom: 1px solid #9db8af; */
+    display: grid;
+    grid-template-columns: 140px 1fr 120px 80px; 
+    /* 140px 放圖片，1fr 放商品名，120px 放價錢，80px 放 icon 區 */
+    align-items: center;
+    padding: 20px 0;
     border-bottom: 1px solid #9db8af;
 }
 
