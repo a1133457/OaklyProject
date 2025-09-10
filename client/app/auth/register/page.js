@@ -12,7 +12,7 @@ import Button from '@/app/_components/Button'
 
 export default function RegisterPage() {
     const router = useRouter()
-    const { register } = useAuth()
+    const { register } = useAuth()  // ✅ 從 useAuth hook 取得 register 函數
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -20,6 +20,7 @@ export default function RegisterPage() {
     const [password2, setpassword2] = useState('')
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
+    
 
     const onSubmit =  async (e) => {
         e.preventDefault()

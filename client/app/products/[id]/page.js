@@ -1233,7 +1233,8 @@ export default function PidPage({ params }) {
             </div>
 
             <div className="action-buttons">
-              <button className="buy-now-btn">立即購買</button>
+              <button className="buy-now-btn">
+                立即購買</button>
               <button
                 className="add-to-cart-btn"
                 onClick={() => {

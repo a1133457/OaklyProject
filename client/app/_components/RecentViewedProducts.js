@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/app/contexts/CartContext';
 
 
@@ -14,6 +14,8 @@ const RecentViewedProducts = ({
   const [recentProducts, setRecentProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const router = useRouter();
+
   
 
   // 響應式顯示數量
