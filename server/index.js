@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: "chunny.env" });
 
 import express from "express";
 import multer from "multer";
@@ -15,7 +15,7 @@ import userCouponRouter from "./routes/userCoupons.js";
 import articleRouter from "./routes/article.js";
 import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
-
+import testMailRouter from "./routes/testMail.js";
 
 // 設定區
 const upload = multer();
@@ -46,6 +46,7 @@ app.get("/", (req, res)=>{
 
 app.use("/api/users", usersRouter);
 app.use('/api', reviewsRouter);
+app.use("/api", testMailRouter);
 app.use("/api/organizers", organizersRouter);
 app.use("/api/user/organizers", userOrganizersRouter);
 app.use("/api/products", productsRouter);
