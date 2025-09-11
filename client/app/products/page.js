@@ -12,9 +12,8 @@ import Swal from 'sweetalert2';
 
 
 
-
 const MainProduct = () => {
-  const { addFavorite, removeFavorite } = useAuth();
+  const { user } = useAuth();  
   const [selectedFilters, setSelectedFilters] = useState({
     colors: [],
     materials: [],
@@ -55,6 +54,8 @@ const MainProduct = () => {
     selectedColor: null,
     selectedSize: null
   });
+
+
 
   // 收藏成功通知組件
   const AddToWishlistSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
@@ -264,10 +265,10 @@ const MainProduct = () => {
     if (!selectedColor || !selectedSize) {
       Swal.fire({
         title: "請選擇商品規格",
-        text: "請選擇顏色和尺寸後再加入收藏",
-        icon: "info",
-        button: "我知道了"
-      });      return;
+        text: "請選擇顏色和尺寸後再加入購物車",
+        icon: "warning",
+        confirmButtonText: "我知道了"
+      }); return;
     }
 
     addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
@@ -537,11 +538,15 @@ const MainProduct = () => {
 
 
 
-  // 處理頁面切換
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      // 滾動到商品區域頂部
+
+      // 只有換頁時才更新URL中的page參數
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('page', page.toString());
+      window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+
       document.querySelector('.products-grid')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
@@ -640,8 +645,12 @@ const MainProduct = () => {
     const category = decodeURIComponent(urlParams.get('category') || '');
     const subcategory = decodeURIComponent(urlParams.get('subcategory') || '');
     const type = urlParams.get('type') || '';
+    const page = parseInt(urlParams.get('page')) || 1;
 
     console.log('URL 參數:', { category, subcategory, type });
+
+    setCurrentPage(page);
+
 
     if (type === 'latest') {
       fetchLatestProducts();
@@ -709,7 +718,6 @@ const MainProduct = () => {
 
         // console.log('獲取的商品:', allProducts);
         setProducts(Array.isArray(allProducts) ? allProducts : []);
-        setCurrentPage(1);
       } catch (err) {
         console.error("產品 API 請求錯誤：", err);
         setProducts([]);
@@ -733,6 +741,41 @@ const MainProduct = () => {
   //     });
   // }, []);
 
+  useEffect(() => {
+    const loadWishlistStatus = async () => {
+      const token = localStorage.getItem('reactLoginToken');
+      console.log('Token:', token); 
+
+      if (!token) return;
+      try {
+        // 獲取用戶所有收藏
+        const response = await fetch('http://localhost:3005/api/users/favorites', {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          const wishlistState = {};
+          result.data.forEach(favorite => {
+            const key = `${favorite.product_id}_${favorite.color_id}_${favorite.size_id}`;
+            wishlistState[key] = true;
+          });
+          setIsWishlisted(wishlistState);
+        }
+      } catch (error) {
+        console.error('載入收藏狀態失敗:', error);
+      }
+    };
+    loadWishlistStatus();
+  }, []);
+
+
+
+  
   const currentProducts = getCurrentPageProducts();
 
   const handleCategoryClick = (e, categoryName) => {
@@ -760,56 +803,23 @@ const MainProduct = () => {
       const categoryInfo = categoryData[categoryName] || categoryData[''];
       setCurrentTitle(categoryInfo.title);
       setCurrentHeroImage(categoryInfo.image);
-
     }
 
     // 清除其他篩選條件
     clearFilters();
   };
-  // 添加收藏相關函數
-  const handleWishlistToggle = async (product, e) => {
-    e.stopPropagation();
-    e.preventDefault();
 
-    const colorId = product.colors?.[0]?.id;
-    const sizeId = product.sizes?.[0]?.id;
 
-    
-  if (checkWishlistStatus(product.id, colorId, sizeId)) {
-    // 已收藏，詢問是否要移除
-    Swal.fire({
-      title: "已在收藏清單中",
-      text: "此商品已在您的收藏清單中，是否要移除收藏？",
-      icon: "info",
-      buttons: {
-        cancel: {
-          text: "取消",
-          visible: true,
-          className: "Swal.fire-button--cancel"
-        },
-        confirm: {
-          text: "移除收藏",
-          className: "Swal.fire-button--confirm"
-        }
-      }
-    }).then((willRemove) => {
-      if (willRemove) {
-        removeFromWishlist(product.id, colorId, sizeId);
-      }
-    });
-  } else {
-    openWishlistModal(product);
-  }
-  };
 
   const openWishlistModal = async (product) => {
     console.log('openWishlistModal 被調用', product);
     console.log('product.images:', product.images);
+
+    setCurrentWishlistProduct(product);
     setSelectedColor(product.colors?.[0] || null);
     setSelectedSize(product.sizes?.[0] || null);
     setWishlistQuantity(1);
     console.log('準備設置 showWishlistModal 為 true');
-
     setShowWishlistModal(true);
     document.body.classList.add('no-scroll');
 
@@ -834,17 +844,31 @@ const MainProduct = () => {
   };
 
   const addToWishlist = async () => {
-    const token = localStorage.getItem('reactLoginToken');
-    console.log('準備發送的 token:', token);
-
-    if (!token) {
-      alert('請先登入');
+    const isLoggedIn = await checkAuthStatus();
+    if (!isLoggedIn) {
+      Swal.fire({
+        title: "請先登入",
+        text: "您需要登入才能使用收藏功能",
+        icon: "info",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/auth/login';
+        }
+      });
       return;
     }
 
     if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
-      return;
+      Swal.fire({
+        title: "請選擇商品規格",
+        text: "請選擇顏色和尺寸後再加入收藏",
+        icon: "warning",
+        confirmButtonText: "我知道了",
+        confirmButtonColor: "#DBA783"
+
+      }); return;
     }
 
     try {
@@ -883,35 +907,134 @@ const MainProduct = () => {
           selectedSize: selectedSize
         });
       } else {
-        Swal.fire({
-          title: "加入收藏失敗",
-          text: result.message || "請稍後再試或聯絡客服",
-          icon: "error",
-          button: "確定"
-        });      }
+        // 先關閉收藏彈窗
+        setShowWishlistModal(false);
+        document.body.classList.remove('no-scroll');
+        // 您的錯誤處理代碼放在這裡
+        if (result.message && result.message.includes("已在收藏清單中")) {
+          Swal.fire({
+            title: "已在收藏清單中",
+            text: "此商品的這個顏色和尺寸組合已經在您的收藏清單中了",
+            icon: "info",
+            confirmButtonText: "確定",
+            position: 'center',
+            confirmButtonColor: "#DBA783",
+
+
+
+          });
+        } else {
+          Swal.fire({
+            title: "加入收藏失敗",
+            text: "請稍後再試或聯絡客服",
+            icon: "error",
+            position: 'center',
+            confirmButtonText: "確定",
+            confirmButtonColor: "#DBA783"
+
+          });
+        }
+      }
     } catch (err) {
       console.error('加入收藏失敗:', err);
       Swal.fire({
         title: "發生錯誤",
         text: "加入收藏時發生錯誤，請稍後再試",
         icon: "error",
-        button: "確定"
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+
       });
     }
   };
+  const checkAuthStatus = async () => {
+    const token = localStorage.getItem('reactLoginToken');
+    if (!token) return false;
+
+    try {
+      const response = await fetch('http://localhost:3005/api/users/status', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.status !== 401;
+    } catch {
+      return false;
+    }
+  };
+  // 添加收藏相關函數
+  const handleWishlistToggle = async (product, e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  
+    const isLoggedIn = await checkAuthStatus();
+    if (!isLoggedIn) {
+      Swal.fire({
+        title: "請先登入",
+        text: "您需要登入才能使用收藏功能",
+        icon: "info",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/auth/login';
+        }
+      });
+      return;
+    }
+  
+    // 檢查是否有任何收藏組合
+    const hasWishlist = hasAnyWishlist(product.id);
+    
+    if (hasWishlist) {
+      // 如果已收藏，找到第一個收藏的組合並移除
+      const wishlistKeys = Object.keys(isWishlisted).filter(key => 
+        key.startsWith(`${product.id}_`) && isWishlisted[key]
+      );
+      
+      if (wishlistKeys.length > 0) {
+        const firstKey = wishlistKeys[0];
+        const [productId, colorId, sizeId] = firstKey.split('_');
+        await removeFromWishlist(productId, colorId, sizeId);
+      }
+    } else {
+      // 如果未收藏，打開選擇彈窗
+      openWishlistModal(product);
+    }
+  };
+
+
+
 
   const removeFromWishlist = async (productId, colorId, sizeId) => {
     try {
-      const response = await fetch(`http://localhost:3005/api/users/favorites/${productId}/${colorId}/${sizeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
-        }
+      const result = await Swal.fire({
+        title: "確定要移除收藏嗎？",
+        text: "此商品將從您的收藏清單中移除",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#DBA783",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "確定移除",
+        cancelButtonText: "取消"
       });
 
-      const result = await response.json();
+      if (!result.isConfirmed) return;
 
-      if (result.status === "success") {
+      const response = await fetch(
+        `http://localhost:3005/api/users/favorites/${productId}/${colorId}/${sizeId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
+          }
+        }
+      );
+
+      const data = await response.json();
+      if (data.status === "success") {
         const key = `${productId}_${colorId}_${sizeId}`;
         setIsWishlisted(prev => ({
           ...prev,
@@ -921,31 +1044,52 @@ const MainProduct = () => {
           title: "已移除收藏",
           text: "商品已從收藏清單中移除",
           icon: "success",
-          button: "確定",
-          timer: 2000
-        });      }
+          confirmButtonText: "確定",
+          confirmButtonColor: "#DBA783",
+          timer: 2000,
+          timerProgressBar: true
+        });
+      }
     } catch (err) {
+      console.error('移除收藏失敗:', err);
       Swal.fire({
         title: "移除失敗",
-        text: result.message || "請稍後再試",
+        text: "移除收藏時發生錯誤，請稍後再試",
         icon: "error",
-        button: "確定"
-      });    }
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+      });
+    }
   };
-
   const handleAddToCart = (product, e) => {
     e.stopPropagation();
 
     const defaultColor = product.colors?.[0] || null;
     const defaultSize = product.sizes?.[0] || null;
-
     addToCart(product, 1, defaultColor, defaultSize);
   };
-  // 收藏狀態檢查函數
+
   const checkWishlistStatus = (productId, colorId, sizeId) => {
     const key = `${productId}_${colorId}_${sizeId}`;
-    return isWishlisted[key] || false;
+    const result = isWishlisted[key] || false;
+    console.log(`checkWishlistStatus(${productId}, ${colorId}, ${sizeId}) = ${result}`);
+    console.log('完整 isWishlisted:', isWishlisted);
+    return result;
   };
+  // hasAnyWishlist 函數
+  const hasAnyWishlist = (productId) => {
+    console.log('=== hasAnyWishlist 被調用 ===');
+   console.log('檢查商品 ID:', productId);
+   console.log('當前 isWishlisted 狀態:', isWishlisted);
+   
+     const productKeys = Object.keys(isWishlisted).filter(key =>
+       key.startsWith(`${productId}_`) && isWishlisted[key]
+     );
+   console.log('找到的相關 keys:', productKeys);
+   console.log('最終結果:', productKeys.length > 0);
+     return productKeys.length > 0;
+   };
+
   const getColorCode = (colorName) => {
     const colorMap = {
       '白色': '#ffffff',
@@ -961,9 +1105,24 @@ const MainProduct = () => {
     };
     return colorMap[colorName] || '#cccccc';
   };
+  
 
+  
+  const getProductColors = (product) => {
+    if (Array.isArray(product.colors)) return product.colors;
+    // 如果 colors 是 ID，需要從某處獲取完整數據
+    return [];
+  };
+
+  const getProductSizes = (product) => {
+    if (Array.isArray(product.sizes)) return product.sizes;
+    return [];
+  };
+
+  
   return (
     <div className="main-product-page">
+      
       {/* 子導航欄 */}
       <div className="breadcrumb-nav-top">
         <div className="sub-nav-content">
@@ -1434,10 +1593,10 @@ const MainProduct = () => {
 
                       {/* 右上角愛心按鈕 */}
                       <button
-                        className={`wishlist-heart-btn ${checkWishlistStatus(product.id, product.colors?.[0]?.id, product.sizes?.[0]?.id) ? 'active' : ''}`}
+                        className={`wishlist-heart-btn ${hasAnyWishlist(product.id) ? 'active' : ''}`}
                         onClick={(e) => handleWishlistToggle(product, e)}
                       >
-                        <i className={`fa-${checkWishlistStatus(product.id, product.colors?.[0]?.id, product.sizes?.[0]?.id) ? 'solid' : 'regular'} fa-heart`}></i>
+                        <i className={`fa-${hasAnyWishlist(product.id) ? 'solid' : 'regular'} fa-heart`}></i>
                       </button>
                     </div>
                   ))}

@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/app/contexts/CartContext';
 
 
+
 const RecentViewedProducts = ({ 
   currentProductId, 
   maxItems = 8,
@@ -210,7 +211,7 @@ const RecentViewedProducts = ({
             <div 
               key={`recent-${product.id}`} 
               className="product-card recent-product-card"
-              style={{ width: `${100 / recentProducts.length}%` }}
+              style={{ width: `${100 / recentProducts.length}%`,zIndex: 0 }}
             >
               <div className="product-image" onClick={() => handleProductClick(product.id)}>
                 <img 

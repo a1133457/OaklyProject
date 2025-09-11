@@ -378,11 +378,12 @@ html {
   max-width: 1440px;
   margin: 0 auto;
   overflow: visible;
+  grid-gap:40px;
 }
 
 /* 左側邊欄 */
 .sidebar {
-  padding-right: 96px;
+  padding-right: 80px;
   height: fit-content;
   /* 讓高度適應內容 */
   overflow: visible;
@@ -662,7 +663,7 @@ span {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 120px;
+  gap: 110px;
   margin-bottom: 80px;
 }
 
@@ -890,14 +891,8 @@ span {
   transform: scale(1.1);
 }
 
-/* 已收藏狀態 */
-.wishlist-heart-btn.active {
-  background: #DBA783;
-  color: white;
-}
 
 .wishlist-heart-btn.active:hover {
-  background: #CD8A5B;
   transform: scale(1.1);
 }
 
@@ -971,11 +966,8 @@ span {
 
 /* 收藏彈窗樣式 */
 .no-scroll {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 9999 !important;
+  overflow: hidden !important;
+
 }
 
 .wishlist-modal-backdrop {
@@ -998,7 +990,7 @@ span {
 
 .wishlist-modal-content {
   background: white;
-  border-radius: 8px;
+  border-radius: 2px;
   width: 800px;
   max-width: 90vw;
   max-height: 90vh;
@@ -1036,9 +1028,12 @@ span {
 }
 
 .wishlist-modal-body {
-  padding: 30px;
+  padding: 12px 16px;
   display: flex;
   gap: 24px;
+  align-items: center;
+  justify-content: center;
+  border: hidden;
 }
 
 .wishlist-product-image img {
@@ -1360,7 +1355,7 @@ span {
 }
 
 .wishlist-success-actions .view-wishlist:hover {
-  background-color: #d68f5b;
+  background-color: #d39161;
 }
 
 /* 響應式設計 */
@@ -1416,7 +1411,7 @@ span {
 
 .cart-modal-content {
   background: white;
-  border-radius: 8px;
+  border-radius: 2px;
   width: 800px;
   max-width: 90vw;
   max-height: 90vh;
@@ -1454,9 +1449,12 @@ span {
 }
 
 .cart-modal-body {
-  padding: 30px;
+  padding: 12px 16px;
   display: flex;
   gap: 24px;
+  align-items: center;
+  justify-content: center;
+  border: hidden;
 }
 
 .cart-product-image img {
@@ -2210,4 +2208,88 @@ span {
     display: block !important;
   }
 
+}
+
+.swal2-container {
+    z-index: 99999 !important;
+  }
+  
+  .swal2-popup {
+    z-index: 99999 !important;
+  }
+  /* 1. 背景遮罩 - 確保全螢幕覆蓋 */
+.swal2-backdrop-show {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.swal2-container {
+  z-index: 1060 !important;
+}
+
+/* 2. 確認按鈕樣式和 hover 效果 */
+.swal2-confirm {
+  background-color: #DBA783 !important;
+  border: 1px solid #DBA783 !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.swal2-confirm:hover {
+  background-color: #c9956e !important;
+  border-color: #c9956e !important;
+}
+
+
+
+.swal2-confirm:focus {
+  outline: none !important;
+}
+
+/* 3. 取消按鈕樣式和 hover 效果 */
+.swal2-cancel {
+  background-color: #6c757d !important;
+  border: 1px solid #6c757d !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  margin-right: 10px !important;
+}
+
+.swal2-cancel:hover {
+  background-color: #5a6268 !important;
+  border-color: #5a6268 !important;
+}
+/* 已收藏狀態永久顯示 */
+.wishlist-heart-btn.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: #DBA783; 
+}
+
+.wishlist-heart-btn.active:hover {
+  color: #CD8A5B; /* hover 時稍微深一點的顏色 */
+}
+
+
+/* 未收藏狀態 */
+.wishlist-heart-btn:not(.active) {
+  color: #999;
+}
+
+.wishlist-heart-btn:not(.active):hover {
+  color: #DBA783;
+}
+
+/* 已收藏狀態 - 實心愛心 */
+.wishlist-heart-btn.active {
+  color: white;
+}
+
+.wishlist-heart-btn.active:hover {
+  transform: scale(1.1);
 }

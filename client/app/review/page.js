@@ -108,8 +108,7 @@ const Review = ({ productId = 1 }) => {
     });
 
     try {
-      // 注意：這裡的 URL 需要根據你的後端設定進行調整
-      // 目前假設後端有一個 /api/upload/review-images 的路由來處理圖片上傳
+      // 後端設定進行調整
       const response = await fetch('http://localhost:3005/api/upload/review-images', {
         method: 'POST',
         body: formData,

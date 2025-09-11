@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 import db from "../connect.js";
 import { getProductsFromDB } from "./models/products.js";
+import Fuse from 'fuse.js';
+
 
 
 const upload = multer();
@@ -99,14 +101,49 @@ router.get("/search", async (req, res) => {
     const productsWithImages = Array.from(productMap.values());
 
     //搜尋篩選
-    const filteredProducts = productsWithImages.filter(product => {
-      // ID 搜尋
-      if (/^\d+$/.test(q)) {
-        return product.id == q;
+    const fuseOptions = {
+      keys: ['name', 'description'],
+      threshold: 0.6,
+      ignoreLocation: true,
+      getFn: (obj, path) => {
+        const value = Fuse.config.getFn(obj, path);
+        if (typeof value === 'string') {
+          let searchText = value;
+
+          // 拆解中文字符：椅子 -> 椅子 椅 子
+          for (let i = 0; i < value.length; i++) {
+            const char = value[i];
+            if (/[\u4e00-\u9fff]/.test(char)) {
+              searchText += ' ' + char;
+            }
+          }
+
+          return searchText;
+        }
+        return value;
       }
-      // 名稱模糊搜尋
-      return product.name.toLowerCase().includes(q.toLowerCase());
-    });
+      
+    };
+    const testProduct = productsWithImages[0];
+if (testProduct && testProduct.name) {
+  const expandedText = fuseOptions.getFn(testProduct, 'name');
+  console.log('原始名稱:', testProduct.name);
+  console.log('展開後的搜尋文字:', expandedText);
+}
+    
+    //搜尋篩選
+    let filteredProducts;
+    if (/^\d+$/.test(q)) {
+      filteredProducts = productsWithImages.filter(product => product.id == q);
+    } else {
+      const fuse = new Fuse(productsWithImages, fuseOptions);
+      const results = fuse.search(q);
+      console.log('Fuse 原始搜尋結果:', results); // 加入這行
+
+      filteredProducts = results.map(result => result.item);
+      console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
+
+    }
 
     // 排序：開頭匹配優先
     filteredProducts.sort((a, b) => {
@@ -128,7 +165,7 @@ router.get("/search", async (req, res) => {
     if (paginatedResults.length > 0) {
       console.log("找到的產品:", paginatedResults.map(r => r.name));
     }
-    
+
     const latestQuery = `
   SELECT id FROM products 
   WHERE is_valid = 1 
