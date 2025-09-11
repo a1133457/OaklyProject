@@ -1,4 +1,5 @@
 "use client";
+// css
 import styles from "@/styles/organizer/organizer.module.css";
 import styles2 from "@/styles/userOrganizerDetails/userOrganizerDetails.module.css";
 import { useFetch } from "@/hooks/use-fetch";
@@ -6,6 +7,14 @@ import { useParams } from "next/navigation";
 import { useTab } from "@/contexts/TabContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import Button from "@/app/_components/Button";
+import ButtonGroup from "@/app/_components/ButtonGroup";
+
+// toast
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+
 //CSS
 // import styles from "@/styles/userOrganizer/userOrganizer.module.css";
 // 自訂組件(全域)
@@ -43,9 +52,8 @@ export default function UserOrganizerEditPage() {
   // );
 
   const booking = result.data?.data; // 修正：確保有資料才渲染
-
-
-
+  const booking_id = booking?.booking_id;
+  console.log("render");
 
   // 初始化editData
   useEffect(() => {
@@ -57,13 +65,13 @@ export default function UserOrganizerEditPage() {
         selectedDistrict: booking.district || "",
         address: booking.address || "",
         serviceDate: booking.service_datetime
-          ? booking.service_datetime.split(' ')[0].replace(/\//g, '-')
+          ? booking.service_datetime.split(" ")[0].replace(/\//g, "-")
           : "",
         selectedOrganizers: booking.organizer_id || "",
         note: booking.note || "",
       });
     }
-  }, [booking]);
+  }, [booking_id]);
 
   // 整理師fetch
   const organizerResult = useFetch("http://localhost:3005/api/organizers");
@@ -77,7 +85,7 @@ export default function UserOrganizerEditPage() {
     const files = Array.from(e.target.files);
     //限制4張
     if (files.length > 4) {
-      alert("最多只能上傳4張圖片!");
+      Swal.fire({ title: "最多只能上傳4張圖片!", confirmButtonColor: "#6f9b8c" });
       e.target.value = "";
       return;
     }
@@ -131,16 +139,21 @@ export default function UserOrganizerEditPage() {
   //提交按鈕
   const handleSubmit = async () => {
     // 檢查必填欄位
-    if (!editData.selectedCity || !editData.selectedDistrict ||
-      !editData.address || !editData.selectedOrganizers ||
-      !editData.serviceDate || !isConfirmed) {
-      alert("請填寫所有必填欄位並確認資訊無誤");
+    if (
+      !editData.selectedCity ||
+      !editData.selectedDistrict ||
+      !editData.address ||
+      !editData.selectedOrganizers ||
+      !editData.serviceDate ||
+      !isConfirmed
+    ) {
+      Swal.fire({ title: "請填寫所有必填欄位", confirmButtonColor: "#6f9b8c" });
       return;
     }
 
     // 檢查圖片必填
     if (!booking.images?.length && selectedFiles.length === 0) {
-      alert("請上傳環境照片");
+      Swal.fire({ title: "請上傳環境照片", confirmButtonColor: "#6f9b8c" });
       return;
     }
 
@@ -166,20 +179,19 @@ export default function UserOrganizerEditPage() {
         const formData = new FormData();
 
         // 加入基本資料
-        Object.keys(submitData).forEach(key => {
+        Object.keys(submitData).forEach((key) => {
           formData.append(key, submitData[key]);
         });
 
         // 加入圖片檔案
         selectedFiles.forEach((file, index) => {
-          formData.append('photos', file);
+          formData.append("photos", file);
         });
 
-
         // 加入這個來檢查 FormData 內容
-        console.log('FormData 內容:');
+        console.log("FormData 內容:");
         for (let pair of formData.entries()) {
-          console.log(pair[0] + ': ' + pair[1]);
+          console.log(pair[0] + ": " + pair[1]);
         }
 
         response = await fetch(
@@ -204,24 +216,30 @@ export default function UserOrganizerEditPage() {
       }
       // 先檢查回應內容
       const responseText = await response.text();
-      console.log('後端回應狀態:', response.status);
-      console.log('後端回應內容:', responseText);
+      console.log("後端回應狀態:", response.status);
+      console.log("後端回應內容:", responseText);
 
       // 嘗試解析 JSON
       let result;
       try {
         result = JSON.parse(responseText);
       } catch (error) {
-        console.error('JSON 解析錯誤:', error);
-        alert('伺服器回應格式錯誤，請檢查後端API');
+        console.error("JSON 解析錯誤:", error);
+        alert("伺服器回應格式錯誤，請檢查後端API");
         return;
       }
 
       if (response.ok) {
-        alert("預約資訊更新成功！");
-        router.push("/user/organizer")
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "預約資訊更新成功！",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        router.push("/user/organizer");
       } else {
-        alert(`更新失敗：${result.message || '未知錯誤'}`);
+        alert(`更新失敗：${result.message || "未知錯誤"}`);
       }
     } catch (error) {
       console.error("提交錯誤:", error);
@@ -229,40 +247,45 @@ export default function UserOrganizerEditPage() {
     }
   };
 
-  //刪除按鈕
-  const handleDelete = async () => {
-    console.log("開始刪除流程");
+  const handleDelete = () => {
+    Swal.fire({
+      title: "確定要取消預約嗎？",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d26363ff",
+      cancelButtonColor: "#6f9b8c",
+      confirmButtonText: "取消預約",
+      cancelButtonText: "保留預約",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(
+            `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+            {
+              method: "DELETE",
+            }
+          );
+          const responseText = await response.text();
+          console.log("後端回應:", responseText);
 
-    if (!window.confirm("確定要取消此預約嗎？")) {
-      console.log("使用者取消刪除");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
-        {
-          method: "DELETE",
+          if (response.ok) {
+            Swal.fire({
+              title: "取消預約成功",
+              confirmButtonColor: "#6f9b8c",
+              icon: "success",
+            });
+            router.push("/user/organizer");
+          }
+        } catch (error) {
+          console.error("請求錯誤:", error);
+          alert("網路錯誤，請稍後再試");
         }
-      );
-
-      const responseText = await response.text();
-      console.log("後端回應:", responseText);
-
-      if (response.ok) {
-        alert("預約取消成功！");
-        router.push("/user/organizer")
-      } else {
-        alert("取消失敗，請稍後再試");
       }
-
-    } catch (error) {
-      console.error("請求錯誤:", error);
-      alert("網路錯誤，請稍後再試");
-    }
+    });
   };
 
-    // 處理登入
+
+  // 處理登入
   useEffect(() => {
     const tokenFromStorage = localStorage.getItem("reactLoginToken");
     const userFromStorage = localStorage.getItem("user");
@@ -284,7 +307,6 @@ export default function UserOrganizerEditPage() {
     return <div>載入中...</div>;
   }
 
-
   // 修正：加上載入狀態和錯誤處理
 
   if (result.error) {
@@ -301,11 +323,14 @@ export default function UserOrganizerEditPage() {
         <div className="container-xl">
           <div className="d-flex flex-column gap-lg section">
             <h2 className="t-primary01 text-center">編輯預約</h2>
-            <form action="" method="POST" className="d-flex flex-column">
+            <form className="d-flex flex-column">
               {/* 第一個 row - 姓名 + 手機 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="name" className="form-label t-primary03 label700">
+                  <label
+                    htmlFor="name"
+                    className="form-label t-primary03 label700"
+                  >
                     姓名*
                   </label>
                   <input
@@ -320,7 +345,10 @@ export default function UserOrganizerEditPage() {
                   />
                 </div>
                 <div className="col-12 col-md-6 mb-xl">
-                  <label htmlFor="phone" className="form-label t-primary03 label700">
+                  <label
+                    htmlFor="phone"
+                    className="form-label t-primary03 label700"
+                  >
                     手機號碼*
                   </label>
                   <input
@@ -338,7 +366,10 @@ export default function UserOrganizerEditPage() {
               {/* 第二個 row - 信箱獨立一行 */}
               <div className="row">
                 <div className="col-12 mb-xl">
-                  <label htmlFor="email" className="form-label t-primary03 label700">
+                  <label
+                    htmlFor="email"
+                    className="form-label t-primary03 label700"
+                  >
                     信箱*
                   </label>
                   <input
@@ -356,7 +387,9 @@ export default function UserOrganizerEditPage() {
               {/* 服務地址區塊 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03 label700">服務地址*</label>
+                  <label className="form-label t-primary03 label700">
+                    服務地址*
+                  </label>
                 </div>
                 <div className="col-12 col-md-6 col-lg-3">
                   <select
@@ -424,7 +457,9 @@ export default function UserOrganizerEditPage() {
               {/* 選整理師+日期 */}
               <div className="row">
                 <div className="col-12 col-md-6 mb-xl">
-                  <label className="form-label t-primary03 label700">選擇整理師*</label>
+                  <label className="form-label t-primary03 label700">
+                    選擇整理師*
+                  </label>
                   <select
                     value={editData.selectedOrganizers}
                     onChange={(e) => {
@@ -498,33 +533,32 @@ export default function UserOrganizerEditPage() {
                     </div>
 
                     {/* 顯示圖片：現有圖片或新選擇的圖片 */}
-                    {selectedFiles.length > 0 ? (
-                      // 顯示新選擇的圖片
-                      selectedFiles.map((file, index) => (
-                        <div key={index}>
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={`新圖片 ${index + 1}`}
-                            width={150}
-                            height={150}
-                            className={styles2.userHouseImage}
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      // 顯示現有圖片
-                      booking.images && booking.images.map((imageUrl, index) => (
-                        <div key={index}>
-                          <img
-                            src={`http://localhost:3005${imageUrl}`}
-                            alt={`環境照片 ${index + 1}`}
-                            width={150}
-                            height={150}
-                            className={styles2.userHouseImage}
-                          />
-                        </div>
-                      ))
-                    )}
+                    {selectedFiles.length > 0
+                      ? // 顯示新選擇的圖片
+                        selectedFiles.map((file, index) => (
+                          <div key={index}>
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`新圖片 ${index + 1}`}
+                              width={150}
+                              height={150}
+                              className={styles2.userHouseImage}
+                            />
+                          </div>
+                        ))
+                      : // 顯示現有圖片
+                        booking.images &&
+                        booking.images.map((imageUrl, index) => (
+                          <div key={index}>
+                            <img
+                              src={`http://localhost:3005${imageUrl}`}
+                              alt={`環境照片 ${index + 1}`}
+                              width={150}
+                              height={150}
+                              className={styles2.userHouseImage}
+                            />
+                          </div>
+                        ))}
                   </div>
 
                   {/* 提示訊息 */}
@@ -534,7 +568,8 @@ export default function UserOrganizerEditPage() {
                     支援格式：.jpg、.jpeg、.png，建議每張 ≤ 5MB
                     {selectedFiles.length > 0 && (
                       <span className="text-success d-block mt-1">
-                        已選擇 {selectedFiles.length} 張圖片，提交後將替換現有圖片
+                        已選擇 {selectedFiles.length}{" "}
+                        張圖片，提交後將替換現有圖片
                       </span>
                     )}
                   </p>
@@ -543,7 +578,9 @@ export default function UserOrganizerEditPage() {
               {/* 備註 */}
               <div className="row">
                 <div className="col-12">
-                  <label className="form-label t-primary03 label700">備註</label>
+                  <label className="form-label t-primary03 label700">
+                    備註
+                  </label>
                   <textarea
                     name="note"
                     id="note"
@@ -573,9 +610,31 @@ export default function UserOrganizerEditPage() {
                 />
                 請確認以上資訊無誤，整理師將依據您提供的資料安排聯繫！
               </label>
-              <div className="d-flex justify-content-center">
-                <GreenBorderButton onClick={handleDelete}>取消預約</GreenBorderButton>
-                <GreenBorderButton onClick={handleSubmit}>修改完成</GreenBorderButton>
+              {/* <ButtonGroup align="Center">
+                <Button
+                  type="reset"
+                  variant="white"
+                  size="sm"
+                  onClick={handleDelete}
+                >
+                  取消預約
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary01"
+                  size="sm"
+                  onClick={handleSubmit}
+                >
+                  修改完成
+                </Button>
+              </ButtonGroup> */}
+              <div className="d-flex justify-content-center flex-wrap gap-md">
+                <GreenBorderButton onClick={handleDelete} type="button">
+                  取消預約
+                </GreenBorderButton>
+                <GreenBorderButton onClick={handleSubmit} type="button">
+                  修改完成
+                </GreenBorderButton>
               </div>
             </form>
           </div>

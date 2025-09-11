@@ -12,6 +12,11 @@ import CouponCard from "./_components/CouponCard";
 import MemberCard from "./_components/MemberCard";
 import { useRouter } from "next/navigation";
 
+// toast
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+
 export default function CouponPage() {
   const router = useRouter();
   const [coupons, setCoupons] = useState([]);
@@ -40,9 +45,9 @@ export default function CouponPage() {
       );
       const data = await result.json();
       if (data.status === "success") {
-        alert("領取成功");
+        toast.success("領取成功");
       } else {
-        alert(data.message);
+        toast.error(data.message);
       }
     } catch (err) {
       console.log("優惠券領取失敗", err);
@@ -213,6 +218,14 @@ export default function CouponPage() {
           </div>
         </div>
       </section>
+
+      {/* 吐司 */}
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={true}
+        closeOnClick
+      />
     </>
   );
 }

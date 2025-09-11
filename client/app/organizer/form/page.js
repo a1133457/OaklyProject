@@ -4,6 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useFetch } from "@/hooks/use-fetch";
 import { useRouter } from "next/navigation";
 
+// toast
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+
 // 針對單一頁面使用css modules技術
 import styles from "@/styles/organizer/organizer.module.css";
 
@@ -102,7 +107,7 @@ const handleFileChange = (e) => {
   const files = Array.from(e.target.files);
   //限制4張
   if (files.length > 4) {
-    alert("最多只能上傳4張圖片!");
+    Swal.fire({ title: "請最多只能上傳4張圖片!", confirmButtonColor: "#6f9b8c" });
     e.target.value = "";
     return;
   }
@@ -151,12 +156,12 @@ const handleSubmit = async (e) => {
 
   // 確認要勾
   if (!isConfirmed) {
-    alert("請確認資訊無誤後，勾選確認框！");
+    Swal.fire({ title: "請確認資訊後，勾選確認框！", confirmButtonColor: "#6f9b8c" });
     return;
   }
 
   if (selectedFiles.length === 0) {
-    alert("請上傳至少一張照片！");
+    Swal.fire({ title: "請上傳至少一張照片！", confirmButtonColor: "#6f9b8c" });
     return;
   }
 
@@ -192,7 +197,7 @@ const handleSubmit = async (e) => {
       console.log("提交成功:", result);
       router.push("/organizer/form/success"); // 導向成功頁面
     } else {
-      alert("表單請填寫完整");
+      Swal.fire({ title: "表單請填寫完整", confirmButtonColor: "#6f9b8c" });
     }
   } catch (error) {
     console.error("提交錯誤:", error);

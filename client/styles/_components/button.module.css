@@ -9,6 +9,7 @@
   /* height: 44px;         想固定高度就加這行；不要固定就刪掉 */
   cursor: pointer; /* 游標小手 */
   /* border-radius: 1px; */
+  transition: 0.3s all ease-in;
 }
 
 /* variant */
