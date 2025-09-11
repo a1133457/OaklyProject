@@ -61,7 +61,7 @@ router.get("/status/canUse/:userId", async (req, res) => {
     JOIN coupons c ON uc.coupon_id = c.id
     LEFT JOIN coupon_categories cc ON c.id = cc.coupon_id
     LEFT JOIN products_category pc ON cc.category_id = pc.category_id
-    WHERE uc.user_id = ? AND uc.status = 1
+    WHERE uc.user_id = ? AND uc.status = 0
     GROUP BY uc.id
     ORDER BY uc.status ASC`;
 
@@ -84,7 +84,7 @@ router.get("/status/canUse/:userId", async (req, res) => {
 router.put("/:userId/status/used", async (req, res) => {
   try {
     const { userId } = req.params; // 取得路由參數
-    const sql = `UPDATE user_coupons SET status = 0 WHERE user_id = ? AND status = 1`;
+    const sql = `UPDATE user_coupons SET status = 1 WHERE user_id = ? AND coupon_id = ?`;
     const [coupons] = await pool.execute(sql, [userId]);
     res.status(200).json({
       status: "success",

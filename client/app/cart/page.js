@@ -12,19 +12,17 @@ import Swal from "sweetalert2";
 // sweetalert2 整合 react 的函式
 import withReactContent from "sweetalert2-react-content";
 
-
 export default function CartOrderPage() {
-  const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } = useCart();
+  const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } =
+    useCart();
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
-
-
 
   // 處理全選/取消全選
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
-      const allItemIds = items.map(item => item.id);
+      const allItemIds = items.map((item) => item.id);
       setSelectedItems(new Set(allItemIds));
     } else {
       setSelectedItems(new Set());
@@ -62,8 +60,10 @@ export default function CartOrderPage() {
         confirmButtonText: "確定",
       });
     } else {
-      const selectedItemsData = items.filter(item => selectedItems.has(item.id));
-      const itemNames = selectedItemsData.map(item => item.name).join(", ");
+      const selectedItemsData = items.filter((item) =>
+        selectedItems.has(item.id)
+      );
+      const itemNames = selectedItemsData.map((item) => item.name).join(", ");
 
       Swal.fire({
         title: "確定要刪除嗎?",
@@ -77,24 +77,42 @@ export default function CartOrderPage() {
       }).then((result) => {
         // 如果使用者按下確認按鈕後執行這裡
         if (result.isConfirmed) {
-          // 執行刪除
-          localStorage.removeItem("cart");
+          try {
+            // 從 localStorage 取得現有的購物車資料
+            const cartData = JSON.parse(localStorage.getItem("cart") || "[]");
 
+            // 過濾掉被選中的商品，只保留未被選中的商品
+            const updatedCartData = cartData.filter(
+              (item) => !selectedItems.has(item.id)
+            );
 
-          // 跳出刪除成功對話盒
-          Swal.fire({
-            title: "已成功刪除",
-            text: "商品已從購物車中被刪除",
-            icon: "success"
-          }).then(() => {
-            try {
-              router.fresh();
-            } catch (error) {
-              window.location.reload();
-            }
+            // 將更新後的資料存回 localStorage
+            localStorage.setItem("cart", JSON.stringify(updatedCartData));
 
-          })
+            // 清空選中狀態
+            setSelectedItems(new Set());
 
+            // 跳出刪除成功對話盒
+            Swal.fire({
+              title: "已成功刪除",
+              text: "商品已從購物車中被刪除",
+              icon: "success",
+            }).then(() => {
+              try {
+                router.fresh();
+              } catch (error) {
+                window.location.reload();
+              }
+            });
+          } catch (error) {
+            console.error("刪除商品時發生錯誤:", error);
+            Swal.fire({
+              title: "刪除失敗",
+              text: "刪除商品時發生錯誤，請重試",
+              icon: "error",
+              confirmButtonText: "確定",
+            });
+          }
         }
       });
 
@@ -127,11 +145,11 @@ export default function CartOrderPage() {
         Swal.fire({
           title: "已成功刪除",
           text: `${item.name} 已從購物車中被刪除`,
-          icon: "success"
+          icon: "success",
         });
       }
     });
-  }
+  };
 
   // useEffect(() => {
   //   return () => {
@@ -152,7 +170,8 @@ export default function CartOrderPage() {
                 type="checkbox"
                 checked={selectAll}
                 onChange={(e) => handleSelectAll(e.target.checked)}
-                placeholder="選擇全部" />
+                placeholder="選擇全部"
+              />
               <h6>選擇全部</h6>
             </div>
             <button
@@ -168,7 +187,7 @@ export default function CartOrderPage() {
                 } else {
                   // // sweetalert2 對話盒
                   // confirmAndRemove(items);
-                  confirmAndRemoveSelected(items)
+                  confirmAndRemoveSelected(items);
                 }
               }}
             >

@@ -117,7 +117,6 @@ export function AuthProvider({ children }) {
         //localStorage.setItem(appKey, token);
         localStorage.removeItem(appKey);
         localStorage.removeItem(userKey);
-        localStorage.removeItem(cart);
         router.push("/");
         // return { success: true };
       } else {
@@ -251,6 +250,7 @@ export function AuthProvider({ children }) {
   //     }
   // }, [isLoading, user, pathname]);
 
+
   // status------------------------------------
   useEffect(() => {
     const API = "http://localhost:3005/api/users/status";
@@ -280,7 +280,7 @@ export function AuthProvider({ children }) {
           //alert(result.message);
           setIsLoading(false);
           // setUser(null);
-          // localStorage.removeItem(appKey);
+          localStorage.clear();
           // router.push('/auth/login');
           // 接 吐司？
         }

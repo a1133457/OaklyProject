@@ -12,10 +12,18 @@ export function useFetch(url, options) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+ const userStr = localStorage.getItem("user");
+ const user = userStr ? JSON.parse(userStr) : null;
+  const userId = user?.id;
+    let connectedUrl = url
+    if(url && url.includes('undefined') && userId){
+       connectedUrl = connectedUrl.replace('undefined', userId)
+    }
+
     // 與伺服器進行fetch的異步函式
     async function fetchData() {
       try {
-        const res = await fetch(url, options)
+        const res = await fetch(connectedUrl, options)
         const json = await res.json()
         setData(json)
         setLoading(false) // 停止載入

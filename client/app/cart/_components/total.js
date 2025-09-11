@@ -21,20 +21,12 @@ export default function Total({ type }) {
     useCart();
   const [userId, setUserId] = useState(null);
 
-
-  // const fetchCoupons = async () => {
-  //   try {
-  //     const res = await fetch(`http://localhost:3000/api/counpons/${userId}`);
-  //     const data = await res.json();
-  //     setCoupons(data);
-  //   } catch (error) {
-  //     setError("無法載入優惠券");
-  //     console.log(error);
-  //   }
-  // };
-
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const storedCoupon = localStorage.getItem("selectedCoupon");
+    const couponData = JSON.parse(storedCoupon);
+    console.log("找到優惠券:", couponData);
+    setSelectedCoupon(couponData);
     setUserId(storedUser.id);
   }, []);
 
@@ -45,7 +37,11 @@ export default function Total({ type }) {
         // 檢查是否有選中優惠券
         const storedCoupon = localStorage.getItem("selectedCoupon");
 
-        if (storedCoupon && storedCoupon === "null" && storedCoupon === "undefined") {
+        if (
+          storedCoupon &&
+          storedCoupon === "null" &&
+          storedCoupon === "undefined"
+        ) {
           const couponData = JSON.parse(storedCoupon);
           console.log("找到優惠券:", couponData);
 
@@ -60,13 +56,12 @@ export default function Total({ type }) {
         console.log("讀取優惠券失敗:", error);
         setSelectedCoupon(null);
         setDiscountAmount(0);
-
       }
-    }
+    };
     loadCouponData();
   }, [totalAmount]);
 
-  const calculateDiscount = (coupon) => {
+  const calculatedDiscount = (coupon) => {
     if (!coupon || !totalAmount) {
       setDiscountAmount(0);
       return;
@@ -74,19 +69,15 @@ export default function Total({ type }) {
     let discount = 0;
 
     // 根據優惠券類型計算折扣
-    if (coupon.discountType === 'percentage') {
+    if (coupon.discountType === "percentage") {
       // 百分比折扣 (例如：10% = 0.1)
       discount = Math.floor(totalAmount * coupon.discountValue);
-    } else if (coupon.discountType === 'fixed') {
+    } else if (coupon.discountType === "fixed") {
       // 固定金額折扣
       discount = Math.min(coupon.discountValue, totalAmount);
-    } else if (coupon.discountType === 'freeShipping') {
-      // 免運費折扣
-      discount = coupon.shippingDiscount || 0;
     }
-
     setDiscountAmount(discount);
-  }
+  };
   // 移除優惠券
   const removeCoupon = () => {
     localStorage.removeItem("selectedCoupon");
@@ -102,35 +93,92 @@ export default function Total({ type }) {
     // 將選中的優惠券存到 localStorage
     localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
     setSelectedCoupon(coupon);
-    calculateDiscount(coupon);
+    calculatedDiscount(coupon);
   };
 
-
   const handleNext = async () => {
-    if (paymentMethod === "信用卡") {
-      const res = await fetch("api/order/add", {
-        method: "POST",
-        headers: { "content-Type": "application/json" },
-        body: JSON.stringify(orderData),
+    try {
+      setLoading(true);
+
+      // 準備訂單資料
+      const orderData = {
+        userId: userId,
+        items: items,
+        totalAmount: finalAmount,
+        coupon: selectedCoupon,
+        paymentMethod: paymentMethod,
+        delivery: delivery,
+      };
+      if (paymentMethod === "信用卡") {
+        // 呼叫後端 API 建立訂單並取得綠界
+        const res = await fetch("api/order/add", {
+          method: "POST",
+          headers: { "content-Type": "application/json" },
+          body: JSON.stringify(orderData),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("訂單建立成功:", data);
+
+        // 檢查回應資料
+        if (!data.success || !data.ecpayParams) {
+          throw new Error(data.message || "訂單建立失敗");
+        }
+
+        // 使用綠界支付
+        await submitEcpayForm(data.ecpayParams, data.ecpayAction);
+      } else {
+        // 其他支付方式的處理
+        console.log("使用其他支付方式:", paymentMethod);
+        // 可以導向其他頁面或處理其他支付邏輯
+      }
+    } catch (error) {
+      console.error("支付處理失敗:", error);
+
+      // 顯示錯誤訊息
+      Swal.fire({
+        title: "支付失敗",
+        text: error.message || "處理支付時發生錯誤，請稍後再試",
+        icon: "error",
+        confirmButtonText: "確定",
       });
-      const data = await res.json();
-
-      // form POST 到綠界
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = data.ecpayAction;
-
-      Object.entries(data.ecpayParams).forEach(([KeyboardEvent, value]) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
+    }finally{
+      setLoading(false);
     }
+
+    // 提交綠界表單的函數
+    // const submitEcpayForm = async(ecpayParams, ecpayAction = "/api/ecpay/payment")=>{
+    //   return new Promise((resolve, reject)=>{
+    //     try{
+    //       // 創建表單
+    //       const form = document.createElement("form");
+    //       form.method = "POST";
+    //       form.action = ecpayAction;
+    //       form.style.display = "none"; //隱藏表單
+
+    //       // 添加所有參數到表單
+    //       Object.entries(ecpayParams).forEach(([key,value])=>{
+    //         const input = document.
+    //       })
+    //     }
+    //   })
+    // }
+
+
+    // Object.entries(data.ecpayParams).forEach(([KeyboardEvent, value]) => {
+    //   const input = document.createElement("input");
+    //   input.type = "hidden";
+    //   input.name = key;
+    //   input.value = value;
+    //   form.appendChild(input);
+    // });
+
+    // document.body.appendChild(form);
+    // form.submit();
   };
 
   if (type === "order") {
@@ -148,7 +196,7 @@ export default function Total({ type }) {
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>
-            <h6>$0</h6>
+            <h6>${selectedCoupon}</h6>
           </div>
           <div className="t-line"></div>
           <div className="total">

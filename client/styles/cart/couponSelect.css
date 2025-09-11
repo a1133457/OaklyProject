@@ -18,16 +18,17 @@
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  min-width: 1000px;
+  width: 825px;
   max-width: 90%;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   z-index: 1000;
+  
 }
 
 .my-coupon-line {
   margin: 20px 0;
-  width: 920px;
+  width: 785px;
   height: 1px;
   background-color: var(--color-gray-400);
 }
@@ -137,7 +138,10 @@
 .coupons-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  justify-content: space-between;
+  width: 785px;
+  height: 500px;
+  overflow-y: auto;
 }
 
 /* 優惠券卡片樣式 */

@@ -2,13 +2,15 @@
 
 import "@/styles/cart/contactPerson.css";
 import { useEffect, useState } from "react";
-import EditInfo from "./editInfo";
 import { useAuth } from "@/hooks/use-auth";
+import EditInfoBuyer from "./editInfoBuyer";
+import EditInfoRecipient from "./editInfoRecipient";
 
 export default function ContactPerson() {
   const { updateUser } = useAuth();
   const [showForm, setShowForm] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenB, setIsOpenB] = useState(false);
+  const [isOpenR, setIsOpenR] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [localStorageUser, setLocalStorageUser] = useState(null);
   const [buyer, setBuyer] = useState({
@@ -191,13 +193,13 @@ export default function ContactPerson() {
             <button
               className="detail-button pc"
               onClick={() => {
-                setIsOpen(!isOpen);
+                setIsOpenB(!isOpenB);
               }}
             >
               <p>編輯</p>
             </button>
-            {isOpen && (
-              <EditInfo type="buyer" onClose={() => setIsOpen(false)} />
+            {isOpenB && (
+              <EditInfoBuyer onClose={() => setIsOpenB(false)} />
             )}
           </div>
           <div className="contact-line pc"></div>
@@ -222,12 +224,12 @@ export default function ContactPerson() {
             </div>
             <button
               className="detail-button pc"
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setIsOpenR(!isOpenR)}
             >
               <p>編輯</p>
             </button>
-            {isOpen && (
-              <EditInfo type="recipient" onClose={() => setIsOpen(false)} />
+            {isOpenR && (
+              <EditInfoRecipient onClose={() => setIsOpenR(false)} />
             )}
           </div>
         </div>
