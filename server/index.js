@@ -16,6 +16,7 @@ import articleRouter from "./routes/article.js";
 import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
 import testMailRouter from "./routes/testMail.js";
+import authResetRouter from "./routes/authReset.js";
 
 // 設定區
 const upload = multer();
@@ -56,7 +57,7 @@ app.use("/api/article", articleRouter);
 // app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
-
+app.use("/api/auth", authResetRouter);
 
 
 
