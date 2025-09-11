@@ -56,13 +56,13 @@ router.post("/forgot-password", forgotLimiter, async (req, res) => {
         }
         
         // 直接把 token 也一起回傳出來（方便測試）
-        return res.status(200).json({
-            status: "ok",
-            message: "如果此 Email 有註冊，我們已寄出重設連結，請查收信箱。",
-            devToken: token  // ← 測試用
-        });
+        // return res.status(200).json({
+        //     status: "ok",
+        //     message: "如果此 Email 有註冊，我們已寄出重設連結，請查收信箱。",
+        //     devToken: token  // ← 測試用
+        // });
         // 上線換這個
-        // return res.status(200).json(generic);
+        return res.status(200).json(generic);
     } catch (err) {
         console.error(err);
         return res.status(500).json({ status: "error", message: "系統錯誤" });
