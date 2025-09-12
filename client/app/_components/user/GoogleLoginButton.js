@@ -8,10 +8,12 @@ export default function GoogleLoginButton({ onSuccess }) {
     async function handleClick() {
         try {
             setLoading(true);
-            const { idToken } = await signInWithGooglePopup();
+            const { idToken, user } = await signInWithGooglePopup();
+
+            console.log("[Google] uid:", user?.uid, "idToken.len:", idToken?.length, idToken?.slice(0, 20));
 
             // 丟給你的後端換成你自己的 JWT
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/google`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include", // 若你用 httpOnly cookie 可保留；若用 localStorage 可拿掉

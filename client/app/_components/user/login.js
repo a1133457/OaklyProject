@@ -6,6 +6,8 @@ import Link from 'next/link'
 import styles from '@/app/auth/auth.module.css'
 import UserTextInput from '@/app/_components/UserTextInput'
 import Button from '@/app/_components/Button'
+import GoogleLoginButton from './GoogleLoginButton'
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState("")
@@ -13,6 +15,7 @@ export default function LoginPage() {
     const [error, setError] = useState("")   // ✅ 錯誤訊息
     const { login } = useAuth()
     const router = useRouter()  // ✅ 宣告 router
+    const { loginWithGoogle } = useAuth()
 
     const onSubmit = async (e) => {
         e.preventDefault()
@@ -60,6 +63,13 @@ export default function LoginPage() {
                     />
 
                     <Button type="submit" variant="primary01" size="userlg">登入</Button>
+                    <hr />
+                    <GoogleLoginButton
+                        onSuccess={({ token, user }) => {
+                            loginWithGoogle(token, user)   // ✅ 呼叫 use-auth.js 新增的函式
+                            router.push("/")    // ✅ 成功後導頁
+                        }}
+                    />
 
                     <div className={styles.links}>
                         <Link href="/auth/forgotpassword">忘記密碼</Link>

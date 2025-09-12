@@ -5,8 +5,8 @@ import { useContext, createContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 AuthContext.displayName = "AuthContext";
-const appKey = "reactLoginToken";
 // 存 user 資料的 localStorage key
+const appKey = "reactLoginToken";
 const userKey = "user";
 
 export function AuthProvider({ children }) {
@@ -15,6 +15,21 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState([]);
   const router = useRouter();
+
+   // 開站自動恢復登入狀態 --------------------------
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(userKey);
+      const token = localStorage.getItem(appKey);
+      if (raw && token) {
+        setUser(JSON.parse(raw)); // 從 localStorage 取出 user
+      }
+    } catch (err) {
+      console.error("恢復登入狀態失敗:", err);
+    } finally {
+      setIsLoading(false); // 一定要設，否則頁面會卡 loading
+    }
+  }, []);
 
   // register------------------------------------
   const register = async (name, email, password) => {
@@ -352,12 +367,29 @@ export function AuthProvider({ children }) {
     }
   };
 
+
+   // login with Google------------------------------------
+  const loginWithGoogle = async (token, user) => {
+    try {
+      // 存到狀態
+      setUser(user);
+      // 存到 localStorage
+      localStorage.setItem(appKey, token);
+      localStorage.setItem(userKey, JSON.stringify(user));
+      return { success: true, message: "Google 登入成功" };
+    } catch (error) {
+      console.error(error);
+      return { success: false, message: "Google 登入失敗" };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user, register, login, logout, isLoading, users,
         updateUser, updateUserEdit, updateUserPassword, updateUserAvatar,
-        getFavorites, addFavorite, removeFavorite
+        getFavorites, addFavorite, removeFavorite,
+        loginWithGoogle
       }}>
       {children}
     </AuthContext.Provider>

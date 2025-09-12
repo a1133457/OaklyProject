@@ -16,6 +16,7 @@ import articleRouter from "./routes/article.js";
 import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
 import authResetRouter from "./routes/authReset.js";
+import authGoogleRouter from "./routes/auth-google.js";
 
 // 設定區
 const upload = multer();
@@ -33,7 +34,8 @@ let corsOptions = {
 
 // 路由區
 const app = express();
-app.use(cors(corsOptions)); 
+app.use(cors(corsOptions));
+app.use(cors({ origin: ["http://localhost:3000"], credentials: true })); 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public')) //後端提供public的靜態檔案
@@ -56,6 +58,7 @@ app.use("/api/article", articleRouter);
 app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use("/api/auth", authResetRouter);
+app.use("/api/auth", authGoogleRouter); // => POST /api/auth/google
 
 
 
