@@ -543,12 +543,12 @@ export default function SearchResultsPage() {
       </div>
 
       {/* Hero 區域 */}
-      <section className="hero">
+      {/* <section className="hero">
         <img src="/img/lan/header.png" alt="hero" style={{ filter: 'brightness(0.7)' }} />
         <div className="hero-content">
           <h1 className="hero-title">搜尋結果</h1>
         </div>
-      </section>
+      </section> */}
 
       <div className="sub-nav">
         <div className="sub-nav-links">
@@ -768,7 +768,9 @@ export default function SearchResultsPage() {
               </div>
 
               <div className="view-toggle-container">
-                <div className="view-toggle-title">搜尋結果</div>
+                <div className="view-toggle-title">"{query}"搜尋結果
+           </div>
+              
                 <div className="view-toggle">
                   <button className={`view-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")}>
                     <img src="../img/lan/menu.png" alt="grid" />
@@ -778,6 +780,7 @@ export default function SearchResultsPage() {
                   </button>
                 </div>
               </div>
+              <div className="find">找到 {totalResults} 個相關產品</div>
 
               {/* 商品網格 - 完全複用產品頁面 */}
               {currentProducts.length > 0 ? (
@@ -791,8 +794,8 @@ export default function SearchResultsPage() {
                         animationDelay: `${index * 0.1}s`
                       }}>
                       <div className="badges">
-                      {product.isNew && <span className="badge-new">新品</span>}
-                      {product.isHot && <span className="badge-hot">熱賣</span>}
+                        {product.isNew && <span className="badge-new">新品</span>}
+                        {product.isHot && <span className="badge-hot">熱賣</span>}
                       </div>
                       <div className="image">
                         {product.images && product.images.length > 0 ? (
@@ -839,7 +842,7 @@ export default function SearchResultsPage() {
                 </div>
               ) : (
                 <div className="nosearchfit">
-                  <h3>沒有找到符合條件的產品</h3>
+                  <h3>抱歉，搜尋不到「{query}」的商品</h3>
                   <p>請嘗試調整篩選條件或搜尋其他關鍵字</p>
                   <Link href="/products" style={{ color: '#DBA783', textDecoration: 'none', fontSize: '14px' }}>
                     瀏覽所有產品

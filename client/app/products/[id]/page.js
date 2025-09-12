@@ -1712,6 +1712,8 @@ const closeWishlistSuccessModal = () => {
           currentProductId={parseInt(productId)}
           isProductInWishlist={isProductInWishlist}
           addToCart={addToCart}
+          hasAnyWishlist={hasAnyWishlist} 
+          handleWishlistToggle={handleWishlistToggle} 
           handleCartClick={handleCartClick}
         />
 
