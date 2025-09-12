@@ -87,6 +87,12 @@ export function CartProvider({ children }) {
   const totalQty = items.reduce((acc, v) => acc + v.quantity, 0);
   const totalAmount = items.reduce((acc, v) => acc + v.quantity * v.price, 0);
 
+  useEffect(()=>{
+    if(totalAmount !== undefined && totalAmount !== null){
+      localStorage.setItem('totalAmount', totalAmount.toString());
+    }
+  },[totalAmount])
+
   // 統一的 localStorage 同步化處理
   useEffect(() => {
     // 第一次渲染時，從 localStorage 讀取資料

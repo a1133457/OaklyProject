@@ -36,6 +36,8 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.static('public')) //後端提供public的靜態檔案
 app.use('/uploads', express.static('uploads'));
 
+import cartRouter from './routes/cart/ecpay.js'
+
 app.get("/", (req, res)=>{
   res.send("首頁");
 });
@@ -49,7 +51,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/coupons", couponRouter);
 app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
-// app.use("/api/cart", cartRouter);
+app.use("/api/cart/ecpay", cartRouter);
 app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 

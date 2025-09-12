@@ -25,10 +25,12 @@ export default function Total({ type }) {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const storedCoupon = localStorage.getItem("selectedCoupon");
     const couponData = JSON.parse(storedCoupon);
+    const orderData = JSON.parse(localStorage.getItem("cart"));
     console.log("找到優惠券:", couponData);
     setSelectedCoupon(couponData);
     setUserId(storedUser.id);
   }, []);
+
 
   // 讀取並處理優惠券
   useEffect(() => {
@@ -100,15 +102,30 @@ export default function Total({ type }) {
     try {
       setLoading(true);
 
-      // 準備訂單資料
+      // 驗證必要數據
+      if(!userId){
+        throw new Error("請先登入")
+      }
+
+      if(!items || items.length === 0){
+        throw new Error("購物車為空");
+      }
+
+      // 準備完整的訂單資料並存到 localStorage
       const orderData = {
         userId: userId,
         items: items,
         totalAmount: finalAmount,
+        originalAmount: totalAmount,
         coupon: selectedCoupon,
+        discountAmount: discountAmount,
         paymentMethod: paymentMethod,
         delivery: delivery,
+        orderNo:`ORD${Date.now()}`, // 生成訂單編號
+        timestamp: new Date().toISOString()
       };
+      
+
       if (paymentMethod === "信用卡") {
         // 呼叫後端 API 建立訂單並取得綠界
         const res = await fetch("api/order/add", {
@@ -244,7 +261,7 @@ export default function Total({ type }) {
           </div>
         </div>
         <div className="nextOrBack">
-          <GreenButton step={"前往下一步"} to={handleNext} />
+          <GreenButton step={"前往下一步"} to="/cart/ecpay/check" />
           <WhiteButton step={"繼續購物"} to="/products" />
         </div>
         <div className="nextOrBack-phone">

@@ -1,12 +1,14 @@
 import express from "express";
 import crypto from "crypto";
+import ecpay_payment from "ecpay_aio_nodejs";
 import dotenv from "dotenv";
-
 dotenv.config();
+
 const router = express.Router();
 
+
+
 // 綠界提供的 SDK
-const ecpay_payment = require("ecpay_aio_nodejs");
 
 const { MERCHANTID, HASHKEY, HASHIV, HOST } = process.env;
 
@@ -27,7 +29,8 @@ const options = {
 };
 let TradeNo;
 
-router.get("/", (req, res) => {
+router.post("/", (req, res) => {
+  const { totalAmount, cartItems } = req.body;
   // SDK 提供的範例，參數設定
   // https://github.com/ECPay/ECPayAIO_Node.js/blob/master/ECPAY_Payment_node_js/conf/config-example.js
   const MerchantTradeDate = new Date().toLocaleDateString("zh-tw", {
@@ -40,15 +43,17 @@ router.get("/", (req, res) => {
     hour12: false,
     timeZone: "UTC",
   });
-  TradeNo = "test" + new Date().getTime();
+  TradeNo = "ORDER" + new Date().getTime();
   let base_param = {
+    MerchantID: "2000132",
+    PaymentType: "aio",
     MerchantTradeNo: TradeNo, //這裡要 20 碼 uid
     MerchantTradeDate,
-    TotalAmount: "100",
-    TradeDesc: "測試交易描述",
-    ItemName: "測試商品等",
-    ReturnURL: `${HOST}/return`,
-    ClientBackURL: `http://localhost:3000/payment?success=true`,
+    TotalAmount: totalAmount,
+    TradeDesc: "網路購物",
+    ItemName: cartItems.map((item) => item.name).join("#"),
+    ReturnURL: `${HOST}/cart/return`,
+    ClientBackURL: `${HOST}/cart/fin`,
   };
   const create = new ecpay_payment(options);
 
@@ -65,35 +70,48 @@ router.get("/", (req, res) => {
 
 // 後端接收綠界回傳的資料
 router.post("/return", async (req, res) => {
-  console.log("req.body", req.body);
+  try {
+    console.log("綠界回傳資料", req.body);
 
-  const { CheckMacValue } = req.body;
-  const data = { ...req.body };
-  delete data.CheckMacValue; // 此段不驗證
+    const { CheckMacValue, MerchantTradeNo, RtnCode, RtnMsg, TradeAmt } =
+      req.body;
+    const data = { ...req.body };
+    delete data.CheckMacValue; // 此段不驗證
 
-  const create = new ecpay_payment(options);
-  const checkValue = create.payment_client.helper.gen_chk_mac_value(data);
+    const create = new ecpay_payment(options);
+    const checkValue = create.payment_client.helper.gen_chk_mac_value(data);
 
-  console.log(
-    "確認交易正確性:",
-    CheckMacValue === checkValue,
-    CheckMacValue,
-    checkValue
-  );
+    const isValid = CheckMacValue === checkValue;
+    const isSuccess = RtnCode === "1";
 
-  //  交易成功後，需要回傳 1|ok 給綠界
-  res.send("1|ok");
+    console.log("付款驗證結果:", {
+      交易編號: MerchantTradeNo,
+      金額: TradeAmt,
+      驗證正確: isValid,
+      付款成功: isSuccess,
+    });
+
+    if (!isValid && isSuccess) {
+      // 更新訂單狀態為已付款
+
+      console.log("付款成功，訂單已更新");
+    } else {
+      console.log("付款失敗或驗證失敗");
+    }
+
+    //  交易成功後，需要回傳 1|ok 給綠界
+    res.send("1|ok");
+  } catch (error) {
+    console.error("處理付款回傳錯誤:", error);
+    res.send("1|ok"); //即使有錯誤也要回傳，避免綠界重複通知
+  }
 });
 
 // 用戶交易完成的轉址，可以轉到完成訂單畫面
 router.get("/clientReturn", (req, res) => {
-  console.log("clientReturn:", req.body, req.query);
+  console.log("付款結果頁面:", req.body, req.query);
   res.render("return", { query: req.query });
 });
 
-const { RtnCode, RtnMsg, MerchantTradeNo } = req.query;
-res.redirect(
-  `http://localhost:3000/payment?RtnCode=${RtnCode}&RtnMsg=${RtnMsg}&TradeNo=${MerchantTradeNo}`
-);
 
 export default router;
