@@ -619,6 +619,8 @@ export default function PidPage({ params }) {
         sizeId: selectedSize.id,
         quantity: wishlistQuantity
       };
+      console.log('發送的資料:', wishlistData);
+
 
       const response = await fetch('http://localhost:3005/api/users/favorites', {
         method: 'POST',
@@ -775,6 +777,8 @@ const closeWishlistSuccessModal = () => {
 };
   // 打開收藏彈窗
   const openWishlistModal = async (product, clickEvent = null) => {
+    console.log('商品顏色:', product.colors); // 檢查實際的顏色資料
+    console.log('商品尺寸:', product.sizes);   // 檢查實際的尺寸資料
     setCurrentWishlistProduct(product);
     setSelectedColor(product.colors?.[0] || null);
     setSelectedSize(product.sizes?.[0] || null);
@@ -787,6 +791,64 @@ const closeWishlistSuccessModal = () => {
       loadWishlistStatus();
     }
   }, [productData]);
+
+//立即購買
+const handleBuyNow = async () => {
+  if (!selectedColor) {
+    Swal.fire({
+      title: "請選擇顏色",
+      text: "請先選擇商品顏色",
+      icon: "warning",
+      confirmButtonText: "我知道了",
+      confirmButtonColor: "#DBA783"
+    });
+    return;
+  }
+
+  if (!selectedSize) {
+    Swal.fire({
+      title: "請選擇尺寸", 
+      text: "請先選擇商品尺寸",
+      icon: "warning",
+      confirmButtonText: "我知道了",
+      confirmButtonColor: "#DBA783"
+    });
+    return;
+  }
+
+  const isLoggedIn = await checkAuthStatus();
+  if (!isLoggedIn) {
+    Swal.fire({
+      title: "請先登入",
+      text: "您需要登入才能進行購買",
+      icon: "info",
+      confirmButtonText: "前往登入",
+      confirmButtonColor: "#DBA783"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = '/auth/login';
+      }
+    });
+    return;
+  }
+
+  const buyNowProduct = {
+    id: productData.id,
+    name: productData.name,
+    price: productData.price,
+    images: productData.images,
+    selectedColor: selectedColor,
+    selectedSize: selectedSize,
+    quantity: quantity
+  };
+
+  sessionStorage.setItem('buyNowProduct', JSON.stringify(buyNowProduct));
+  window.location.href = '/cart/detail';
+};
+
+
+
+
 
   const categoryMapping = {
     // 客廳分類
@@ -1530,7 +1592,8 @@ const closeWishlistSuccessModal = () => {
             </div>
 
             <div className="action-buttons">
-              <button className="buy-now-btn">
+              <button className="buy-now-btn"
+               onClick={handleBuyNow}>
                 立即購買</button>
               <button
                 className="add-to-cart-btn"
@@ -1721,9 +1784,10 @@ const closeWishlistSuccessModal = () => {
           className="middle-content"
           currentProductId={productId}
           maxItems={8}
-          handleWishlistToggle={handleWishlistToggle}
           isProductInWishlist={isProductInWishlist}
           addToCart={addToCart}
+          hasAnyWishlist={hasAnyWishlist} 
+          handleWishlistToggle={handleWishlistToggle}
           handleCartClick={handleCartClick}
         />
       </div>

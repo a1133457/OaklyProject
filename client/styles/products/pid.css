@@ -400,7 +400,7 @@ body.body-no-scroll {
 .main-image {
     width: 100%;
     max-width: 500px; /* 限制最大寬度 */
-    border-radius: 8px;
+    height: 100%;
     overflow: hidden;
     padding: 96px 0px 60px 0px;
 }

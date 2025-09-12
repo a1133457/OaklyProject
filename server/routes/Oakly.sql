@@ -79,7 +79,7 @@ ADD COLUMN color_name VARCHAR(50);
 DROP INDEX IF EXISTS idx_favorites_unique;
 CREATE UNIQUE INDEX idx_favorites_unique 
 ON favorites(user_id, product_id, color_id);
-
+SELECT * FROM favorites WHERE user_id = 1 AND product_id = 52 AND color_id = 1;
 -- 收藏文章
 CREATE TABLE IF NOT EXISTS bookmarks (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

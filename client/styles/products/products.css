@@ -210,7 +210,7 @@ html {
   height: 100%;
   display: flex;
   justify-content: end;
-  align-items: center;
+  align-items: start;
 
 }
 

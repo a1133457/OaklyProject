@@ -44,12 +44,10 @@ router.post("/favorites", checkToken, async (req, res) => {
     const userId = req.decoded.id;
     const { productId, colorId, sizeId, quantity } = req.body;
 
-    // 檢查是否已收藏同商品同顏色同尺寸
     const [existing] = await pool.execute(
       "SELECT * FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
       [userId, productId, colorId || null, sizeId || null]
     );
-
     if (existing.length > 0) {
       return res.status(400).json({ status: "error", message: "此顏色尺寸已在收藏清單中" });
     }
@@ -62,6 +60,9 @@ router.post("/favorites", checkToken, async (req, res) => {
       "INSERT INTO favorites (user_id, product_id, color_id, size_id, color_name, quantity) VALUES (?, ?, ?, ?, ?, ?)",
       [userId, productId, colorId || null, sizeId || null, colorName, quantity || 1]
     );
+    console.log('查詢結果:', existing);
+
+
 
     res.json({ status: "success", message: "已加入收藏" });
   } catch (err) {
