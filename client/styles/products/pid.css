@@ -2410,8 +2410,6 @@ body.modal-open {
     position: relative;
     z-index: 1;
     background: white;
-    padding: 8px;
-    margin-top: 8px;
   }
 /* 響應式設計 */
 @media (max-width: 1200px) {

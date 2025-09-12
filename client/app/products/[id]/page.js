@@ -5,7 +5,6 @@ import "@/styles/products/pid.css";
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
-
 import RandomShowcaseSection from "@/app/_components/RandomShowcaseSection.js";
 import CategoryDropdown from "@/app/_components/CategoryDropdown.js";
 import { useCart } from "@/hooks/use-cart";

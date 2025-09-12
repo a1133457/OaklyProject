@@ -6,6 +6,7 @@ import Link from 'next/link';
 import "@/styles/products/search.css";
 import { useCart } from '@/hooks/use-cart';
 
+
 export default function SearchResultsPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q');
