@@ -52,7 +52,8 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                   <div className="card-left">
                     <input
                       type="checkbox"
-                      checked={selectedItems.has(item.id)}
+                      //雅嵐更改麻煩幫我添加這行
+                      checked={ selectedItems?.has(item.id) ?? false }
                       onChange={(e) => onItemSelect(item.id, e.target.checked)}
                     />
                     <img
