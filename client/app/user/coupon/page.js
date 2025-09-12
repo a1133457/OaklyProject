@@ -8,56 +8,49 @@ import styles from "@/styles/userCoupon/userCoupon.module.css";
 import TabItem from "@/app/_components/TabItem";
 // 自訂組件 (專用)
 import "@/styles/btnReset/btnReset.css";
-import CartCoupon from "./_components/CartCoupon";
 import CanUseCoupon from "./_components/CanUseCoupon";
 import UsedCoupon from "./_components/UsedCoupon";
 import Link from "next/link";
 
+
 export default function UserCouponPage() {
-  /////// 完整的檢查9/9
   const router = useRouter();
-  // 控制優惠券顯示
   const [activeTab, setActiveTab] = useState("canUse");
   const [token, setToken] = useState(null);
-  const [userStr, setUserStr] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
-  const user = userStr ? JSON.parse(userStr) : null;
-  const userId = user?.id;
-
+  // 修正 useFetch 的依賴問題
   const userCouponsResult = useFetch(
-    userId ? `http://localhost:3005/api/user/coupons/${userId}` : null
+    isReady && token ? `http://localhost:3005/api/user/coupons` : null,
+    {
+      headers: { 'Authorization': `Bearer ${token}` },
+      // 加上 key 來穩定請求
+      key: isReady && token ? 'user-coupons' : null
+    }
   );
 
   // 處理登入
   useEffect(() => {
     const tokenFromStorage = localStorage.getItem("reactLoginToken");
-    const userFromStorage = localStorage.getItem("user");
 
-    setToken(tokenFromStorage);
-    setUserStr(userFromStorage);
-
-    //沒登入的跳轉
-    if (!tokenFromStorage || !userFromStorage) {
+    if (!tokenFromStorage) {
       router.push("/auth/login");
       return;
     }
 
-    setIsLoading(false);
+    setToken(tokenFromStorage);
+    setIsReady(true);
   }, [router]);
 
-  //解析token
-  if (isLoading || !token || !userStr) {
+  // 載入中
+  if (!isReady) {
     return <div>載入中...</div>;
   }
 
-  // 使用者 fetch
+  // 使用者優惠券資料
   const userCoupons = userCouponsResult.data ? userCouponsResult.data.data : [];
   console.log("使用者的優惠券資料", userCoupons);
 
-  if (userCouponsResult.error && !userCouponsResult.data) {
-    console.error("載入使用者優惠券失敗:", userCouponsResult.error);
-  }
 
   return (
     <>
@@ -89,7 +82,7 @@ export default function UserCouponPage() {
           <div className="d-flex flex-wrap gap-lg align-items-xl-start align-items-center">
             {activeTab === "canUse" &&
               (userCoupons.filter((coupon) => coupon.status === 0).length >
-              0 ? (
+                0 ? (
                 userCoupons
                   .filter((coupon) => coupon.status === 0)
                   .map((coupon) => (
@@ -97,15 +90,14 @@ export default function UserCouponPage() {
                       key={coupon.id}
                       tag={
                         coupon.category_names &&
-                        coupon.category_names.split(",").length >= 6
+                          coupon.category_names.split(",").length >= 6
                           ? "全館適用"
                           : `${coupon.category_names}適用`
                       }
                       name={coupon.name}
                       smallCost={`滿 $${coupon.min_discount} 使用`}
-                      date={`${coupon.get_at.split("T")[0]} – ${
-                        coupon.expire_at.split("T")[0]
-                      }`}
+                      date={`${coupon.get_at.split("T")[0]} – ${coupon.expire_at.split("T")[0]
+                        }`}
                       costCate1={coupon.discount_type === 1 ? "$ " : ""}
                       cost={
                         coupon.discount_type === 1
@@ -120,7 +112,7 @@ export default function UserCouponPage() {
               ))}
             {activeTab === "used" &&
               (userCoupons.filter((coupon) => coupon.status === 1).length >
-              0 ? (
+                0 ? (
                 userCoupons
                   .filter((coupon) => coupon.status === 1)
                   .map((coupon) => (
@@ -128,7 +120,7 @@ export default function UserCouponPage() {
                       key={coupon.id}
                       tag={
                         coupon.category_names &&
-                        coupon.category_names.split(",").length >= 6
+                          coupon.category_names.split(",").length >= 6
                           ? "全館適用"
                           : `${coupon.category_names}適用`
                       }

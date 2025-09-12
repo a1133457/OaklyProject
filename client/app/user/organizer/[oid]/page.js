@@ -14,56 +14,53 @@ import { useRouter } from "next/navigation";
 export default function UserOrganizerDetailPage() {
   const router = useRouter();
   const [token, setToken] = useState(null);
-  const [userStr, setUserStr] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
   const params = useParams();
   const bookingId = params.oid;
 
-  const user = userStr ? JSON.parse(userStr) : null;
-  const userId = user?.id;
-
-
   const { currentTab, setCurrentTab } = useTab(); // ← 使用 Context
+
+
+
   // 抓取使用者的預約列表
-  const result = useFetch(
-    `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`
+  const userOrganizerDetailsResult = useFetch(
+    isReady && token ? `http://localhost:3005/api/user/organizers/${bookingId}` : null,
+    {
+      headers: { 'Authorization': `Bearer ${token}` },
+      // 加上 key 來穩定請求
+      key: isReady && token ? 'user-organizer-details' : null
+    }
   );
 
-  const booking = result.data?.data; // 修正：確保有資料才渲染
+  const booking = userOrganizerDetailsResult.data?.data; // 修正：確保有資料才渲染
 
-   // 處理登入
+
+  // 處理登入
   useEffect(() => {
     const tokenFromStorage = localStorage.getItem("reactLoginToken");
-    const userFromStorage = localStorage.getItem("user");
 
-    setToken(tokenFromStorage);
-    setUserStr(userFromStorage);
-
-    //沒登入的跳轉
-    if (!tokenFromStorage || !userFromStorage) {
+    if (!tokenFromStorage) {
       router.push("/auth/login");
       return;
     }
 
-    setIsLoading(false);
+    setToken(tokenFromStorage);
+    setIsReady(true);
   }, [router]);
 
-  //解析token
-  if (isLoading || !token || !userStr) {
-    return <div>載入中...</div>;
-  }
 
 
   // 修正：加上載入狀態和錯誤處理
-  if (result.loading) {
+  if (userOrganizerDetailsResult.loading) {
     return <div>載入中...</div>;
   }
 
-  if (result.error) {
-    return <div>載入失敗：{result.error.message}</div>;
+  if (userOrganizerDetailsResult.error) {
+    return <div>載入失敗：{userOrganizerDetailsResult.error.message}</div>;
   }
 
+  // 修正：檢查 booking 而不是 userOrganizerDetailsResult
   if (!booking) {
     return <div>找不到預約資料</div>;
   }

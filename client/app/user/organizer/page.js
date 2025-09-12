@@ -14,41 +14,41 @@ import { useRouter } from "next/navigation";
 export default function UserOrganizerPage() {
   const router = useRouter();
   const { currentTab, setCurrentTab } = useTab();  // ← 使用 Context
-  // const [currentTab, setCurrentTab] = useState(1);
   const [token, setToken] = useState(null);
-  const [userStr, setUserStr] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
-  const user = userStr ? JSON.parse(userStr) : null;
-  const userId = user?.id;
+
 
   // 抓取使用者的預約列表
   const userOrganizersResult = useFetch(
-    `http://localhost:3005/api/user/organizers/${userId}`
+    isReady && token ? `http://localhost:3005/api/user/organizers` : null,
+    {
+      headers: { 'Authorization': `Bearer ${token}` },
+      // 加上 key 來穩定請求
+      key: isReady && token ? 'user-organizers' : null
+    }
   );
 
-
+  // 整理師資料
   const userOrganizers = userOrganizersResult?.data?.data || [];
+  console.log("使用者的整理師預約資料", userOrganizers);
+
 
   // 處理登入
   useEffect(() => {
     const tokenFromStorage = localStorage.getItem("reactLoginToken");
-    const userFromStorage = localStorage.getItem("user");
 
-    setToken(tokenFromStorage);
-    setUserStr(userFromStorage);
-
-    //沒登入的跳轉
-    if (!tokenFromStorage || !userFromStorage) {
+    if (!tokenFromStorage) {
       router.push("/auth/login");
       return;
     }
 
-    setIsLoading(false);
+    setToken(tokenFromStorage);
+    setIsReady(true);
   }, [router]);
 
-  //解析token
-  if (isLoading || !token || !userStr) {
+  // 載入中
+  if (!isReady) {
     return <div>載入中...</div>;
   }
 

@@ -1,12 +1,39 @@
 import express from "express";
 import pool from "../connect.js";
+import jwt from "jsonwebtoken";
+
 
 const router = express.Router();
+const secretKey = process.env.JWT_SECRET_KEY;
 
-// GET /api/user/coupons - 取得領取 有效(沒過期未使用) 以及 已使用 兩個狀態
-router.get("/:userId", async (req, res) => {
+
+// 後端檢查token
+function checkToken(req, res, next) {
+  let token = req.get("Authorization");
+  if (token && token.includes("Bearer ")) {
+    token = token.slice(7);
+    jwt.verify(token, secretKey, (error, decoded) => {
+      if (error) {
+        return res.status(401).json({
+          status: "error",
+          message: "登入驗證失效，請重新登入",
+        });
+      }
+      req.decoded = decoded;
+      next();
+    });
+  } else {
+    res.status(401).json({
+      status: "error",
+      message: "無登入驗證資訊，請重新登入",
+    });
+  }
+}
+
+// GET /api/user - 取得領取 有效(沒過期未使用) 以及 已使用 兩個狀態
+router.get("/", checkToken, async (req, res) => {
   try {
-    const { userId } = req.params; // 取得路由參數
+    const userId = req.decoded.id; // 從 token 取得
     const sql = `SELECT 
       uc.*,
       uc.get_at,      
@@ -41,10 +68,12 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-// POST /api/user/:userId/:couponId - 領取優惠券
-router.post("/:userId/:couponId", async (req, res) => {
+
+// POST /api/user:couponId - 領取優惠券
+router.post("/:couponId", checkToken, async (req, res) => {
   try {
-    const { userId, couponId } = req.params;
+    const userId = req.decoded.id; // 從 token 取得真正的 userId
+    const { couponId } = req.params;
 
     // 1. 檢查優惠券是否存在且有效
     const [couponCheck] = await pool.execute(
