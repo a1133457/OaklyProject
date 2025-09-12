@@ -9,6 +9,7 @@ import Header from "./_components/header";
 import Footer from "./_components/footer"
 import { CartProvider } from "@/hooks/use-cart";
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import RootHeader from './_components/RootHeader';
 // import { CartProvider } from './contexts/CartContext.js';
 
 
@@ -36,7 +37,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <CartProvider>
             <ArticleProvider>
-              <Header />
+              <RootHeader />
               {children}
               <Footer />
             </ArticleProvider>

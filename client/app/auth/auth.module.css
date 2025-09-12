@@ -24,7 +24,7 @@
 }
 
 .title {
-    font-weight: 700;
+    font-weight: 500;
     font-size: 1.8rem;
     color: #000;
     margin-bottom: 30px;
@@ -57,11 +57,89 @@
     text-decoration: underline;
 }
 
-/* RWD：>=768px 才顯示左圖 */
+.mobileOnly {
+    display: block;
+}
+
+/* ====== 可滑出的 Header 基礎樣式 ====== */
+
+
+/* 內容區，避免被 fixed header 擋到點擊 */
+.pageContent {
+  position: relative;
+  z-index: 0;
+}
+
+/* 頂端觸發區（桌機 hover 用） */
+.revealZone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  z-index: 40;
+  pointer-events: auto;
+}
+
+/* 會滑出的 Header 容器（預設藏上面） */
+.slideHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transform: translateY(-100%);
+  transition: transform 200ms ease;
+}
+
+/* ====== 桌機（≥768px）：左圖顯示 + Header 滑出互動 ====== */
 @media (min-width: 768px) {
-    .left {
-        display: block;
+  .left {
+    display: block;
+  }
+
+  /* 游標碰到觸發區時，滑出 */
+  .revealZone:hover + .slideHeader {
+    transform: translateY(0);
+  }
+
+  /* 滑出後把滑鼠移到 header 上也保持顯示 */
+  .slideHeader:hover {
+    transform: translateY(0);
+  }
+}
+
+/* === 手機＆小平板：<= 767px === */
+@media (max-width: 767px) {
+
+    /* 1) 關掉頂端觸發條，避免擋觸控 */
+    .revealZone {
+        display: none;
     }
+
+    /* 2) 手機 Header 固定顯示在頂端 */
+    .slideHeader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        transform: translateY(0);
+        /* 依你的 Header 實際高度調整：56/64/72 其中一個 */
+        height: 64px;
+    }
+
+    /* 3) 內容往下騰出同等高度，避免被蓋住 */
+    .pageContent,
+    .full {
+        padding-top: 64px;
+        /* 與 .slideHeader 高度一致 */
+    }
+
+    /* 4) （可留可刪）若你想讓右側容器更貼近設計 */
+    /* .right {
+        justify-content: flex-start;
+        padding: 0;
+    } */
 }
 
 /* 手機版 (<= 430px) */
@@ -94,4 +172,7 @@
         justify-content: left;
         font-size: 0.85rem;
     }
+
+
 }
+
