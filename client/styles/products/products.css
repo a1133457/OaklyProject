@@ -1689,6 +1689,7 @@ span {
   }
 }
 
+
 @media (max-width: 768px) {
 
   .content-wrapper {
@@ -2278,7 +2279,7 @@ span {
 
 /* 未收藏狀態 */
 .wishlist-heart-btn:not(.active) {
-  color: #999;
+  color: #6a6a6a;
 }
 
 .wishlist-heart-btn:not(.active):hover {

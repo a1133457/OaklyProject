@@ -1076,7 +1076,8 @@ const MainProduct = () => {
     console.log('完整 isWishlisted:', isWishlisted);
     return result;
   };
-  // hasAnyWishlist 函數
+
+
   const hasAnyWishlist = (productId) => {
     console.log('=== hasAnyWishlist 被調用 ===');
    console.log('檢查商品 ID:', productId);
