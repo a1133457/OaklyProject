@@ -8,6 +8,7 @@ import "@/styles/btnReset/btnReset.css";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import clsx from "clsx";
 
 // 靜態圖片
 import spaceImage from "@/public/img/hui/space/high-angle-desk-arrangement.jpg";
@@ -21,7 +22,8 @@ import ProductCard from "./_components/index/ProductCard";
 import ArticleCard from "./_components/index/ArticleCard";
 import CarouselHead from "./_components/index/CarouselHead";
 
-export default function IndexPage(props) {
+export default function IndexPage() {
+    const [activeTab, setActiveTab] = useState("canUse");
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -116,9 +118,23 @@ export default function IndexPage(props) {
             <div className="row w-100">
               <div className="col-12 d-flex flex-column flex-lg-row justify-content-lg-between align-items-center">
                 <div className="d-flex gap-lg align-items-center">
-                  <TabItem>為你推薦</TabItem>
-                  <TabItem>新品專區</TabItem>
-                  <TabItem>熱銷商品</TabItem>
+                  <TabItem
+                    className={clsx({ active: activeTab === "recommend" })}
+                    onClick={() => {
+                      setActiveTab("recommend");
+                    }}
+                  >為你推薦</TabItem>
+                  <TabItem
+                    className={clsx({ active: activeTab === "new" })}
+                    onClick={() => {
+                      setActiveTab("new");
+                    }}>新品專區</TabItem>
+                  <TabItem
+                    className={clsx({ active: activeTab === "hot" })}
+                    onClick={() => {
+                      setActiveTab("hot");
+                    }}
+                  >熱銷商品</TabItem>
                 </div>
                 <div
                   className={`d-flex gap-md ${styles.arrow} d-none d-lg-flex`}
@@ -225,7 +241,7 @@ export default function IndexPage(props) {
                     不論是追劇還是遠端會議，一張順眼又順手的桌椅能讓空間更好用。
                   </h5>
                   <p className="t-primary03">
-                    7/8–7/14 期間
+                    9/18–9/30 期間
                     <br />
                     領券可享指定商品 88 折或滿 $3000 折 $400
                   </p>
@@ -304,75 +320,75 @@ export default function IndexPage(props) {
       </section>
       {/* section-05: 編輯推薦文章 */}
       {false &&
-      <section>
-        <div className="section-fluid d-flex flex-column gap-xxxl align-items-center">
-          <div className="gap-md text-center d-flex flex-column">
-            <h2 className="t-primary01">編輯推薦文章</h2>
-            <h5 className="t-gray600">想了解更多整理技巧？這些文章值得一讀</h5>
+        <section>
+          <div className="section-fluid d-flex flex-column gap-xxxl align-items-center">
+            <div className="gap-md text-center d-flex flex-column">
+              <h2 className="t-primary01">編輯推薦文章</h2>
+              <h5 className="t-gray600">想了解更多整理技巧？這些文章值得一讀</h5>
+            </div>
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-static-element-interactions */}
+            <div
+              className={`${styles.articleArea} d-flex`}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />{" "}
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />{" "}
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />{" "}
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />{" "}
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />{" "}
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />{" "}
+              <ArticleCard
+                tag="#餐廳空間 #生活節奏"
+                img="/img/hui/space/pexels-pixabay-358572.jpg"
+                title="餐桌就是生活緩衝區"
+                content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
+                date="2025 / 7 / 2"
+              />
+            </div>
+            <Link href="/article">
+              <GreenBorderButton>想看更多文章</GreenBorderButton>
+            </Link>
           </div>
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-static-element-interactions */}
-          <div
-            className={`${styles.articleArea} d-flex`}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />{" "}
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />{" "}
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />{" "}
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />{" "}
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />{" "}
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />{" "}
-            <ArticleCard
-              tag="#餐廳空間 #生活節奏"
-              img="/img/hui/space/pexels-pixabay-358572.jpg"
-              title="餐桌就是生活緩衝區"
-              content="每天吃飯的地方，最容易被堆滿雜物。這篇文章分享怎麼讓餐桌回到「生活中心」的角色，不只是清空，更是整理節奏的開始。"
-              date="2025 / 7 / 2"
-            />
-          </div>
-          <Link href="/article">
-            <GreenBorderButton>想看更多文章</GreenBorderButton>
-          </Link>
-        </div>
-      </section>
+        </section>
       }
     </>
   );

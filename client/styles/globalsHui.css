@@ -298,19 +298,31 @@ p {
 
 .btn.tab-items {
   display: flex;
-  padding: 5px 0;
+  padding: 12px 6px;
   justify-content: center;
   font-family: var(--font-noto-sans) !important;
   font-weight: 700 !important;
   color: var(--primary-02, #9fa79a) !important;
-
+  transition: all 0.3s ease-in;
+  
+  /* 一次性移除所有不要的效果 */
+  &,
+  &:focus,
+  &:focus-visible,
+  &:active,
+  &:active:focus {
+    outline: none !important;
+    border: none !important;
+    background-color: transparent !important;
+  }
+  
   &:hover {
     color: var(--primary-03, #919191) !important;
   }
-
-  &:active,
-  &.active {
-    border-bottom: 2px solid var(--primary-03, #919191) !important;
+  
+   &.active  {
+    color: var(--primary-03, #919191) !important;
+    box-shadow: 0 2px 0 0 #919191; /* 用 box-shadow 做底線 */
   }
 }
 

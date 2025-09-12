@@ -11,6 +11,7 @@ import "@/styles/btnReset/btnReset.css";
 import CanUseCoupon from "./_components/CanUseCoupon";
 import UsedCoupon from "./_components/UsedCoupon";
 import Link from "next/link";
+import clsx from "clsx";
 
 
 export default function UserCouponPage() {
@@ -60,6 +61,7 @@ export default function UserCouponPage() {
           <div className="d-flex justify-content-between">
             <div className="d-flex gap-lg">
               <TabItem
+                className={clsx({ active: activeTab === "canUse" })}
                 onClick={() => {
                   setActiveTab("canUse");
                 }}
@@ -67,6 +69,7 @@ export default function UserCouponPage() {
                 可使用
               </TabItem>
               <TabItem
+              className={clsx({ active: activeTab === "used" })}
                 onClick={() => {
                   setActiveTab("used");
                 }}
