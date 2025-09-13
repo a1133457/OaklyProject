@@ -60,6 +60,8 @@
 
 .cost {
   font-size: 42px;
+  color: inherit !important; /* 加上 !important 強制覆蓋汙染問題 */
+  font-weight: inherit;
 }
 
 .brownBtn {
