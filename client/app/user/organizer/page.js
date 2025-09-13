@@ -48,9 +48,9 @@ export default function UserOrganizerPage() {
   }, [router]);
 
   // 載入中
-  if (!isReady) {
-    return <div>載入中...</div>;
-  }
+  // if (!isReady) {
+  //   return <div>載入中...</div>;
+  // }
 
 
   // tab切換資料
@@ -75,19 +75,25 @@ export default function UserOrganizerPage() {
           <div className="d-flex flex-column gap-lg section">
             <h2 className="t-primary01 text-center">預約紀錄</h2>
             <ItemTab currentTab={currentTab} onTabChange={setCurrentTab} />
-
-            {filteredOrganizers.map((organizer) => (
-              <ListCard
-                key={organizer.booking_id}
-                status={organizer.status}
-                organizerName={organizer.organizer_name}
-                serviceDate={organizer.service_datetime}
-                serviceAddress={organizer.full_address}
-                bookingId={organizer.booking_id}
-                createdDate={organizer.created_at}
-                price={organizer.price}
-              />
-            ))}
+            {!isReady ?
+              <div className="d-flex justify-content-center align-items-center w-100" style={{ minHeight: '200px' }}>
+                <div className="loaderLine"></div>
+              </div> :
+              <>
+                {filteredOrganizers.map((organizer) => (
+                  <ListCard
+                    key={organizer.booking_id}
+                    status={organizer.status}
+                    organizerName={organizer.organizer_name}
+                    serviceDate={organizer.service_datetime}
+                    serviceAddress={organizer.full_address}
+                    bookingId={organizer.booking_id}
+                    createdDate={organizer.created_at}
+                    price={organizer.price}
+                  />
+                ))}
+              </>
+            }
             <h6 className="t-gray600 text-center">{statusTexts[currentTab]}</h6>
           </div>
         </div>

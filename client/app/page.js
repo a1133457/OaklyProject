@@ -88,6 +88,8 @@ export default function IndexPage() {
     return allProducts[category].slice(start, end);
   };
 
+
+
   // 文章
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -229,25 +231,22 @@ export default function IndexPage() {
 
             <div className="row">
               <div className="col-12">
-                <div
-                  className={`d-flex flex-wrap  ${styles.productGap}`}
-                >
-                  {getCurrentPageProducts(activeTab).map((item) => (
-                    <ProductCard
-                      key={item.id}
-                      href={`/products/${item.id}`}
-                      img={`http://localhost:3005${item.images?.[0]}`}
-                      name={item.name}
-                      price={item.price}
-                    />
-                  ))
-                  }
-                  {/* <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  /> */}
-                </div>
+                {loading ? (
+                  <div className="loaderLine"></div>) :
+                  (
+                    <div className={`d-flex flex-wrap  ${styles.productGap}`}>
+                      {getCurrentPageProducts(activeTab).map((item) => (
+                        <ProductCard
+                          key={item.id}
+                          href={`/products/${item.id}`}
+                          img={`http://localhost:3005${item.images?.[0]}`}
+                          name={item.name}
+                          price={item.price}
+                        />
+                      ))
+                      }
+                    </div>)
+                }
               </div>
             </div>
 

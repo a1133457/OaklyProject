@@ -53,16 +53,17 @@ export default function UserOrganizerDetailPage() {
 
   // 修正：加上載入狀態和錯誤處理
   if (userOrganizerDetailsResult.loading) {
-    return <div>載入中...</div>;
+    return <div className="loaderLine"></div>;
   }
 
   if (userOrganizerDetailsResult.error) {
-    return <div>載入失敗：{userOrganizerDetailsResult.error.message}</div>;
+    return console.log("找不到預約資料");
+    ;
   }
 
   // 修正：檢查 booking 而不是 userOrganizerDetailsResult
   if (!booking) {
-    return <div>找不到預約資料</div>;
+    return  console.log("找不到預約資料");
   }
 
   return (
@@ -78,20 +79,20 @@ export default function UserOrganizerDetailPage() {
                 router.push("/user/organizer");
               }}
             />
-            <ListDetails
-              status={booking.status}
-              organizerName={booking.organizer_name}
-              serviceDate={booking.service_datetime}
-              serviceAddress={booking.full_address}
-              bookingId={booking.booking_id}
-              createdAt={booking.created_at}
-              userName={booking.user_name}
-              userPhone={booking.user_phone}
-              userEmail={booking.user_email}
-              images={booking.images}
-              note={booking.note}
-              price={booking.price}
-            />
+                <ListDetails
+                  status={booking.status}
+                  organizerName={booking.organizer_name}
+                  serviceDate={booking.service_datetime}
+                  serviceAddress={booking.full_address}
+                  bookingId={booking.booking_id}
+                  createdAt={booking.created_at}
+                  userName={booking.user_name}
+                  userPhone={booking.user_phone}
+                  userEmail={booking.user_email}
+                  images={booking.images}
+                  note={booking.note}
+                  price={booking.price}
+                />
           </div>
         </div>
       </section>

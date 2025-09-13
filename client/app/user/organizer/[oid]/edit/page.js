@@ -309,9 +309,9 @@ export default function UserOrganizerEditPage() {
     setIsLoading(false);
   }, [router]);
 
-  //解析token
+
   if (isLoading || !token|| !isReady) {
-    return <div>載入中...</div>;
+    return <div className="loaderLine"></div>;
   }
 
   // 修正：加上載入狀態和錯誤處理
@@ -321,7 +321,7 @@ export default function UserOrganizerEditPage() {
   }
 
   if (!booking) {
-    return <div>找不到預約資料</div>;
+    return console.log("找不到預約資料");
   }
 
   return (

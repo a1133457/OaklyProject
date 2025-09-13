@@ -160,6 +160,65 @@ router.get("/search", (req, res) => {
   });
 });
 
+//0913怡卉新增 優惠券要抓的user
+router.get("/profile", checkToken, async (req, res) => {
+  console.log("=== 進入 /profile 路由 ===");
+  try {
+    const id = req.decoded.id;
+    console.log("從 token 取得的 id:", id);
+    console.log("id 的型別:", typeof id);
+    
+    const sqlCheck1 = "SELECT * FROM `users` WHERE `id` = ?;";
+    console.log("準備執行 SQL:", sqlCheck1);
+    console.log("查詢參數:", [id]);
+    
+    let user = await pool.execute(sqlCheck1, [id]).then(([result]) => {
+      console.log("原始查詢結果:", result);
+      console.log("結果數量:", result.length);
+      if (result.length > 0) {
+        console.log("第一筆資料:", result[0]);
+      }
+      return result[0];
+    });
+    
+    console.log("最終 user 變數:", user);
+    
+    if (!user) {
+      console.log("user 為空，準備拋出錯誤");
+      const err = new Error("找不到使用者");
+      err.code = 404;
+      err.status = "fail";
+      throw err;
+    }
+    // 剩餘參數 （不顯示出來的資料）
+    const {
+      id: userId,
+      password,
+      is_valid,
+      created_at,
+      updated_at,
+      ...data
+    } = user;
+
+    res.status(200).json({
+      status: "success",
+      data,
+      message: "查詢成功",
+    });
+  } catch (error) {
+    console.log(error);
+    const statusCode = error.code ?? 401;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
+
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  }
+});
+
+
 // 獲取特定 ID的使用者----------------------------------
 router.get("/:id", async (req, res) => {
   // 路由參數
@@ -211,8 +270,6 @@ router.get("/:id", async (req, res) => {
     });
   }
 });
-
-
 
 
 // 更新(特定 ID 的)使用者-------------------------------

@@ -44,9 +44,9 @@ export default function UserCouponPage() {
   }, [router]);
 
   // 載入中
-  if (!isReady) {
-    return <div>載入中...</div>;
-  }
+  // if (!isReady) {
+  //   return <div>載入中...</div>;
+  // }
 
   // 使用者優惠券資料
   const userCoupons = userCouponsResult.data ? userCouponsResult.data.data : [];
@@ -69,7 +69,7 @@ export default function UserCouponPage() {
                 可使用
               </TabItem>
               <TabItem
-              className={clsx({ active: activeTab === "used" })}
+                className={clsx({ active: activeTab === "used" })}
                 onClick={() => {
                   setActiveTab("used");
                 }}
@@ -83,69 +83,76 @@ export default function UserCouponPage() {
           </div>
 
           <div className="d-flex flex-wrap gap-lg align-items-xl-start align-items-center">
-            {activeTab === "canUse" &&
-              (userCoupons.filter((coupon) => coupon.status === 0).length >
-                0 ? (
-                userCoupons
-                  .filter((coupon) => coupon.status === 0)
-                  .map((coupon) => (
-                    <CanUseCoupon
-                      key={coupon.id}
-                      tag={
-                        coupon.category_names &&
-                          coupon.category_names.split(",").length >= 6
-                          ? "全館適用"
-                          : `${coupon.category_names}適用`
-                      }
-                      name={coupon.name}
-                      smallCost={`滿 $${coupon.min_discount} 使用`}
-                      date={`${coupon.get_at.split("T")[0]} – ${coupon.expire_at.split("T")[0]
-                        }`}
-                      costCate1={coupon.discount_type === 1 ? "$ " : ""}
-                      cost={
-                        coupon.discount_type === 1
-                          ? parseInt(coupon.discount)
-                          : parseInt(coupon.discount * 100)
-                      }
-                      costCate2={coupon.discount_type === 1 ? "" : " 折"}
-                    />
-                  ))
-              ) : (
-                <div className="text-center w-100 p-4">沒有可使用的優惠券</div>
-              ))}
-            {activeTab === "used" &&
-              (userCoupons.filter((coupon) => coupon.status === 1).length >
-                0 ? (
-                userCoupons
-                  .filter((coupon) => coupon.status === 1)
-                  .map((coupon) => (
-                    <UsedCoupon
-                      key={coupon.id}
-                      tag={
-                        coupon.category_names &&
-                          coupon.category_names.split(",").length >= 6
-                          ? "全館適用"
-                          : `${coupon.category_names}適用`
-                      }
-                      name={coupon.name}
-                      smallCost={`滿 $${coupon.min_discount} 使用`}
-                      usedDate={
-                        coupon.used_at
-                          ? `${coupon.used_at.split("T")[0]} 使用完畢`
-                          : "使用完畢"
-                      }
-                      costCate1={coupon.discount_type === 1 ? "$ " : ""}
-                      cost={
-                        coupon.discount_type === 1
-                          ? parseInt(coupon.discount)
-                          : parseInt(coupon.discount * 100)
-                      }
-                      costCate2={coupon.discount_type === 1 ? "" : " 折"}
-                    />
-                  ))
-              ) : (
-                <div className="text-center w-100 p-4">沒有已使用的優惠券</div>
-              ))}
+            {!isReady ?
+              <div className="d-flex justify-content-center align-items-center w-100" style={{ minHeight: '200px' }}>
+                <div className="loaderLine"></div>
+              </div> :
+              <>
+                {activeTab === "canUse" &&
+                  (userCoupons.filter((coupon) => coupon.status === 0).length >
+                    0 ? (
+                    userCoupons
+                      .filter((coupon) => coupon.status === 0)
+                      .map((coupon) => (
+                        <CanUseCoupon
+                          key={coupon.id}
+                          tag={
+                            coupon.category_names &&
+                              coupon.category_names.split(",").length >= 6
+                              ? "全館適用"
+                              : `${coupon.category_names}適用`
+                          }
+                          name={coupon.name}
+                          smallCost={`滿 $${coupon.min_discount} 使用`}
+                          date={`${coupon.get_at.split("T")[0]} – ${coupon.expire_at.split("T")[0]
+                            }`}
+                          costCate1={coupon.discount_type === 1 ? "$ " : ""}
+                          cost={
+                            coupon.discount_type === 1
+                              ? parseInt(coupon.discount)
+                              : parseInt(coupon.discount * 100)
+                          }
+                          costCate2={coupon.discount_type === 1 ? "" : " 折"}
+                        />
+                      ))
+                  ) : (
+                    <div className="text-center w-100 p-4">沒有可使用的優惠券</div>
+                  ))}
+                {activeTab === "used" &&
+                  (userCoupons.filter((coupon) => coupon.status === 1).length >
+                    0 ? (
+                    userCoupons
+                      .filter((coupon) => coupon.status === 1)
+                      .map((coupon) => (
+                        <UsedCoupon
+                          key={coupon.id}
+                          tag={
+                            coupon.category_names &&
+                              coupon.category_names.split(",").length >= 6
+                              ? "全館適用"
+                              : `${coupon.category_names}適用`
+                          }
+                          name={coupon.name}
+                          smallCost={`滿 $${coupon.min_discount} 使用`}
+                          usedDate={
+                            coupon.used_at
+                              ? `${coupon.used_at.split("T")[0]} 使用完畢`
+                              : "使用完畢"
+                          }
+                          costCate1={coupon.discount_type === 1 ? "$ " : ""}
+                          cost={
+                            coupon.discount_type === 1
+                              ? parseInt(coupon.discount)
+                              : parseInt(coupon.discount * 100)
+                          }
+                          costCate2={coupon.discount_type === 1 ? "" : " 折"}
+                        />
+                      ))
+                  ) : (
+                    <div className="text-center w-100 p-4">沒有已使用的優惠券</div>
+                  ))}
+              </>
+            }
           </div>
         </div>
       </section>
