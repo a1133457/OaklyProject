@@ -25,11 +25,9 @@ export default function UserOrganizerEditPage() {
   const router = useRouter();
   const params = useParams();
   const [token, setToken] = useState(null);
-  const [userStr, setUserStr] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   const bookingId = params.oid;
-  const user = userStr ? JSON.parse(userStr) : null;
-  const userId = user?.id;
 
   // 修改狀態
   const [editData, setEditData] = useState({
@@ -45,7 +43,11 @@ export default function UserOrganizerEditPage() {
   const [isConfirmed, setIsConfirmed] = useState(false); // checkbox 另外管理
 
   const result = useFetch(
-    `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`
+    isReady && token ? `http://localhost:3005/api/user/organizers/${bookingId}` : null,
+    {
+      headers: { 'Authorization': `Bearer ${token}` },
+      key: isReady && token ? 'user-organizer-edit' : null
+    }
   );
   //   const result = useFetch(
   //   `http://localhost:3005/api/user/organizers/TEST/${userId}/${bookingId}`
@@ -195,20 +197,24 @@ export default function UserOrganizerEditPage() {
         }
 
         response = await fetch(
-          `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+          `http://localhost:3005/api/user/organizers/${bookingId}`,
           {
             method: "PUT",
-            body: formData, // 不要設 Content-Type，讓瀏覽器自動設定
+            headers: {
+              'Authorization': `Bearer ${token}`  // 加這行
+            },
+            body: formData,
           }
         );
       } else {
         // 沒有新圖片時用 JSON
         response = await fetch(
-          `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+          `http://localhost:3005/api/user/organizers/${bookingId}`,
           {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              'Authorization': `Bearer ${token}`  // 加這行
             },
             body: JSON.stringify(submitData),
           }
@@ -260,9 +266,12 @@ export default function UserOrganizerEditPage() {
       if (result.isConfirmed) {
         try {
           const response = await fetch(
-            `http://localhost:3005/api/user/organizers/${userId}/${bookingId}`,
+            `http://localhost:3005/api/user/organizers/${bookingId}`,
             {
               method: "DELETE",
+              headers: {
+                'Authorization': `Bearer ${token}`  // 加這行
+              },
             }
           );
           const responseText = await response.text();
@@ -288,22 +297,20 @@ export default function UserOrganizerEditPage() {
   // 處理登入
   useEffect(() => {
     const tokenFromStorage = localStorage.getItem("reactLoginToken");
-    const userFromStorage = localStorage.getItem("user");
-
-    setToken(tokenFromStorage);
-    setUserStr(userFromStorage);
 
     //沒登入的跳轉
-    if (!tokenFromStorage || !userFromStorage) {
+    if (!tokenFromStorage) {
       router.push("/auth/login");
       return;
     }
 
+    setToken(tokenFromStorage);
+    setIsReady(true);
     setIsLoading(false);
   }, [router]);
 
   //解析token
-  if (isLoading || !token || !userStr) {
+  if (isLoading || !token|| !isReady) {
     return <div>載入中...</div>;
   }
 
@@ -535,30 +542,30 @@ export default function UserOrganizerEditPage() {
                     {/* 顯示圖片：現有圖片或新選擇的圖片 */}
                     {selectedFiles.length > 0
                       ? // 顯示新選擇的圖片
-                        selectedFiles.map((file, index) => (
-                          <div key={index}>
-                            <img
-                              src={URL.createObjectURL(file)}
-                              alt={`新圖片 ${index + 1}`}
-                              width={150}
-                              height={150}
-                              className={styles2.userHouseImage}
-                            />
-                          </div>
-                        ))
+                      selectedFiles.map((file, index) => (
+                        <div key={index}>
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`新圖片 ${index + 1}`}
+                            width={150}
+                            height={150}
+                            className={styles2.userHouseImage}
+                          />
+                        </div>
+                      ))
                       : // 顯示現有圖片
-                        booking.images &&
-                        booking.images.map((imageUrl, index) => (
-                          <div key={index}>
-                            <img
-                              src={`http://localhost:3005${imageUrl}`}
-                              alt={`環境照片 ${index + 1}`}
-                              width={150}
-                              height={150}
-                              className={styles2.userHouseImage}
-                            />
-                          </div>
-                        ))}
+                      booking.images &&
+                      booking.images.map((imageUrl, index) => (
+                        <div key={index}>
+                          <img
+                            src={`http://localhost:3005${imageUrl}`}
+                            alt={`環境照片 ${index + 1}`}
+                            width={150}
+                            height={150}
+                            className={styles2.userHouseImage}
+                          />
+                        </div>
+                      ))}
                   </div>
 
                   {/* 提示訊息 */}

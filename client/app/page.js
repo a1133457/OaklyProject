@@ -235,6 +235,7 @@ export default function IndexPage() {
                   {getCurrentPageProducts(activeTab).map((item) => (
                     <ProductCard
                       key={item.id}
+                      href={`/products/${item.id}`}
                       img={`http://localhost:3005${item.images?.[0]}`}
                       name={item.name}
                       price={item.price}
