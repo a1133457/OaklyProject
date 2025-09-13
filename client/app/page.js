@@ -5,7 +5,7 @@ import "@/styles/globalsHui.css";
 import styles from "@/styles/index/index.module.css";
 import "@/styles/btnReset/btnReset.css";
 
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
@@ -23,10 +23,72 @@ import ArticleCard from "./_components/index/ArticleCard";
 import CarouselHead from "./_components/index/CarouselHead";
 
 export default function IndexPage() {
-    const [activeTab, setActiveTab] = useState("canUse");
+  const [activeTab, setActiveTab] = useState("new");
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  //產品
+  const [loading, setLoading] = useState(false);
+  // const [productData, setProductData] = useState({
+  //   new: [],
+  //   hot: []
+  // });
+  // 產品分頁
+  const [allProducts, setAllProducts] = useState({ new: [], hot: [] });
+  const [currentPage, setCurrentPage] = useState({ new: 1, hot: 1 });
+  const itemsPerPage = 8;
+  //計算當前產品
+
+
+  // 頁面載入時自動取得新品資料
+  useEffect(() => {
+    fetchProducts("new");
+  }, []);
+
+  // 產品
+  const fetchProducts = async (category) => {
+    try {
+      setLoading(true);
+
+      let apiUrl = '';
+      if (category === 'new') {
+        apiUrl = 'http://localhost:3005/api/products/latest';
+      } else if (category === 'hot') {
+        apiUrl = 'http://localhost:3005/api/products/hot-products';
+      }
+
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      console.log('產品 API 回傳的資料:', data);
+
+      // 把資料存到 state
+      setAllProducts(prev => ({
+        ...prev,
+        [category]: data
+      }));
+
+
+    } catch (error) {
+      console.error('取得產品資料失敗:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 當前頁面產品
+  const getCurrentPageProducts = (category) => {
+    if (!allProducts[category] || !Array.isArray(allProducts[category])) {
+      console.log('回傳空陣列');
+      return [];
+    }
+
+    const start = (currentPage[category] - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return allProducts[category].slice(start, end);
+  };
+
+  // 文章
   const handleMouseDown = (e) => {
     setIsDragging(true);
     setStartX(e.pageX - e.currentTarget.offsetLeft);
@@ -44,6 +106,7 @@ export default function IndexPage() {
   const handleMouseUp = () => {
     setIsDragging(false);
   };
+
 
   return (
     <>
@@ -119,28 +182,47 @@ export default function IndexPage() {
               <div className="col-12 d-flex flex-column flex-lg-row justify-content-lg-between align-items-center">
                 <div className="d-flex gap-lg align-items-center">
                   <TabItem
-                    className={clsx({ active: activeTab === "recommend" })}
-                    onClick={() => {
-                      setActiveTab("recommend");
-                    }}
-                  >為你推薦</TabItem>
-                  <TabItem
                     className={clsx({ active: activeTab === "new" })}
                     onClick={() => {
                       setActiveTab("new");
+                      fetchProducts("new")
                     }}>新品專區</TabItem>
                   <TabItem
                     className={clsx({ active: activeTab === "hot" })}
                     onClick={() => {
                       setActiveTab("hot");
+                      fetchProducts("hot")
                     }}
                   >熱銷商品</TabItem>
                 </div>
                 <div
                   className={`d-flex gap-md ${styles.arrow} d-none d-lg-flex`}
                 >
-                  <button className={`btn d-flex ${styles.arrowLeft}`} />
-                  <button className={`btn d-flex ${styles.arrowRight}`} />
+                  <button className={`btn d-flex ${styles.arrowLeft}`}
+                    onClick={() => {
+                      console.log('左箭頭被點擊');
+                      const newPage = currentPage[activeTab] - 1
+                      if (newPage >= 1) {
+                        setCurrentPage(prev => ({
+                          ...prev,
+                          [activeTab]: newPage
+                        }))
+                      }
+                    }}
+                  />
+                  <button className={`btn d-flex ${styles.arrowRight}`}
+                    onClick={() => {
+                      console.log('右箭頭被點擊');
+                      const maxPage = Math.ceil(allProducts[activeTab].length / itemsPerPage)
+                      const newPage = currentPage[activeTab] + 1
+                      if (newPage <= maxPage) {
+                        setCurrentPage(prev => ({
+                          ...prev,
+                          [activeTab]: newPage
+                        }))
+                      }
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -148,52 +230,22 @@ export default function IndexPage() {
             <div className="row">
               <div className="col-12">
                 <div
-                  className={`d-flex flex-wrap justify-content-center ${styles.productGap}`}
+                  className={`d-flex flex-wrap  ${styles.productGap}`}
                 >
-                  <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  />
-                  <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  />
-                  <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  />
-                  <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  />
-                  <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  />
-                  <ProductCard
-                    img="/img/hui/product/0583377_PE671187_S5.jpg"
-                    name="電視櫃"
-                    price="8,999"
-                  />
-                  <div className="d-none d-lg-block">
+                  {getCurrentPageProducts(activeTab).map((item) => (
                     <ProductCard
-                      img="/img/hui/product/0583377_PE671187_S5.jpg"
-                      name="電視櫃"
-                      price="8,999"
+                      key={item.id}
+                      img={`http://localhost:3005${item.images?.[0]}`}
+                      name={item.name}
+                      price={item.price}
                     />
-                  </div>
-                  <div className="d-none d-lg-block">
-                    <ProductCard
-                      img="/img/hui/product/0583377_PE671187_S5.jpg"
-                      name="電視櫃"
-                      price="8,999"
-                    />
-                  </div>
+                  ))
+                  }
+                  {/* <ProductCard
+                    img="/img/hui/product/0583377_PE671187_S5.jpg"
+                    name="電視櫃"
+                    price="8,999"
+                  /> */}
                 </div>
               </div>
             </div>
@@ -203,8 +255,31 @@ export default function IndexPage() {
                 <div
                   className={`d-flex gap-xl justify-content-center ${styles.arrow}`}
                 >
-                  <button className={`btn d-flex ${styles.arrowLeft}`} />
-                  <button className={`btn d-flex ${styles.arrowRight}`} />
+                  <button className={`btn d-flex ${styles.arrowLeft}`}
+                    onClick={() => {
+                      console.log('左箭頭被點擊');
+                      const newPage = currentPage[activeTab] - 1
+                      if (newPage >= 1) {
+                        setCurrentPage(prev => ({
+                          ...prev,
+                          [activeTab]: newPage
+                        }))
+                      }
+                    }}
+                  />
+                  <button className={`btn d-flex ${styles.arrowRight}`}
+                    onClick={() => {
+                      console.log('右箭頭被點擊');
+                      const maxPage = Math.ceil(allProducts[activeTab].length / itemsPerPage)
+                      const newPage = currentPage[activeTab] + 1
+                      if (newPage <= maxPage) {
+                        setCurrentPage(prev => ({
+                          ...prev,
+                          [activeTab]: newPage
+                        }))
+                      }
+                    }}
+                  />
                 </div>
               </div>
             </div>
