@@ -2411,6 +2411,10 @@ body.modal-open {
     z-index: 1;
     background: white;
   }
+
+  .swal2-cancel.swal2-styled{
+    background-color: #6A6A6A;
+  }
 /* 響應式設計 */
 @media (max-width: 1200px) {
     .showcase-container {

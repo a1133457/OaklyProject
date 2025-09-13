@@ -1,12 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import "@/styles/products/BackToTop.css";
-
 
 const BackToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isSolid, setIsSolid] = useState(false);
+  const pathname = usePathname();
+
+  // 如果在 review 頁面，直接不渲染
+  if (pathname === '/review') {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {

@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS favorites (
     FOREIGN KEY (product_id) REFERENCES products(id)
     ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+----加進去
 ALTER TABLE favorites 
 ADD COLUMN color_id INT NULL,
 ADD COLUMN size_id INT NULL,
@@ -76,10 +78,68 @@ ALTER TABLE favorites
 ADD COLUMN color_name VARCHAR(50);
 
 -- 複合唯一索引（防止重複收藏同商品同顏色）
+
 DROP INDEX IF EXISTS idx_favorites_unique;
 CREATE UNIQUE INDEX idx_favorites_unique 
 ON favorites(user_id, product_id, color_id);
 SELECT * FROM favorites WHERE user_id = 1 AND product_id = 52 AND color_id = 1;
+
+CREATE TABLE stock_notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  product_id INT,
+  color_id INT,
+  size_id INT,
+  email VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 暫時關閉外鍵約束
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 更新 stocks 表
+UPDATE stocks
+SET size_id = 10
+WHERE id = 9;
+
+SELECT * FROM stocks WHERE id = 9 AND color_id = 2 AND size_id = 10;
+SHOW CREATE TABLE stocks;
+SELECT * FROM stocks
+WHERE id = 9 AND size_id = 10;
+-- 查是否已存在會與你更新後重複的資料
+SELECT * FROM stocks
+WHERE id = 9 AND size_id = 10 AND color_id IN (2,5,7);
+
+
+UPDATE stocks SET color_id = 2 WHERE id = 9;
+UPDATE stocks SET color_id = 5 WHERE id = 9;
+UPDATE stocks SET color_id = 7 WHERE id = 9;
+SELECT * FROM stocks
+WHERE id = 9 AND size_id = 10;
+SELECT *
+FROM stocks
+WHERE (id = 9 AND size_id = 10)
+  AND color_id IN (2, 5, 7);
+-- 刪除已存在會造成衝突的資料
+DELETE FROM stocks
+WHERE id = 9 AND size_id = 10 AND color_id IN (4, 5, 6);
+
+-- 更新 color_id 對應新值
+UPDATE stocks SET color_id = 2 WHERE id = 9 AND size_id = 10 AND color_id = 2;
+UPDATE stocks SET color_id = 5 WHERE id = 9 AND size_id = 10 AND color_id = 5;
+UPDATE stocks SET color_id = 7 WHERE id = 9 AND size_id = 10 AND color_id = 7;
+INSERT INTO stocks (id, color_id, size_id, amount)
+VALUES
+(9, 2, 10, 2),
+(9, 5, 10, 3),
+(9, 7, 10, 3);
+
+-- 重新開啟外鍵約束
+SET FOREIGN_KEY_CHECKS = 1;
+
+SELECT * FROM stocks WHERE id = 1 AND color_id = 1 AND size_id = 1;
+-------------------------------------
 -- 收藏文章
 CREATE TABLE IF NOT EXISTS bookmarks (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

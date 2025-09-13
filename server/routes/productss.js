@@ -294,6 +294,7 @@ router.get('/hot-products', async (req, res) => {
   }
 });
 
+
 //  產品詳細資料
 router.get("/:id", async (req, res) => {
   try {
@@ -436,6 +437,43 @@ router.get("/:id", async (req, res) => {
       message: "服務器內部錯誤"
     });
   }
+
+  // 庫存檢查
+  router.post('/:id/stock', async (req, res) => {
+    try {
+      const { id: productId } = req.params;
+      const { colorId, sizeId, quantity } = req.body;
+  
+      console.log('庫存檢查請求:', { productId, colorId, sizeId, quantity });
+  
+      const [stockRows] = await db.execute(
+        'SELECT amount FROM stocks WHERE id = ? AND color_id = ? AND size_id = ?',
+        [productId, colorId, sizeId]
+      );
+  
+      const availableStock = stockRows[0]?.amount || 0;
+      
+      console.log('查詢結果:', stockRows);
+      console.log('可用庫存:', availableStock);
+  
+      res.json({
+        status: 'success',
+        data: { 
+          availableStock, 
+          available: availableStock >= quantity 
+        }
+      });
+    } catch (error) {
+      console.error('庫存檢查錯誤:', error);
+      res.status(500).json({
+        status: 'error',
+        message: '庫存檢查失敗: ' + error.message
+      });
+    }
+  });
+
+
+  
 });
 
 

@@ -8,6 +8,7 @@ import Total from "../_components/total";
 import WhiteButton from "../_components/whiteButton";
 import "/styles/cart/cartFin.css";
 
+
 export default function CartFinPage() {
     return (
         <div className="container-fluid">

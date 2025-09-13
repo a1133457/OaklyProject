@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import "@/styles/products/pid.css";
+import "@/styles/products/notify.css";
+
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
@@ -10,6 +12,35 @@ import CategoryDropdown from "@/app/_components/CategoryDropdown.js";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import Swal from 'sweetalert2';
+import BuyNowButton from '@/app/products/_components/BuyNowButton.js';
+
+
+const checkStock = async (productId, colorId, sizeId, quantity) => {
+  try {
+    const response = await fetch(`http://localhost:3005/api/products/${productId}/stock`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        colorId: parseInt(colorId),
+        sizeId: parseInt(sizeId),
+        quantity: parseInt(quantity)
+      })
+    });
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('檢查庫存失敗:', error);
+    return { availableStock: 0, available: false };
+  }
+};
+
+
+
+
+
 // 收藏成功通知組件
 const AddToWishlistSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
   useEffect(() => {
@@ -92,9 +123,9 @@ const AddToWishlistSuccessModal = ({ product, quantity, selectedColor, selectedS
         </div>
       </div>
     </div>
-    
+
   );
-  
+
 };
 
 // 跟隨指針移動的滾動條類別
@@ -764,16 +795,16 @@ export default function PidPage({ params }) {
       openWishlistModal(product, event);
     }
   };
-// 關閉收藏成功通知
-const closeWishlistSuccessModal = () => {
-  setWishlistSuccessModal({
-    isVisible: false,
-    product: null,
-    quantity: 0,
-    selectedColor: null,
-    selectedSize: null
-  });
-};
+  // 關閉收藏成功通知
+  const closeWishlistSuccessModal = () => {
+    setWishlistSuccessModal({
+      isVisible: false,
+      product: null,
+      quantity: 0,
+      selectedColor: null,
+      selectedSize: null
+    });
+  };
   // 打開收藏彈窗
   const openWishlistModal = async (product, clickEvent = null) => {
     console.log('商品顏色:', product.colors); // 檢查實際的顏色資料
@@ -791,59 +822,37 @@ const closeWishlistSuccessModal = () => {
     }
   }, [productData]);
 
-//立即購買
-const handleBuyNow = async () => {
-  if (!selectedColor) {
-    Swal.fire({
-      title: "請選擇顏色",
-      text: "請先選擇商品顏色",
-      icon: "warning",
-      confirmButtonText: "我知道了",
-      confirmButtonColor: "#DBA783"
-    });
-    return;
-  }
+  // 簡化的 handleBuyNow 函數（只處理實際購買邏輯）
+  const handleBuyNow = async () => {
+    const isLoggedIn = await checkAuthStatus();
+    if (!isLoggedIn) {
+      Swal.fire({
+        title: "請先登入",
+        text: "您需要登入才能進行購買",
+        icon: "info",
+        confirmButtonText: "前往登入",
+        confirmButtonColor: "#DBA783"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/auth/login';
+        }
+      });
+      return;
+    }
 
-  if (!selectedSize) {
-    Swal.fire({
-      title: "請選擇尺寸", 
-      text: "請先選擇商品尺寸",
-      icon: "warning",
-      confirmButtonText: "我知道了",
-      confirmButtonColor: "#DBA783"
-    });
-    return;
-  }
+    const buyNowProduct = {
+      id: productData.id,
+      name: productData.name,
+      price: productData.price,
+      images: productData.images,
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
+      quantity: quantity
+    };
 
-  const isLoggedIn = await checkAuthStatus();
-  if (!isLoggedIn) {
-    Swal.fire({
-      title: "請先登入",
-      text: "您需要登入才能進行購買",
-      icon: "info",
-      confirmButtonText: "前往登入",
-      confirmButtonColor: "#DBA783"
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = '/auth/login';
-      }
-    });
-    return;
-  }
-
-  const buyNowProduct = {
-    id: productData.id,
-    name: productData.name,
-    price: productData.price,
-    images: productData.images,
-    selectedColor: selectedColor,
-    selectedSize: selectedSize,
-    quantity: quantity
+    sessionStorage.setItem('buyNowProduct', JSON.stringify(buyNowProduct));
+    window.location.href = '/cart/detail';
   };
-
-  sessionStorage.setItem('buyNowProduct', JSON.stringify(buyNowProduct));
-  window.location.href = '/cart/detail';
-};
 
 
 
@@ -1570,11 +1579,11 @@ const handleBuyNow = async () => {
                   onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                   disabled={quantity <= 1}
                 >
-                  
+
                 </button>
                 <div className="quantity-number">{quantity}</div>
                 <button onClick={() => setQuantity((prev) => prev + 1)}>
-                  
+
                 </button>
               </div>
               <div className="saved">
@@ -1591,9 +1600,15 @@ const handleBuyNow = async () => {
             </div>
 
             <div className="action-buttons">
-              <button className="buy-now-btn"
-               onClick={handleBuyNow}>
-                立即購買</button>
+              <BuyNowButton
+                product={productData}
+                selectedColor={selectedColor}
+                selectedSize={selectedSize}
+                quantity={quantity}
+                onBuyNow={handleBuyNow}
+              />
+
+
               <button
                 className="add-to-cart-btn"
                 onClick={() => {
@@ -1613,6 +1628,22 @@ const handleBuyNow = async () => {
                 加入購物車
               </button>
             </div>
+            {/* <div className="action-buttons">
+              <button className="buy-now-btn" onClick={handleBuyNow}>
+                立即購買
+              </button>
+
+              <AddToCartButton
+                product={productData}
+                selectedColor={selectedColor}
+                selectedSize={selectedSize}
+                quantity={quantity}
+                onAddToCart={() => {
+                  addToCart(productData, quantity, selectedColor, selectedSize);
+                  openSuccessModal(productData, quantity, selectedColor, selectedSize);
+                }}
+              />
+            </div> */}
 
             {/* 更新的資訊展開區塊 */}
             <div className="more-info">
@@ -1761,8 +1792,8 @@ const handleBuyNow = async () => {
           currentProductId={parseInt(productId)}
           isProductInWishlist={isProductInWishlist}
           addToCart={addToCart}
-          hasAnyWishlist={hasAnyWishlist} 
-          handleWishlistToggle={handleWishlistToggle} 
+          hasAnyWishlist={hasAnyWishlist}
+          handleWishlistToggle={handleWishlistToggle}
           handleCartClick={handleCartClick}
         />
 
@@ -1774,8 +1805,8 @@ const handleBuyNow = async () => {
           currentProductId={parseInt(productId)}
           isProductInWishlist={isProductInWishlist}
           addToCart={addToCart}
-          hasAnyWishlist={hasAnyWishlist} 
-          handleWishlistToggle={handleWishlistToggle} 
+          hasAnyWishlist={hasAnyWishlist}
+          handleWishlistToggle={handleWishlistToggle}
           handleCartClick={handleCartClick}
         />
 
@@ -1785,7 +1816,7 @@ const handleBuyNow = async () => {
           maxItems={8}
           isProductInWishlist={isProductInWishlist}
           addToCart={addToCart}
-          hasAnyWishlist={hasAnyWishlist} 
+          hasAnyWishlist={hasAnyWishlist}
           handleWishlistToggle={handleWishlistToggle}
           handleCartClick={handleCartClick}
         />
@@ -2033,6 +2064,7 @@ const handleBuyNow = async () => {
                     >
                       加入購物車
                     </button>
+
                   </div>
                 </div>
               </div>
