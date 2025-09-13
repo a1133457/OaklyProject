@@ -2,11 +2,20 @@
 
 import "@/styles/cart/delivery.css";
 import { useEffect, useState } from "react";
+import { useShip711StoreOpener } from "@/hooks/use-ship-711-store"; // 根據你的路徑調整
+import { nextUrl } from "@/config/client.config"; // 根據你的路徑調整
 
 export default function Delivery() {
   const [showForm, setShowForm] = useState(false);
   // 先讀 localStorage，初始值如果沒存過就空字串
   const [selectedDelivery, setSelectedDelivery] = useState("");
+
+  // 整合 7-11 門市選擇功能
+  const { store711, openWindow, closeWindow } = useShip711StoreOpener(
+    `${nextUrl}/ship/api`, // 7-11 回調 API 路由
+    { autoCloseMins: 3 }
+  );
+
 
   // 在瀏覽器渲染後再讀取 localStorage
   useEffect(() => {
