@@ -2,17 +2,19 @@
 
 import "@/styles/cart/delivery.css";
 import { useEffect, useState } from "react";
-import { useShip711StoreOpener } from "@/hooks/use-ship-711-store"; // 根據你的路徑調整
-import { nextUrl } from "@/config/client.config"; // 根據你的路徑調整
+import { useShip711StoreOpener } from "@/hooks/use-711-store.js"; // 根據你的路徑調整
 
 export default function Delivery() {
   const [showForm, setShowForm] = useState(false);
   // 先讀 localStorage，初始值如果沒存過就空字串
   const [selectedDelivery, setSelectedDelivery] = useState("");
 
+  // 取得當前網址，自動組成回調 URL
+  const currentUrl = typeof window === 'undefined' ? window.location.origin : '';
+
   // 整合 7-11 門市選擇功能
-  const { store711, openWindow, closeWindow } = useShip711StoreOpener(
-    `${nextUrl}/ship/api`, // 7-11 回調 API 路由
+  const { store711, openWindow } = useShip711StoreOpener(
+    `${currentUrl}/ship/api`, // 駔動組成回調 API 路由
     { autoCloseMins: 3 }
   );
 
@@ -70,6 +72,47 @@ export default function Delivery() {
             公斤（含包裝），三邊長度合計不得超過 105 公分，且最長邊長度不得超過
             45 公分。
           </p>
+          {/* 7-11 門市選擇區塊 */}
+          {selectedDelivery === "超商自取" && (
+            <div className="store-selection pc" style={{
+              marginTop: '15px',
+              padding: '15px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '5px',
+              border: '1px solid #dee2e6'
+            }}>
+              <button
+                type="button"
+                onClick={openWindow}
+                style={{
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginBottom: '10px'
+                }}
+              >
+                {store711.storename ? '重新選擇門市' : '選擇 7-11 門市'}
+              </button>
+
+              {store711.storename ? (
+                <div style={{ fontSize: '14px' }}>
+                  <p style={{ margin: '5px 0', color: '#28a745' }}>
+                    <strong>✓ 已選擇門市：</strong>{store711.storename}
+                  </p>
+                  <p style={{ margin: '5px 0', color: '#6c757d' }}>
+                    <strong>地址：</strong>{store711.storeaddress}
+                  </p>
+                </div>
+              ) : (
+                <p style={{ fontSize: '14px', color: '#dc3545', margin: '5px 0' }}>
+                  請選擇取貨門市
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {/* 手機------------------------------------- */}
@@ -127,6 +170,46 @@ export default function Delivery() {
                   公斤（含包裝），三邊長度合計不得超過 105
                   公分，且最長邊長度不得超過 45 公分。
                 </p>
+                {selectedDelivery === "超商自取" && (
+                  <div className="store-selection phone" style={{
+                    marginTop: '15px',
+                    padding: '15px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '5px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={openWindow}
+                      style={{
+                        background: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        marginBottom: '10px'
+                      }}
+                    >
+                      {store711.storename ? '重新選擇門市' : '選擇 7-11 門市'}
+                    </button>
+
+                    {store711.storename ? (
+                      <div style={{ fontSize: '13px' }}>
+                        <p style={{ margin: '5px 0', color: '#28a745' }}>
+                          <strong>✓ 已選擇：</strong>{store711.storename}
+                        </p>
+                        <p style={{ margin: '5px 0', color: '#6c757d', fontSize: '12px' }}>
+                          {store711.storeaddress}
+                        </p>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '13px', color: '#dc3545', margin: '5px 0' }}>
+                        請選擇取貨門市
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </>

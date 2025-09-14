@@ -12,7 +12,8 @@ import userCouponRouter from "./routes/userCoupons.js";
 import articleRouter from "./routes/article.js";
 import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
-import cartRouter from './routes/cart/ecpay3.js'
+import cartRouter from './routes/cart/ecpay3.js';
+import shipRouter from './routes/seCallback.js';
 
 
 
@@ -65,6 +66,7 @@ app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
+app.use("api/ship/711", shipRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 
 
