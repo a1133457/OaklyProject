@@ -41,13 +41,17 @@ body {
     padding: 0 64px;
     background-color: #fff;
 }
-
+.more-items{
+    text-align: right;
+}
 /* 頂部標題欄 */
 .top-bar {
     background-color: #f0f0f0;
     padding: 12px 0;
 }
-
+.product-item{
+    margin-top: 25px;
+}
 .page-title {
     font-size: 16px;
     color: #666;
@@ -480,7 +484,6 @@ body {
     gap: 12px;
     padding-top: 6px;
     padding-bottom: 6px;
-    border-bottom: 1px #EDEDED solid;
     color: #6A6A6A;
     font-size: 16px;
     font-family: Noto Sans TC;
@@ -925,6 +928,7 @@ word-wrap: break-word
         justify-content: flex-start;
         align-items: flex-start;
         gap: 43px;
-        display: inline-flex
+        display: inline-flex;
+
     }
 }

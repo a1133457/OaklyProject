@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 
 
 const MainProduct = () => {
-  const { user } = useAuth();  
+  const { user } = useAuth();
   const [selectedFilters, setSelectedFilters] = useState({
     colors: [],
     materials: [],
@@ -55,6 +55,12 @@ const MainProduct = () => {
     selectedColor: null,
     selectedSize: null
   });
+  const [expandedCategory, setExpandedCategory] = useState(null);
+
+// 切換分類展開狀態
+const toggleCategoryExpand = (category) => {
+  setExpandedCategory(expandedCategory === category ? null : category);
+};
 
 
 
@@ -745,13 +751,13 @@ const MainProduct = () => {
   useEffect(() => {
     const loadWishlistStatus = async () => {
       const token = localStorage.getItem('reactLoginToken');
-      console.log('Token:', token); 
+      console.log('Token:', token);
 
       if (!token) return;
       try {
         // 獲取用戶所有收藏
         const response = await fetch('http://localhost:3005/api/users/favorites', {
-          method: 'GET', 
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -776,7 +782,7 @@ const MainProduct = () => {
 
 
 
-  
+
   const currentProducts = getCurrentPageProducts();
 
   const handleCategoryClick = (e, categoryName) => {
@@ -969,7 +975,7 @@ const MainProduct = () => {
   const handleWishlistToggle = async (product, e) => {
     e.stopPropagation();
     e.preventDefault();
-  
+
     const isLoggedIn = await checkAuthStatus();
     if (!isLoggedIn) {
       Swal.fire({
@@ -985,16 +991,16 @@ const MainProduct = () => {
       });
       return;
     }
-  
+
     // 檢查是否有任何收藏組合
     const hasWishlist = hasAnyWishlist(product.id);
-    
+
     if (hasWishlist) {
       // 如果已收藏，找到第一個收藏的組合並移除
-      const wishlistKeys = Object.keys(isWishlisted).filter(key => 
+      const wishlistKeys = Object.keys(isWishlisted).filter(key =>
         key.startsWith(`${product.id}_`) && isWishlisted[key]
       );
-      
+
       if (wishlistKeys.length > 0) {
         const firstKey = wishlistKeys[0];
         const [productId, colorId, sizeId] = firstKey.split('_');
@@ -1081,16 +1087,16 @@ const MainProduct = () => {
 
   const hasAnyWishlist = (productId) => {
     console.log('=== hasAnyWishlist 被調用 ===');
-   console.log('檢查商品 ID:', productId);
-   console.log('當前 isWishlisted 狀態:', isWishlisted);
-   
-     const productKeys = Object.keys(isWishlisted).filter(key =>
-       key.startsWith(`${productId}_`) && isWishlisted[key]
-     );
-   console.log('找到的相關 keys:', productKeys);
-   console.log('最終結果:', productKeys.length > 0);
-     return productKeys.length > 0;
-   };
+    console.log('檢查商品 ID:', productId);
+    console.log('當前 isWishlisted 狀態:', isWishlisted);
+
+    const productKeys = Object.keys(isWishlisted).filter(key =>
+      key.startsWith(`${productId}_`) && isWishlisted[key]
+    );
+    console.log('找到的相關 keys:', productKeys);
+    console.log('最終結果:', productKeys.length > 0);
+    return productKeys.length > 0;
+  };
 
   const getColorCode = (colorName) => {
     const colorMap = {
@@ -1107,9 +1113,9 @@ const MainProduct = () => {
     };
     return colorMap[colorName] || '#cccccc';
   };
-  
 
-  
+
+
   const getProductColors = (product) => {
     if (Array.isArray(product.colors)) return product.colors;
     // 如果 colors 是 ID，需要從某處獲取完整數據
@@ -1121,23 +1127,18 @@ const MainProduct = () => {
     return [];
   };
 
-  
+
   return (
     <div className="main-product-page">
-      
+
       {/* 子導航欄 */}
       <div className="breadcrumb-nav-top">
         <div className="sub-nav-content">
           <div className="breadcrumb">
             <a href="/" onClick={(e) => {
               e.preventDefault();
-              setSelectedCategory('');
-              setSelectedSubCategory('');
-              setCurrentTitle('全部商品');
-              setCurrentHeroImage('/img/lan/header.png');
-
-            }}>首頁</a>
-            <div className="arrow">&gt;</div>
+              window.location.href = '/';
+            }}>首頁</a>            <div className="arrow">&gt;</div>
             <a href="#" onClick={(e) => {
               e.preventDefault();
               setSelectedCategory('');
@@ -1288,18 +1289,8 @@ const MainProduct = () => {
 
             <a href="/" onClick={(e) => {
               e.preventDefault();
-              setSelectedCategory('');
-              setSelectedSubCategory('');
-              setCurrentTitle('全部商品');
-              setCurrentHeroImage('/img/lan/header.png');
-              fetch("http://localhost:3005/api/products")
-                .then(res => res.json())
-                .then(json => setProducts(Array.isArray(json) ? json : []))
-                .catch(err => console.error(err));
-
-            }}>
-              首頁
-            </a>
+              window.location.href = '/';
+            }}>首頁</a>
             <div className="arrow">&gt;</div>
             <a href="#" onClick={(e) => {
               e.preventDefault();
@@ -1508,6 +1499,11 @@ const MainProduct = () => {
                 <button className="reset-btn" onClick={clearFilters}>清除</button>
               </div>
             </aside>
+
+
+
+
+
 
             {/* 右側商品區域 */}
             <main className="products-section">
@@ -1868,7 +1864,184 @@ const MainProduct = () => {
 
             {/* Modal 內容 */}
             <div className="modal-body flex-grow-1 overflow-auto p-0">
+{/* 移動版導航選單 */}
+<div className="mobile-sub-nav">
+  <div className="mobile-sub-nav-links">
+    <a href="#" className="mobile-sub-nav-link"
+      onClick={(e) => {
+        e.preventDefault();
+        fetchLatestProducts();
+        closeMobileFilter();
+      }}>
+      最新商品
+    </a>
 
+    <a href="#" className="mobile-sub-nav-link"
+      onClick={(e) => {
+        e.preventDefault();
+        fetchHotProducts();
+        closeMobileFilter();
+      }}>
+      熱賣
+    </a>
+
+    {/* 客廳分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '客廳'); closeMobileFilter(); }}
+        >
+          客廳
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '客廳' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('客廳'); }}
+        ></i>
+      </div>
+      {expandedCategory === '客廳' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '邊桌'); closeMobileFilter(); }}>
+            邊桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '單椅'); closeMobileFilter(); }}>
+            單椅/單人沙發
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '茶几'); closeMobileFilter(); }}>
+            茶几
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '書櫃'); closeMobileFilter(); }}>
+            書櫃 / 書架
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '書桌'); closeMobileFilter(); }}>
+            書桌 / 書桌椅
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '邊櫃'); closeMobileFilter(); }}>
+            邊櫃 / 收納櫃
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 廚房分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '廚房'); closeMobileFilter(); }}
+        >
+          廚房
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '廚房' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('廚房'); }}
+        ></i>
+      </div>
+      {expandedCategory === '廚房' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '實木餐桌'); closeMobileFilter(); }}>
+            實木餐桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '餐椅'); closeMobileFilter(); }}>
+            餐椅 / 椅子
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '吧台桌'); closeMobileFilter(); }}>
+            吧台桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '吧台椅'); closeMobileFilter(); }}>
+            吧台椅
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 臥室分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '臥室'); closeMobileFilter(); }}
+        >
+          臥室
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '臥室' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('臥室'); }}
+        ></i>
+      </div>
+      {expandedCategory === '臥室' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '床架'); closeMobileFilter(); }}>
+            床架
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '床邊桌'); closeMobileFilter(); }}>
+            床邊桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '化妝台'); closeMobileFilter(); }}>
+            化妝台
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '全身鏡'); closeMobileFilter(); }}>
+            全身鏡 / 鏡子
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '衣櫃'); closeMobileFilter(); }}>
+            衣櫃 / 衣架
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 兒童房分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '兒童房'); closeMobileFilter(); }}
+        >
+          兒童房
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '兒童房' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('兒童房'); }}
+        ></i>
+      </div>
+      {expandedCategory === '兒童房' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '桌椅組'); closeMobileFilter(); }}>
+            桌椅組
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '衣櫃'); closeMobileFilter(); }}>
+            衣櫃
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納櫃'); closeMobileFilter(); }}>
+            收納櫃
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 收納用品分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納用品'); closeMobileFilter(); }}
+        >
+          收納用品
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '收納用品' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('收納用品'); }}
+        ></i>
+      </div>
+      {expandedCategory === '收納用品' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納盒'); closeMobileFilter(); }}>
+            收納盒 / 收納箱
+          </a>
+        </div>
+      )}
+    </div>
+
+    <a href="#" className="mobile-sub-nav-link">
+      It's Oakly
+    </a>
+  </div>
+</div>
               {/* 價格 */}
               <div className="filter-section">
                 <h6 className="filter-title">價格</h6>

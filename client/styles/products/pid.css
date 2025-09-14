@@ -2687,7 +2687,6 @@ body.modal-open {
     }
 
 
-
     /* 主要內容區域調整 */
     .main-content {
         padding: 20px 0;
@@ -2695,6 +2694,10 @@ body.modal-open {
 
     .product-images {
         height: 543px;
+        width:250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .pid-info {
@@ -2707,15 +2710,32 @@ body.modal-open {
 
     /* 產品詳情版面調整 - 改為單欄 */
     .product-detail-wrapper {
-        grid-template-columns: 1fr;
-        gap: 30px;
-        margin-bottom: 40px;
-        padding: 0;
+        display: flex
+        ;
+                flex-direction: column;
+                gap: 30px;
+                padding: 0px;
+                margin-bottom: 40px;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
     }
+    .thumbnail-images{
+        height: 150px;
+        width: 400px !important;
+    }
+    
 
+    .custom-scrollbar-container{
+        width: 300px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* for iOS smooth scrolling */
+    }
     .end-content-text {
         gap: 26px;
     }
+
+    
 
     .end-content {
         flex-direction: column;
@@ -2744,7 +2764,186 @@ body.modal-open {
     .detail-product-page {
         padding-bottom: 0
     }
+  /* 收藏 Modal */
+  .wishlist-modal-container {
+    right: 0;
+    bottom: 0;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
+  .cart-modal-backdrop{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+  }
+  .wishlist-modal-content {
+    width: 100%;
+    max-width: 390px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+
+  .wishlist-modal-body {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .wishlist-product-image {
+    width: 100%;
+    text-align: center;
+  }
+
+  .wishlist-product-image img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .wishlist-form-content {
+    width: 100%;
+  }
+
+  .wishlist-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .wishlist-color-option,
+  .wishlist-size-option {
+    flex: 1;
+    min-width: calc(50% - 4px);
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  /* 購物車 Modal */
+  .cart-modal-container {
+    right: 0;
+    bottom: 0;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cart-modal-content {
+    width: 100%;
+    max-width: 390px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  .cart-modal-body {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .cart-product-image {
+    width: 100%;
+    text-align: center;
+  }
+
+  .cart-product-image img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .cart-form-content {
+    width: 100%;
+  }
+
+  .cart-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cart-color-option,
+  .cart-size-option {
+    flex: 1;
+    min-width: calc(50% - 4px);
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .cart-color-option.selected,
+  .cart-size-option.selected,
+  .wishlist-color-option.selected,
+  .wishlist-size-option.selected {
+    background-color: #f0f0f0;
+    border-color: #719A8B;
+  }
+
+  .cart-modal-footer,
+  .wishlist-modal-footer {
+    margin-top: 20px;
+  }
+
+  .cart-submit-btn,
+  .wishlist-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #719A8B;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+
+  /* 數量控制 */
+  .cart-quantity-controls,
+  .wishlist-quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 10px 0;
+  }
+
+  .cart-quantity-btn,
+  .wishlist-quantity-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .cart-quantity-display,
+  .wishlist-quantity-display {
+    font-size: 18px;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+  
+}
 
 }/* 強制modal顯示在最頂層 - 終極解決方案 */
 .modal {
@@ -2957,38 +3156,7 @@ body.modal-open .detail-product-page > *:not(.modal):not(.modal-backdrop) {
     background-color: #d39161;
   }
   
-  /* 響應式設計 */
-  @media (max-width: 480px) {
-    .wishlist-success-modal {
-      margin: 10px;
-      max-width: calc(100% - 20px);
-    }
-  
-    .wishlist-success-header,
-    .wishlist-success-content,
-    .wishlist-success-actions {
-      padding: 15px;
-    }
-  
-    .wishlist-success-content .product-image2 {
-      width: 60px;
-      height: 60px;
-      margin-right: 12px;
-    }
-  
-    .wishlist-success-header h3 {
-      font-size: 16px;
-    }
-  
-    .wishlist-success-actions {
-      flex-direction: column;
-    }
-  
-    .wishlist-success-actions .continue-shopping,
-    .wishlist-success-actions .view-wishlist {
-      flex: none;
-    }
-  }
+
 
 .quantity-controls {
     display: flex;
@@ -3124,20 +3292,7 @@ body.modal-open .detail-product-page > *:not(.modal):not(.modal-backdrop) {
       font-size: 14px;
     }
   }
-  
-  @media (max-width: 480px) {
-    .quantity-controls button {
-      width: 38px;
-      height: 38px;
-      font-size: 14px;
-    }
-    
-    .quantity-number {
-      min-width: 46px;
-      height: 38px;
-      font-size: 14px;
-    }
-  }
+
   
   /* 無障礙設計 */
   .quantity-controls button:focus {

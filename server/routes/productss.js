@@ -1,12 +1,10 @@
 import express from "express";
-import multer from "multer";
 import db from "../connect.js";
 import { getProductsFromDB } from "./models/products.js";
 import Fuse from 'fuse.js';
 
 
 
-const upload = multer();
 const router = express.Router();
 
 router.get("/", async (req, res) => {
@@ -438,13 +436,26 @@ router.get("/:id", async (req, res) => {
     });
   }
 
+
+
+
+
+});
+
+
+
   // 庫存檢查
   router.post('/:id/stock', async (req, res) => {
+    console.log('headers:', req.headers);
+  console.log('req.body:', req.body);
+    console.log('req.body 是:', req.body);
+
     try {
       const { id: productId } = req.params;
       const { colorId, sizeId, quantity } = req.body;
   
       console.log('庫存檢查請求:', { productId, colorId, sizeId, quantity });
+
   
       const [stockRows] = await db.execute(
         'SELECT amount FROM stocks WHERE id = ? AND color_id = ? AND size_id = ?',
@@ -471,10 +482,6 @@ router.get("/:id", async (req, res) => {
       });
     }
   });
-
-
-  
-});
 
 
 

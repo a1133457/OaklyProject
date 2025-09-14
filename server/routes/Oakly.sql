@@ -97,43 +97,24 @@ CREATE TABLE stock_notifications (
 
 -- 暫時關閉外鍵約束
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- 更新 stocks 表
 UPDATE stocks
-SET size_id = 10
-WHERE id = 9;
+SET size_id = 7
+WHERE id = 3;
 
-SELECT * FROM stocks WHERE id = 9 AND color_id = 2 AND size_id = 10;
-SHOW CREATE TABLE stocks;
-SELECT * FROM stocks
-WHERE id = 9 AND size_id = 10;
--- 查是否已存在會與你更新後重複的資料
-SELECT * FROM stocks
-WHERE id = 9 AND size_id = 10 AND color_id IN (2,5,7);
+UPDATE stocks
+SET amount = 0
+WHERE id = 3;
 
 
-UPDATE stocks SET color_id = 2 WHERE id = 9;
-UPDATE stocks SET color_id = 5 WHERE id = 9;
-UPDATE stocks SET color_id = 7 WHERE id = 9;
-SELECT * FROM stocks
-WHERE id = 9 AND size_id = 10;
-SELECT *
-FROM stocks
-WHERE (id = 9 AND size_id = 10)
-  AND color_id IN (2, 5, 7);
--- 刪除已存在會造成衝突的資料
 DELETE FROM stocks
-WHERE id = 9 AND size_id = 10 AND color_id IN (4, 5, 6);
+WHERE id = 2
 
--- 更新 color_id 對應新值
-UPDATE stocks SET color_id = 2 WHERE id = 9 AND size_id = 10 AND color_id = 2;
-UPDATE stocks SET color_id = 5 WHERE id = 9 AND size_id = 10 AND color_id = 5;
-UPDATE stocks SET color_id = 7 WHERE id = 9 AND size_id = 10 AND color_id = 7;
 INSERT INTO stocks (id, color_id, size_id, amount)
 VALUES
-(9, 2, 10, 2),
-(9, 5, 10, 3),
-(9, 7, 10, 3);
+(3, 1, 2, 0),
+(3, 4, 3, 0),
+(3, 10, 6, 0);
 
 -- 重新開啟外鍵約束
 SET FOREIGN_KEY_CHECKS = 1;
@@ -406,6 +387,16 @@ CREATE TABLE order_items(
     FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY(product_id) REFERENCES products(id)
 )
+
+UPDATE order_items oi
+JOIN product_sizes ps 
+  ON oi.product_id = ps.product_id
+JOIN sizes s 
+  ON ps.size_id = s.id
+  SET oi.size = s.size_label
+  WHERE oi.size = s.size_label;
+
+ALTER TABLE order_items MODIFY COLUMN size VARCHAR(500);
 
 -- 商品補充
 -- --------------------------------------------------------

@@ -21,12 +21,13 @@ export default function BuyNowButton({
 
   const checkStock = async () => {
     try {
-        console.log('檢查庫存參數:', {
-            productId: product.id,
-            colorId: selectedColor.id,
-            sizeId: selectedSize.id,
-            quantity: quantity
-          });
+      console.log('檢查庫存參數:', {
+        productId: product.id,
+        colorId: selectedColor.id,
+        sizeId: selectedSize.id,
+        quantity: quantity
+      });
+
       const response = await fetch(`http://localhost:3005/api/products/${product.id}/stock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,8 +43,6 @@ export default function BuyNowButton({
 
       if (result.status === 'success') {
         console.log('設定庫存數量:', result.data.availableStock);
-
-
         setCurrentStock(result.data.availableStock);
       }
     } catch (error) {
@@ -131,7 +130,11 @@ export default function BuyNowButton({
               colorId: selectedColor.id,
               sizeId: selectedSize.id,
               email: email,
-              userId: userData.id
+              userId: userData.id,
+              // 直接傳送用戶選擇的名稱
+              productName: product.name,
+              colorName: selectedColor.color_name,
+              sizeName: selectedSize.size_label
             })
           });
 
@@ -175,6 +178,10 @@ export default function BuyNowButton({
       onClick={handleClick}
       disabled={!selectedColor || !selectedSize || loading}
       className={getButtonClass()}
+        style={{ 
+    opacity: loading ? 0.6 : 1,
+    cursor: loading ? 'not-allowed' : 'pointer'
+  }}
     >
       {loading ? '處理中...' : getButtonText()}
     </button>
