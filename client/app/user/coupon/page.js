@@ -56,7 +56,7 @@ export default function UserCouponPage() {
   return (
     <>
       <section>
-        <div className="d-flex flex-column gap-lg section">
+        <div className="d-flex flex-column gap-lg pt-4">
           <h2 className="t-primary01 text-center">我的優惠券</h2>
           <div className="d-flex justify-content-between">
             <div className="d-flex gap-lg">

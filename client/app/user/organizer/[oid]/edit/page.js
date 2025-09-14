@@ -328,7 +328,7 @@ export default function UserOrganizerEditPage() {
     <>
       <section>
         <div className="container-xl">
-          <div className="d-flex flex-column gap-lg section">
+          <div className="d-flex flex-column gap-lg pt-4">
             <h2 className="t-primary01 text-center">編輯預約</h2>
             <form className="d-flex flex-column">
               {/* 第一個 row - 姓名 + 手機 */}

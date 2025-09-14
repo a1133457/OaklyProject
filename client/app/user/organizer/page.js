@@ -72,7 +72,7 @@ export default function UserOrganizerPage() {
     <>
       <section>
         <div className="container-xl">
-          <div className="d-flex flex-column gap-lg section">
+          <div className="d-flex flex-column gap-lg pt-4">
             <h2 className="t-primary01 text-center">預約紀錄</h2>
             <ItemTab currentTab={currentTab} onTabChange={setCurrentTab} />
             {!isReady ?
