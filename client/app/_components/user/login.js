@@ -63,14 +63,16 @@ export default function LoginPage() {
                     />
 
                     <Button type="submit" variant="primary01" size="userlg">登入</Button>
-                    <hr />
+
+                    <div className={styles.divider}><span>or</span></div>
+                    
                     <GoogleLoginButton
                         onSuccess={({ token, user }) => {
                             loginWithGoogle(token, user)   // ✅ 呼叫 use-auth.js 新增的函式
                             router.push("/")    // ✅ 成功後導頁
                         }}
                     />
-
+                    
                     <div className={styles.links}>
                         <Link href="/auth/forgotpassword">忘記密碼</Link>
                         <Link href="/auth/register">加入會員</Link>
