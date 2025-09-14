@@ -184,6 +184,8 @@ const toggleCategoryExpand = (category) => {
 
     } catch (error) {
       console.error('獲取最新商品失敗:', error);
+    }finally {
+      setIsLoading(false); // ← 加入這行
     }
   };
 
@@ -210,6 +212,8 @@ const toggleCategoryExpand = (category) => {
 
     } catch (error) {
       console.error('獲取熱賣商品失敗:', error);
+    }finally {
+      setIsLoading(false); // ← 加入這行
     }
   };
 

@@ -1313,12 +1313,6 @@ span {
   gap: 4px;
 }
 
-.wishlist-success-content .color-label,
-.wishlist-success-content .size-label,
-.wishlist-success-content .quantity-info {
-  font-size: 12px;
-  color: #888;
-}
 
 .wishlist-success-actions {
   font-family: 'Noto Sans TC';
@@ -2780,10 +2774,15 @@ span {
 .cart-success-content .color-label,
 .cart-success-content .size-label,
 .cart-success-content .quantity-info {
-  font-size: 12px;
+  font-size: 14px;
   color: #888;
 }
-
+.wishlist-success-content .color-label,
+.wishlist-success-content .size-label,
+.wishlist-success-content .quantity-info {
+  font-size: 14px;
+  color: #888;
+}
 .cart-success-actions {
   font-family: 'Noto Sans TC';
   font-weight: 600;
