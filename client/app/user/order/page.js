@@ -107,9 +107,7 @@ console.log('原始訂單資料:', result.data);
 
 
   // 處理後端返回的訂單資料
- // 處理後端返回的訂單資料
-const processOrderData = (rawOrders) => {
-  // 將訂單項目按訂單ID分組
+ const processOrderData = (rawOrders) => {
   const ordersMap = new Map();
 
   rawOrders.forEach(item => {
@@ -122,7 +120,7 @@ const processOrderData = (rawOrders) => {
         status: "delivered",
         statusText: "配送中",
         createDate: new Date(item.create_at).toLocaleDateString(),
-        total: item.total_amount,
+        total: item.total_amount, // 先用原本的值
         items: []
       });
     }
@@ -141,7 +139,13 @@ const processOrderData = (rawOrders) => {
     });
   });
 
-  return Array.from(ordersMap.values());
+  // 重新計算每個訂單的總金額
+  const orders = Array.from(ordersMap.values());
+  orders.forEach(order => {
+    order.total = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  });
+
+  return orders;
 };
 
   // 搜尋功能

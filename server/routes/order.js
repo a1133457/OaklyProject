@@ -198,7 +198,7 @@ router.get("/detail", async (req, res) => {
       throw err;
     }
 
-    // 修改 SQL 查詢，包含完整的訂單資訊
+ 
     const sql = `
       SELECT 
         o.id AS order_id,
@@ -219,7 +219,10 @@ router.get("/detail", async (req, res) => {
         oi.color,
         oi.material,
         p.name AS product_name,
-        pi.url AS product_image
+        pi.url AS product_image,
+        c.name AS coupon_name,
+        c.discount_type,
+        c.discount AS coupon_discount_value
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN products p ON oi.product_id = p.id
@@ -228,6 +231,10 @@ router.get("/detail", async (req, res) => {
           FROM product_img
           GROUP BY product_id
       ) pi ON p.id = pi.product_id
+      LEFT JOIN user_coupons uc ON o.user_id = uc.user_id 
+        AND uc.used_at IS NOT NULL 
+        AND DATE(uc.used_at) = DATE(o.create_at)
+      LEFT JOIN coupons c ON uc.coupon_id = c.id
       WHERE o.user_id = ? AND o.id = ?
       ORDER BY oi.id ASC;
     `;
@@ -240,7 +247,16 @@ router.get("/detail", async (req, res) => {
         message: "查無訂單",
       });
     }
-
+    let couponDiscount = 0;
+    if (orders[0].coupon_discount_value && orders[0].discount_type) {
+      const subtotal = orders.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      if (orders[0].discount_type === 1) { // 假設1是百分比折扣
+        couponDiscount = Math.floor(subtotal * (orders[0].coupon_discount_value / 100));
+      } else if (orders[0].discount_type === 2) { // 假設2是固定金額折扣
+        couponDiscount = orders[0].coupon_discount_value;
+      }
+    }
     // 組合完整的訂單資料
     const orderData = {
       order_id: orders[0].order_id,
@@ -254,6 +270,9 @@ router.get("/detail", async (req, res) => {
       recipient_phone: orders[0].recipient_phone,
       postal_code: orders[0].postal_code,
       address: orders[0].address,
+        coupon_discount: couponDiscount,
+  shipping_discount: 0, // 如果有運費折扣邏輯可以加入
+  coupon_name: orders[0].coupon_name || null,
       items: orders.map(item => ({
         product_id: item.product_id,
         product_name: item.product_name,

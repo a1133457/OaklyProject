@@ -91,12 +91,13 @@ export default function OrderDetailPage() {
         quantity: orderData.items?.reduce((sum, item) => sum + item.quantity, 0) || 1,
         price: orderData.items?.[0]?.price || 0
       },
-      discounts: [50, 60],
-      total: orderData.total_amount,
+      couponDiscount: orderData.coupon_discount || 0,
+      shippingDiscount: orderData.shipping_discount || 0,
+      couponName: orderData.coupon_name || null,
+      total: orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || orderData.total_amount,
       recipient: orderData.recipient_name || '收件人',
       phone: orderData.recipient_phone || '聯絡電話',
-      address: `${orderData.postal_code || ''} ${orderData.address || ''}`.trim() || '配送地址',
-      shippingMethod: '宅配',
+      address: `${orderData.postal_code || ''} ${(orderData.address || '').replace(/^240\s*/, '')}`.trim() || '配送地址', shippingMethod: '宅配',
       paymentMethod: '信用卡',
       buyerInfo: {
         name: orderData.buyer_name,
@@ -241,14 +242,16 @@ export default function OrderDetailPage() {
                     <div className="info-tag">付款明細</div>
                     <div className="pricing-details">
                       <div className="details">
-                        <span>優惠券折扣</span>
+                        <span>{orderDetail.couponName ? `${orderDetail.couponName}折扣` : '優惠券折扣'}</span>
                         <span>運費折扣</span>
                       </div>
                       <div className="discount-details">
-                        <div className="quantity-price">{orderDetail.product.quantity} x NT$ {orderDetail.product.price}</div>
-                        {orderDetail.discounts ? orderDetail.discounts.map((discount, i) => (
-                          <div key={`discount-${i}`} className="discount">- NT$ {discount}</div>
-                        )) : null}
+                        {orderDetail.items.map((item, index) => (
+                          <div key={index} className="quantity-price">
+                            {item.quantity} x NT$ {item.price} = NT$ {item.quantity * item.price}
+                          </div>
+                        ))}                        <div className="discount">- NT$ {orderDetail.couponDiscount}</div>
+                        <div className="discount">- NT$ {orderDetail.shippingDiscount}</div>
                       </div>
                     </div>
                   </div>
