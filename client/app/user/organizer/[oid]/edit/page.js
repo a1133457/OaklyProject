@@ -218,15 +218,20 @@ export default function UserOrganizerEditPage() {
       }
 
       if (response.ok) {
-        alert("預約資訊更新成功！");
-        router.push("/user/organizer")
+         alert("預約資訊更新成功！");
+         setTimeout(()=>{
+      router.replace("/user/organizer")
+          router.back()
+    },500)
       } else {
         alert(`更新失敗：${result.message || '未知錯誤'}`);
       }
     } catch (error) {
       console.error("提交錯誤:", error);
-      alert("網路錯誤，請稍後再試");
+      alert("網路錯誤，請稍後再試1");
     }
+   
+    
   };
 
   //刪除按鈕
@@ -264,6 +269,7 @@ export default function UserOrganizerEditPage() {
 
     // 處理登入
   useEffect(() => {
+  
     const tokenFromStorage = localStorage.getItem("reactLoginToken");
     const userFromStorage = localStorage.getItem("user");
 
@@ -277,6 +283,7 @@ export default function UserOrganizerEditPage() {
     }
 
     setIsLoading(false);
+
   }, [router]);
 
   //解析token

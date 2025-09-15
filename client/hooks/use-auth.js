@@ -100,6 +100,7 @@ export function AuthProvider({ children }) {
     const API = "http://localhost:3005/api/users/logout";
     const appKey = "reactLoginToken";
     const userKey = "user";
+    const cart = "cart";
     const token = localStorage.getItem(appKey);
     try {
       if (!token) throw new Error("Token 不存在");
@@ -249,6 +250,7 @@ export function AuthProvider({ children }) {
   //     }
   // }, [isLoading, user, pathname]);
 
+
   // status------------------------------------
   useEffect(() => {
     const API = "http://localhost:3005/api/users/status";
@@ -278,7 +280,7 @@ export function AuthProvider({ children }) {
           //alert(result.message);
           setIsLoading(false);
           // setUser(null);
-          // localStorage.removeItem(appKey);
+          localStorage.clear();
           // router.push('/auth/login');
           // 接 吐司？
         }

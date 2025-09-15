@@ -17,10 +17,14 @@ export default function UserOrganizerPage() {
   // const [currentTab, setCurrentTab] = useState(1);
   const [token, setToken] = useState(null);
   const [userStr, setUserStr] = useState(null);
+
+
   const [isLoading, setIsLoading] = useState(true);
 
   const user = userStr ? JSON.parse(userStr) : null;
   const userId = user?.id;
+
+
 
   // 抓取使用者的預約列表
   const userOrganizersResult = useFetch(
@@ -57,7 +61,7 @@ export default function UserOrganizerPage() {
   const filteredOrganizers = userOrganizers.filter((organizer) => {
     return organizer.status === currentTab;
   });
-  // console.log(filteredOrganizers);
+   console.log('l60',filteredOrganizers);
 
   // 狀態文字對應表
   const statusTexts = {

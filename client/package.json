@@ -8,6 +8,7 @@
   "dependencies": {
     "bootstrap": "^5.3.8",
     "clsx": "^2.1.1",
+    "ecpay_aio_nodejs": "^1.2.2",
     "jsonwebtoken": "^9.0.2",
     "next": "15.5.0",
     "react": "19.1.0",
