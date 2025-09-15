@@ -8,6 +8,10 @@ SELECT * FROM users;
 DELETE FROM users 
 WHERE DATE(created_at) = '2025-09-07';
 
+SELECT DATABASE();
+
+DESCRIBE products;
+
 SELECT * FROM users WHERE email = 'li.meihao@example.com';
 
 

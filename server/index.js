@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config({ path: "chunny.env" });
+
 import express from "express";
 import multer from "multer";
 import cors from "cors";
@@ -18,7 +21,8 @@ import shipRouter from './routes/seCallback.js';
 import notifyRoutes from './routes/notify.js';
 
 
-
+import authResetRouter from "./routes/authReset.js";
+import authGoogleRouter from "./routes/auth-google.js";
 
 // 設定區
 const upload = multer();
@@ -39,9 +43,9 @@ let corsOptions = {
 // 路由區
 const app = express();
 app.use(cors(corsOptions));
-// 然後設置 JSON 解析
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cors({ origin: ["http://localhost:3000"], credentials: true })); 
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 app.use(express.static('public')) //後端提供public的靜態檔案
 app.use('/uploads', express.static('uploads'));
 
@@ -73,7 +77,8 @@ app.use("api/ship/711", shipRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
 
-
+app.use("/api/auth", authResetRouter);
+app.use("/api/auth", authGoogleRouter); // => POST /api/auth/google
 
 
 
