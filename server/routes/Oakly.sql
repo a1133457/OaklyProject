@@ -62,10 +62,13 @@ CREATE TABLE IF NOT EXISTS favorites (
     ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+ALTER TABLE service_conversations ADD COLUMN guest_id VARCHAR(50);
+SELECT * FROM service_conversations WHERE id = 16;
+SELECT current_chats, max_chats FROM service_agents WHERE status = 'online';
 SELECT * FROM service_messages 
 WHERE conversation_id = 1 
 ORDER BY sent_at;
-
+UPDATE service_agents SET max_chats = 20 WHERE username = 'alice';
 ----加進去
 ALTER TABLE favorites 
 ADD COLUMN color_id INT NULL,

@@ -67,10 +67,10 @@ html {
 }
 
 .hero-title {
+  width: 100%;
   font-weight: 700;
   margin: 0;
   color: white;
-  text-shadow: #505050 2px 2px 10px;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -241,10 +241,29 @@ router.post('/agent/take/:conversationId', authenticateAgent, async (req, res) =
 
 // 客戶開始對話
 router.post('/customer/start', async (req, res) => {
+  
   console.log('請求數據:', req.body);
 
   try {
     const { customerName, customerEmail, initialMessage, userId } = req.body;
+    // 檢查是否有現有對話
+let existingConversation = null;
+if (userId) {
+  const [existing] = await db.execute(
+    'SELECT * FROM service_conversations WHERE customer_id = ? AND status IN ("active", "waiting") ORDER BY started_at DESC LIMIT 1',
+    [userId]
+  );
+  existingConversation = existing[0] || null;
+}
+
+if (existingConversation) {
+  return res.json({
+    success: true,
+    conversationId: existingConversation.id,
+    status: existingConversation.status,
+    message: '歡迎回來！已載入您之前的對話'
+  });
+}
 
     // 尋找可用的客服
     const [availableAgents] = await db.execute(`

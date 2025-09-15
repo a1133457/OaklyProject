@@ -2,4 +2,6 @@ import SimpleCustomerServiceAdmin from '@/app/_components/agent/SimpleCustomerSe
 
 export default function CustomerServiceAdminPage() {
   return <SimpleCustomerServiceAdmin />;
+  
 }
+

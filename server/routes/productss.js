@@ -61,7 +61,18 @@ LEFT JOIN materials m ON ml.materials_id = m.id
       const [allRows] = await db.execute(allQuery);
       products = allRows;
     }
+
+    // 獲取最新商品列表用於標記
+    const latestQuery = `
+SELECT id FROM products 
+WHERE is_valid = 1 
+ORDER BY create_at DESC 
+LIMIT 50
+`;
+    const [latestProducts] = await db.execute(latestQuery);
+    const latestProductIds = latestProducts.map(p => p.id);
     const productMap = new Map();
+
     products.forEach(item => {
       if (!productMap.has(item.id)) {
         let colors = [];
@@ -71,7 +82,7 @@ LEFT JOIN materials m ON ml.materials_id = m.id
             return { id: parseInt(id), color_name };
           });
         }
-    
+
         // 加入材質處理
         let materials = [];
         if (item.materials_data) {
@@ -80,12 +91,20 @@ LEFT JOIN materials m ON ml.materials_id = m.id
             return { id: parseInt(id), material_name };
           });
         }
-    
+
+        const isNew = latestProductIds.includes(item.id);
+        const isHot = item.quantity <= 20 && item.quantity > 0;
+
+
+
+
         productMap.set(item.id, {
           ...item,
           images: item.img ? [`/uploads/${item.img}`] : [],
           colors: colors,
-          materials: materials  // 加入這行
+          materials: materials, // 加入這行
+          isNew: isNew,      // 加這行
+          isHot: isHot       // 加這行
         });
         console.log(`商品 ${item.id} (${item.name}) 的材質數據:`, {
           materials_data: item.materials_data,
@@ -252,7 +271,6 @@ router.get("/search", async (req, res) => {
 `;
     const [latestProducts] = await db.execute(latestQuery);
     const latestProductIds = latestProducts.map(p => p.id);
-
     const resultsWithBadges = paginatedResults.map(product => {
       const isNew = latestProductIds.includes(product.id);
       const isHot = product.quantity <= 20 && product.quantity > 0;

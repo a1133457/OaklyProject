@@ -130,18 +130,50 @@ const SimpleCustomerServiceAdmin = () => {
   const takeConversation = async (conversationId) => {
     try {
       const token = localStorage.getItem('agentToken');
+      console.log('發送接取請求:', { conversationId, token });
+      
       const response = await fetch(`http://localhost:3005/api/service/agent/take/${conversationId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-
-      if (response.ok) {
+  
+      console.log('回應狀態:', response.status);
+      const data = await response.json();
+      console.log('回應資料:', data);
+  
+      if (response.ok && data.success) {
         fetchConversations();
         fetchWaitingQueue();
         alert('成功接取對話');
+      } else {
+        alert('接取失敗: ' + (data.error || data.message || '未知錯誤'));
       }
     } catch (error) {
       console.error('接取對話失敗:', error);
+      alert('接取失敗: ' + error.message);
+    }
+  };
+  const endConversation = async (conversationId) => {
+    try {
+      const token = localStorage.getItem('agentToken');
+      const response = await fetch(`http://localhost:3005/api/service/conversation/${conversationId}/end`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        alert('對話已結束');
+        setActiveConversation(null);
+        setMessages([]);
+        fetchConversations();
+        fetchWaitingQueue();
+      } else {
+        alert('結束對話失敗: ' + (data.error || data.message));
+      }
+    } catch (error) {
+      console.error('結束對話失敗:', error);
+      alert('結束對話失敗: ' + error.message);
     }
   };
 
@@ -201,8 +233,13 @@ const SimpleCustomerServiceAdmin = () => {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f5f5f5' }}>
-      {/* 頂部導航 */}
+<div style={{ 
+  minHeight: '100vh',
+  paddingBottom: '100px', // 給 footer 留出足夠空間
+  display: 'flex', 
+  flexDirection: 'column', 
+  backgroundColor: '#f5f5f5'
+}}>      {/* 頂部導航 */}
       <div style={{ backgroundColor: 'white', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0, color: '#333' }}>Oakly 客服管理系統</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -277,6 +314,7 @@ const SimpleCustomerServiceAdmin = () => {
           {activeConversation ? (
             <>
               {/* 聊天標題 */}
+           
               <div style={{ padding: '20px', backgroundColor: 'white', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h2 style={{ margin: 0 }}>{activeConversation.customer_name}</h2>
@@ -288,6 +326,12 @@ const SimpleCustomerServiceAdmin = () => {
                 >
                   重新整理
                 </button>
+                <button
+  onClick={() => endConversation(activeConversation.id)}
+  style={{ padding: '8px 16px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+>
+  結束對話
+</button>
               </div>
 
               {/* 訊息區域 */}
