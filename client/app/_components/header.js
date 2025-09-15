@@ -76,12 +76,12 @@ export default function Header() {
   };
 
   // 登入/註冊頁，不顯示 header
-  if (
-    pathname.startsWith("/auth/login") ||
-    pathname.startsWith("/auth/register")
-  ) {
-    return null;
-  }
+  // if (
+  //   pathname.startsWith("/auth/login") ||
+  //   pathname.startsWith("/auth/register")
+  // ) {
+  //   return null;
+  // }
 
   return (
     <div className="container-fluid header">

@@ -29,7 +29,10 @@ export default function Total({ type }) {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const storedCoupon = localStorage.getItem("selectedCoupon");
 
-    if (storedCoupon && storedCoupon !== "null" & storedCoupon !== "undefined") {
+    if (
+      storedCoupon &&
+      (storedCoupon !== "null") & (storedCoupon !== "undefined")
+    ) {
       try {
         const couponData = JSON.parse(storedCoupon);
         console.log("找到優惠券:", couponData);
@@ -122,12 +125,14 @@ export default function Total({ type }) {
 
       // 驗證必要數據
       if (!userId) {
-        throw new Error("請先登入")
+        throw new Error("請先登入");
       }
 
       if (!items || items.length === 0) {
         throw new Error("購物車為空");
       }
+      const currentPaymentMethod = localStorage.getItem("payment");
+      setPaymentMethod(currentPaymentMethod);
 
       // 準備完整的訂單資料並存到 localStorage
       const orderDataForPayment = {
@@ -137,10 +142,10 @@ export default function Total({ type }) {
         originalAmount: totalAmount,
         coupon: selectedCoupon,
         discountAmount: discountAmount,
-        paymentMethod: paymentMethod,
+        paymentMethod: currentPaymentMethod,
         delivery: delivery,
         orderNo: `ORD${Date.now()}`, // 生成訂單編號
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       // 儲存 localStorage 供下一頁使用
@@ -150,12 +155,12 @@ export default function Total({ type }) {
       console.log("準備的訂單資料:", orderDataForPayment);
 
       // 導向付款確認頁面
-      if (paymentMethod === "信用卡") {
+      if (currentPaymentMethod === "信用卡") {
         router.push("/cart/ecpay/check");
-      } else {
+      } else if (currentPaymentMethod === "超商付款") {
         // 其他支付方式的處理
         console.log("使用其他支付方式:", paymentMethod);
-
+        router.push("/cart/fin");
       }
     } catch (error) {
       console.error("準備支付失敗:", error);
@@ -234,7 +239,11 @@ export default function Total({ type }) {
           </div>
         </div>
         <div className="nextOrBack">
-          <GreenButton step={"前往下一步"} to="/cart/ecpay/check" onClick={handleNext} />
+          <GreenButton
+            step={"前往下一步"}
+            to="/cart/ecpay/check"
+            onClick={handleNext}
+          />
           <WhiteButton step={"繼續購物"} to="/products" />
         </div>
         <div className="nextOrBack-phone">

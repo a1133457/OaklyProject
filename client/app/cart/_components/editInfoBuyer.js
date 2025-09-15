@@ -46,28 +46,30 @@ export default function EditInfo({ type, onClose }) {
     console.log("完整用戶資料:", fullUserData);
 
     if (fullUserData) {
-      if (type === "buyer") {
-        const buyerData = {
-          name: fullUserData.buyer?.name || fullUserData.name || "",
-          phone: fullUserData.buyer?.phone || fullUserData.phone || "",
-          email: fullUserData.buyer?.email || fullUserData.email || "",
-        };
-        console.log("buyer formData:", buyerData);
-        setFormData(buyerData);
-      } else if (type === "recipient") {
-        const recipientData = {
-          name: fullUserData.recipient?.name || "",
-          phone: fullUserData.recipient?.phone || "",
-          postcode: fullUserData.recipient?.postcode || "",
-          city: fullUserData.recipient?.city || "",
-          address: fullUserData.recipient?.address || "",
-          email: fullUserData.recipient?.email || "",
-        };
-        console.log("recipient formData:", recipientData);
-        setFormData(recipientData);
-      }
+      // 檢查是否有有效的 buyer 資料
+      const hasBuyer =
+        fullUserData.buyer &&
+        (fullUserData.buyer.name ||
+          fullUserData.buyer.phone ||
+          fullUserData.buyer.email);
+
+      const buyerData = hasBuyer
+        ? {
+            // 有 buyer 就用 buyer 資料
+            name: fullUserData.buyer.name || "",
+            phone: fullUserData.buyer.phone || "",
+            email: fullUserData.buyer.email || "",
+          }
+        : {
+            // 沒有 buyer 就用 user 資料
+            name: fullUserData.name || "",
+            phone: fullUserData.phone || "",
+            email: fullUserData.email || "",
+          };
+      console.log("buyer formData:", buyerData);
+      setFormData(buyerData);
     }
-  }, [user, type, isClient]);
+  }, [user, isClient]);
 
   // 除錯：檢查 user 資料
   console.log("user:", user);
@@ -88,12 +90,9 @@ export default function EditInfo({ type, onClose }) {
 
   const handleSave = () => {
     // 更新 user 資料
-    if (type === "buyer") {
-      updateUser({ buyer: formData });
-      // window.location.reload();
-    } else {
-      updateUser({ recipient: formData });
-    }
+
+    updateUser({ buyer: formData });
+    window.location.reload();
     onClose();
   };
 

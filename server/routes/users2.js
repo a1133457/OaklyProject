@@ -9,6 +9,7 @@ import path from "path";
 
 const router = express.Router();
 const upload = multer();
+
 //測試用的 JWT 密鑰
 const secretKey = "myTestSecretKey123";
 
@@ -25,15 +26,22 @@ const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 router.get("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
+
+    // 用 favorites 與 products 連結，把前端需要的欄位選出來
     const sql = `
-    SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
-           p.name, p.price, p.product_img
-    FROM favorites f
-    JOIN products p ON f.product_id = p.id
-    WHERE f.user_id = ?`;
+        SELECT
+        f.id,
+        f.product_id,
+        p.name,
+        p.price
+        FROM favorites f
+        JOIN products p ON p.id = f.product_id
+        WHERE f.user_id = ?;
+    `;
     const [rows] = await pool.execute(sql, [userId]);
     res.json({ status: "success", data: rows });
   } catch (err) {
+    console.error("GET /favorites error:", err);
     res.status(500).json({ status: "error", message: "無法取得收藏清單" });
   }
 });
@@ -42,19 +50,15 @@ router.get("/favorites", checkToken, async (req, res) => {
 router.post("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
-    const { productId, colorId, sizeId, quantity } = req.body;
+    const productId = Number(req.body.productId); // 前端送的是駝峰式 productId
 
-    const [existing] = await pool.execute(
-      "SELECT * FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
-      [userId, productId, colorId || null, sizeId || null]
-    );
-    if (existing.length > 0) {
-      return res.status(400).json({ status: "error", message: "此顏色尺寸已在收藏清單中" });
+    if (!productId) {
+      return res.status(400).json({ status: "fail", message: "缺少或不合法的 productId" });
     }
 
-    // 取得顏色名稱
-    const [colorResult] = await pool.execute("SELECT color_name FROM colors WHERE id = ?", [colorId]);
-    const colorName = colorResult[0]?.color_name || null;
+    // 可選：先確認商品存在
+    const [p] = await pool.execute("SELECT id FROM products WHERE id=?", [productId]);
+    if (!p.length) return res.status(404).json({ status: "fail", message: "商品不存在" });
 
     await pool.execute(
       "INSERT INTO favorites (user_id, product_id, color_id, size_id, color_name, quantity) VALUES (?, ?, ?, ?, ?, ?)",
@@ -66,7 +70,10 @@ router.post("/favorites", checkToken, async (req, res) => {
 
     res.json({ status: "success", message: "已加入收藏" });
   } catch (err) {
-    console.error("加入收藏錯誤:", err);
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ status: "fail", message: "已在收藏清單中" });
+    }
+    console.error("POST /favorites error:", err);
     res.status(500).json({ status: "error", message: "加入收藏失敗" });
   }
 });
