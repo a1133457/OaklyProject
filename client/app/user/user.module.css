@@ -220,7 +220,7 @@
     .userContainer {
         padding-block: 50px;
         /* 上下間距縮小 */
-        padding-inline: 50px;
+        padding-inline: 24px;
         /* 左右固定邊距，避免太擠 */
     }
 

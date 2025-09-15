@@ -76,7 +76,7 @@ export default function UserCouponPage() {
               </TabItem>
             </div>
             <Link href="/coupon" className={`btn ${styles.brownBtn}`}>
-              查看期間限定優惠券
+              查看限定優惠券
             </Link>
           </div>
 

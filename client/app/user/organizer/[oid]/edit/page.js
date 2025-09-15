@@ -641,7 +641,7 @@ export default function UserOrganizerEditPage() {
                 <GreenBorderButton onClick={handleDelete} type="button">
                   取消預約
                 </GreenBorderButton>
-                <GreenBorderButton onClick={handleSubmit} type="button">
+                <GreenBorderButton onClick={handleSubmit} type="button" bgGreen="1">
                   修改完成
                 </GreenBorderButton>
               </div>
