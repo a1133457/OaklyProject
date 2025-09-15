@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
   const [item, setItem] = useState([]);
   const router = useRouter();
 
-   // 開站自動恢復登入狀態 --------------------------
+  // 開站自動恢復登入狀態 --------------------------
   useEffect(() => {
     try {
       const raw = localStorage.getItem(userKey);
@@ -132,8 +132,7 @@ export function AuthProvider({ children }) {
         const token = result.data;
         setUser(null);
         //localStorage.setItem(appKey, token);
-        localStorage.removeItem(appKey);
-        localStorage.removeItem(userKey);
+        localStorage.clear();  //清空整個 localStorage
         router.push("/");
         // return { success: true };
       } else {
@@ -172,7 +171,9 @@ export function AuthProvider({ children }) {
       if (result.status === "success") {
         // 更新前端 user 狀態
         // const newUser = { ...user, ...data };
-        const newUser = result.data?.user ? result.data.user : { ...user, ...data };
+        const newUser = result.data?.user
+          ? result.data.user
+          : { ...user, ...data };
         setUser(newUser);
         localStorage.setItem(userKey, JSON.stringify(newUser));
         return { success: true, message: result.message };
@@ -221,7 +222,9 @@ export function AuthProvider({ children }) {
         // 若後端回傳最新 user 或 avatar 路徑，就同步更新前端
         const newUser = result.data?.user
           ? result.data.user
-          : (result.data?.avatar ? { ...user, avatar: result.data.avatar } : user);
+          : result.data?.avatar
+          ? { ...user, avatar: result.data.avatar }
+          : user;
 
         setUser(newUser);
         localStorage.setItem(userKey, JSON.stringify(newUser));
@@ -235,20 +238,27 @@ export function AuthProvider({ children }) {
 
   // 更新訂購人跟收件人---------------------------
   const updateUser = (newData) => {
-    // newData 可以是 { buyer } 或 { recipient }，更新第二次會覆蓋
-    const updateUser = { ...user };
+    const savedUser = localStorage.getItem(userKey);
+    const currentUser = savedUser ? JSON.parse(savedUser) : user;
+
+    // 創建一個新的物件來避免修改原始資料
+    const updateUser = { ...currentUser };
 
     if (newData.buyer) {
       updateUser.buyer = newData.buyer;
-    } else if (!updateUser.buyer) {
-      // 如果 user.buyer 不存在，就用原本 user 的資料當 buyer 初始值
+    } else if (
+      !updateUser.buyer ||
+      Object.keys(updateUser.buyer).length === 0
+    ) {
+      // 只有在完全沒有 buyer 資料時才創建預設值
+      // 而且要檢查是否真的是空物件
       updateUser.buyer = {
-        name: user.name || "",
-        phone: user.phone || "",
-        postcode: user.postcode || "",
-        city: user.city || "",
-        address: user.address || "",
-        email: user.email || "",
+        name: currentUser.name || "",
+        phone: currentUser.phone || "",
+        postcode: currentUser.postcode || "",
+        city: currentUser.city || "",
+        address: currentUser.address || "",
+        email: currentUser.email || "",
       };
     }
 
@@ -258,7 +268,7 @@ export function AuthProvider({ children }) {
     }
     setUser(updateUser);
     localStorage.setItem(userKey, JSON.stringify(updateUser));
-  }
+  };
 
   // 保護頁面------------------------------------
   // useEffect(() => {
@@ -266,7 +276,6 @@ export function AuthProvider({ children }) {
   //         router.replace(loginRoute); // 導頁
   //     }
   // }, [isLoading, user, pathname]);
-
 
   // status------------------------------------
   useEffect(() => {
@@ -317,7 +326,7 @@ export function AuthProvider({ children }) {
   // 取得收藏清單
   const getFavorites = async () => {
     const token = localStorage.getItem(appKey);
-    
+
     try {
       const res = await fetch(API_FAVORITES, {
         headers: { Authorization: `Bearer ${token}` },
@@ -336,7 +345,7 @@ export function AuthProvider({ children }) {
   // 加入收藏
   const addFavorite = async (productId) => {
     const token = localStorage.getItem(appKey);
-    
+
     try {
       const res = await fetch(API_FAVORITES, {
         method: "POST",
@@ -357,7 +366,7 @@ export function AuthProvider({ children }) {
   // 取消收藏
   const removeFavorite = async (productId) => {
     const token = localStorage.getItem(appKey);
-    
+
     try {
       const res = await fetch(`${API_FAVORITES}/${productId}`, {
         method: "DELETE",
@@ -371,8 +380,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-
-   // login with Google------------------------------------
+  // login with Google------------------------------------
   const loginWithGoogle = async (token, user) => {
     try {
       // 存到狀態
@@ -390,11 +398,22 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        user, register, login, logout, isLoading, users,
-        updateUser, updateUserEdit, updateUserPassword, updateUserAvatar,
-        getFavorites, addFavorite, removeFavorite,
-        loginWithGoogle
-      }}>
+        user,
+        register,
+        login,
+        logout,
+        isLoading,
+        users,
+        updateUser,
+        updateUserEdit,
+        updateUserPassword,
+        updateUserAvatar,
+        getFavorites,
+        addFavorite,
+        removeFavorite,
+        loginWithGoogle,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

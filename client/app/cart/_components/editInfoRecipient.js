@@ -14,7 +14,6 @@ export default function EditInfoRecipient({ type, onClose }) {
     postcode: "",
     city: "",
     address: "",
-    email: "",
   });
 
   // 確保只在客戶端執行
@@ -26,17 +25,20 @@ export default function EditInfoRecipient({ type, onClose }) {
   const getFullUserData = () => {
     if (!isClient) return null; // 伺服器端直接返回 null
 
-    if (user?.phone) {
-      return user; // useAuth 有完整資料就用它
-    }
-    // 否則讀取 localStorage
+    // 優先讀取 localStorage
     try {
       const savedUser = localStorage.getItem("user");
-      return savedUser ? JSON.parse(savedUser) : user;
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        console.log("從 localStorage 讀取到的資料:", parsedUser);
+        return parsedUser;
+      }
     } catch (error) {
       console.log("讀取 localStorage 失敗:", error);
-      return user;
     }
+    // localStorage 沒資料才用 useAuth 的 user
+    console.log("使用 useAuth 的 user:", user);
+    return user;
   };
 
   useEffect(() => {
@@ -46,28 +48,17 @@ export default function EditInfoRecipient({ type, onClose }) {
     console.log("完整用戶資料:", fullUserData);
 
     if (fullUserData) {
-      if (type === "buyer") {
-        const buyerData = {
-          name: fullUserData.buyer?.name || fullUserData.name || "",
-          phone: fullUserData.buyer?.phone || fullUserData.phone || "",
-          email: fullUserData.buyer?.email || fullUserData.email || "",
-        };
-        console.log("buyer formData:", buyerData);
-        setFormData(buyerData);
-      } else if (type === "recipient") {
-        const recipientData = {
-          name: fullUserData.recipient?.name || "",
-          phone: fullUserData.recipient?.phone || "",
-          postcode: fullUserData.recipient?.postcode || "",
-          city: fullUserData.recipient?.city || "",
-          address: fullUserData.recipient?.address || "",
-          email: fullUserData.recipient?.email || "",
-        };
-        console.log("recipient formData:", recipientData);
-        setFormData(recipientData);
-      }
+      const recipientData = {
+        name: fullUserData.recipient?.name || "",
+        phone: fullUserData.recipient?.phone || "",
+        postcode: fullUserData.recipient?.postcode || "",
+        city: fullUserData.recipient?.city || "",
+        address: fullUserData.recipient?.address || "",
+      };
+      console.log("recipient formData:", recipientData);
+      setFormData(recipientData);
     }
-  }, [user, type, isClient]);
+  }, [user, isClient]);
 
   // 除錯：檢查 user 資料
   console.log("user:", user);
@@ -88,12 +79,23 @@ export default function EditInfoRecipient({ type, onClose }) {
 
   const handleSave = () => {
     // 更新 user 資料
-    if (type === "buyer") {
-      updateUser({ buyer: formData });
-      // window.location.reload();
-    } else {
-      updateUser({ recipient: formData });
-    }
+    updateUser({ recipient: formData });
+
+    // 延遲一點重新初始化表單（等待 updateUser 完成）
+    setTimeout(() => {
+      const fullUserData = getFullUserData();
+      if (fullUserData?.recipient) {
+        const recipientData = {
+          name: fullUserData.recipient.name || "",
+          phone: fullUserData.recipient.phone || "",
+          postcode: fullUserData.recipient.postcode || "",
+          city: fullUserData.recipient.city || "",
+          address: fullUserData.recipient.address || "",
+        };
+        setFormData(recipientData);
+      }
+    }, 100);
+    window.location.reload();
     onClose();
   };
 

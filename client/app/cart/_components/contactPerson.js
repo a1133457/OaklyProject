@@ -11,7 +11,7 @@ export default function ContactPerson() {
   const [showForm, setShowForm] = useState(false);
   const [isOpenB, setIsOpenB] = useState(false);
   const [isOpenR, setIsOpenR] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false); //添加載入狀態
   const [buyer, setBuyer] = useState({
     name: "",
     phone: "",
@@ -25,141 +25,105 @@ export default function ContactPerson() {
     address: "",
   });
 
-
   // 從 localStorage 讀取用戶資料
   useEffect(() => {
-
     try {
       const savedUser = localStorage.getItem("user");
-      const savedBuyer = localStorage.getItem("buyer");
+      const userList = JSON.parse(savedUser);
 
-      console.log("savedBuyer:", savedBuyer);
-      console.log("savedUser:", savedUser);
+      // 只從 user 裡讀取 buyer，不要分別儲存
+      const hasBuyerData =
+        userList.buyer &&
+        (userList.buyer.name || userList.buyer.phone || userList.buyer.email);
 
-      if (savedBuyer) {
-        const buyerData = JSON.parse(savedBuyer);
-        console.log("從 localStorage 讀取的 buyer:", buyerData);
+      if (hasBuyerData) {
         setBuyer({
-          name: buyerData.name || "",
-          phone: buyerData.phone || "",
-          email: buyerData.email || "",
-          address: `${buyerData.postcode || ""}${buyerData.city || ""}${buyerData.area || ""
-            }${buyerData.address || ""}`,
+          name: userList.buyer.name || "",
+          phone: userList.buyer.phone || "",
+          email: userList.buyer.email || "",
+          address:
+            userList.buyer.address ||
+            `${userList.buyer.postcode || ""}${userList.buyer.city || ""}${
+              userList.buyer.area || ""
+            }${userList.buyer.address || ""}`,
         });
-      } else if (savedUser) {
-        // 只有當 savedUser 存在時才解析
-        const userData = JSON.parse(savedUser);
-        console.log("從 localStorage 讀取的 user:", userData);
-
-        if (userData) {
-          setBuyer({
-            name: userData.name || "",
-            phone: userData.phone || "",
-            email: userData.email || "",
-            address: `${userData.postcode || ""}${userData.city || ""}${userData.area || ""
-              }${userData.address || ""}`,
-            });
-            console.log("從 localStorage 讀取的用戶資料:", userData);
-          }
+      } else {
+        // 使用 user 基本資料
+        setBuyer({
+          name: userList.name || "",
+          phone: userList.phone || "",
+          email: userList.email || "",
+          address: `${userList.postcode || ""}${userList.city || ""}${
+            userList.area || ""
+          }${userList.address || ""}`,
+        });
       }
+
+      // 只從 user 裡讀取 recipient，不要分別儲存
+      const hasRecipientData =
+        userList.recipient &&
+        (userList.recipient.name || userList.recipient.phone);
 
       // 讀取 recipient 資料
-      const savedRecipient = localStorage.getItem("recipient");
-      if (savedRecipient) {
-        const recipientData = JSON.parse(savedRecipient);
-        console.log("從 localStorage 讀取的 recipient:", recipientData);
+      if (hasRecipientData) {
         setRecipient({
-          name: recipientData.name || "",
-          phone: recipientData.phone || "",
-          email: recipientData.email || "",
-          address: recipientData.address || "",
+          name: userList.recipient.name || "",
+          phone: userList.recipient.phone || "",
+          address: `${userList.recipient.postcode || ""}${
+            userList.recipient.city || ""
+          }${userList.recipient.address || ""}`,
         });
       }
+      setIsLoaded(true); // ← 重要：設置載入完成
     } catch (error) {
       console.log("讀取 localStorage 失敗:", error);
+      setIsLoaded(true); // ← 重要：設置載入完成
     }
   }, []);
 
   // 同步 buyer 到 localStorage
   useEffect(() => {
+    if (!isLoaded) return; // 重要：防止初始化時覆蓋資料
+
     if (buyer.name || buyer.phone || buyer.email || buyer.address) {
       localStorage.setItem("buyer", JSON.stringify(buyer));
     }
-  }, [buyer]);
-
-  // 根據邏輯決定要顯示的資料
-  // const getBuyerData = () => {
-  //   if (!localStorageUser)
-  //     return { name: "", phone: "", email: "", address: "" };
-
-  //   // 如果有 buyer 就用 buyer，沒有就用 user 本身的資料
-  //   if (localStorageUser.buyer) {
-  //     console.log("使用 buyer 資料:", localStorageUser.buyer);
-  //     return {
-  //       name: localStorageUser.buyer.name || "",
-  //       phone: localStorageUser.buyer.phone || "",
-  //       email: localStorageUser.buyer.email || "",
-  //       address:
-  //         localStorageUser.buyer.address ||
-  //         `${localStorageUser.buyer.postcode || ""}${
-  //           localStorageUser.buyer.city || ""
-  //         }${localStorageUser.buyer.area || ""}${
-  //           localStorageUser.buyer.address || ""
-  //         }`,
-  //     };
-  //   } else {
-  //     console.log("使用 user 本身資料:", localStorageUser);
-  //     return {
-  //       name: localStorageUser.name || "",
-  //       phone: localStorageUser.phone || "",
-  //       email: localStorageUser.email || "",
-  //       address: `${localStorageUser.postcode || ""}${
-  //         localStorageUser.city || ""
-  //       }${localStorageUser.area || ""}${localStorageUser.address || ""}`,
-  //     };
-  //   }
-  // };
-
-  // const getRecipientData = () => {
-  //   if (!localStorageUser)
-  //     return { name: "", phone: "", email: "", address: "" };
-
-  //   // recipient 只從 user.recipient 取得
-  //   const recipient = localStorageUser.recipient || {};
-  //   return {
-  //     name: localStorageUser.recipient?.name || "",
-  //     phone: localStorageUser.recipient?.phone || "",
-  //     email: localStorageUser.recipient?.email || "",
-  //     address: localStorageUser.recipient?.address || "",
-  //   };
-  // };
-
-  // const buyerData = getBuyerData();
-  // const recipientData = getRecipientData();
-
-  // // const [recipient, setRecipient] = useState(recipientData);
-
-  // // 監聽 localStorage 用戶資料變化 更新 recipient
-  // useEffect(() => {
-  //   setRecipient(getRecipientData());
-  // }, [localStorageUser]);
-
-
+  }, [buyer, isLoaded]);
 
   // 同步 recipient 到 localStorage
   useEffect(() => {
+    if (!isLoaded) return; // 重要：防止初始化時覆蓋資料
+
     if (recipient.name || recipient.phone || recipient.address) {
-      localStorage.setItem("recipient", JSON.stringify(recipient));
-      console.log("儲存 recipient 到 localStorage:", recipient);
+      try {
+        // 讀取現有的 user 資料
+        const savedUser = localStorage.getItem("user");
+        const userList = savedUser ? JSON.parse(savedUser) : {};
+
+        // 更新 user 中的 recipient
+        const updatedUser = {
+          ...userList,
+          recipient: recipient,
+        };
+
+        // 存回 localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        localStorage.setItem("recipient", JSON.stringify(recipient));
+        console.log("儲存 recipient 到 user:", updatedUser);
+      } catch (error) {
+        console.log("儲存 recipient 失敗:", error);
+      }
     }
-  }, [recipient]);
+  }, [recipient, isLoaded]);
 
   const handleSamePerson = (e) => {
     if (e.target.checked) {
       setRecipient({
         name: buyer.name || "",
         phone: buyer.phone || "",
-        address: buyer.address || "",
+        address: `${buyer.postcode || ""}${buyer.city || ""}${
+          buyer.area || ""
+        }${buyer.address || ""}`,
       });
     } else {
       setRecipient({
@@ -169,7 +133,6 @@ export default function ContactPerson() {
       });
     }
   };
-
 
   return (
     <>
@@ -199,9 +162,7 @@ export default function ContactPerson() {
             >
               <p>編輯</p>
             </button>
-            {isOpenB && (
-              <EditInfoBuyer onClose={() => setIsOpenB(false)} />
-            )}
+            {isOpenB && <EditInfoBuyer onClose={() => setIsOpenB(false)} />}
           </div>
           <div className="contact-line pc"></div>
           <div className="contact-detail2 pc">
@@ -229,9 +190,7 @@ export default function ContactPerson() {
             >
               <p>編輯</p>
             </button>
-            {isOpenR && (
-              <EditInfoRecipient onClose={() => setIsOpenR(false)} />
-            )}
+            {isOpenR && <EditInfoRecipient onClose={() => setIsOpenR(false)} />}
           </div>
         </div>
       </div>
