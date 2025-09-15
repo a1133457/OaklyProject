@@ -120,7 +120,6 @@ const IntegratedCustomerService = () => {
         body: JSON.stringify({
           customerName: customerInfo.name,
           customerEmail: customerInfo.email,
-          initialMessage: newMessage || '您好，我需要客服協助',
           userId: user?.id || null
         })
       });
@@ -128,6 +127,7 @@ const IntegratedCustomerService = () => {
       const data = await response.json();
 
       if (data.success) {
+        
         setConversationId(data.conversationId);
         setConversationStatus(data.status);
         setShowStartForm(false);
@@ -136,6 +136,7 @@ const IntegratedCustomerService = () => {
         loadConversationMessages(data.conversationId);
        
       } else {
+        
         setConversationStatus('auto_reply');
         addLocalMessage('目前客服繁忙，為您啟動智能客服', 'system');
         setShowStartForm(false);
@@ -182,7 +183,8 @@ const sendMessage = async () => {
 
   const userMessage = newMessage;
   setNewMessage('');
-  
+  console.log("目前對話狀態:", conversationStatus);
+
   // 先在本地添加客戶訊息
   addLocalMessage(userMessage, 'user');
 
@@ -201,6 +203,13 @@ const sendMessage = async () => {
           senderName: customerInfo.name
         })
       });
+       // ✅ 若仍在等待客服，可同時觸發智能客服
+    if (conversationStatus === 'waiting') {
+      setTimeout(() => {
+        const reply = getAutoReply(userMessage);
+        addLocalMessage(reply, 'agent', '智能客服');
+      }, 1000 + Math.random() * 2000);
+    }
     } catch (error) {
       console.error('發送訊息失敗:', error);
       addLocalMessage('訊息發送失敗，請重試', 'system');

@@ -194,10 +194,7 @@ const SimpleCustomerServiceAdmin = () => {
               登入
             </button>
           </form>
-          <div style={{ marginTop: '20px', fontSize: '14px', color: '#666', textAlign: 'center' }}>
-            <p>測試帳號: alice 或 bob</p>
-            <p>密碼: 123456</p>
-          </div>
+       
         </div>
       </div>
     );
