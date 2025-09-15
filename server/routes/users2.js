@@ -9,7 +9,14 @@ import path from "path";
 
 const router = express.Router();
 const upload = multer();
-const secretKey = process.env.JWT_SECRET_KEY;
+//測試用的 JWT 密鑰
+const secretKey = "myTestSecretKey123";
+
+
+
+// const secretKey = process.env.JWT_SECRET_KEY;
+// console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
+
 // 預設頭像
 const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 
@@ -19,10 +26,11 @@ router.get("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
     const sql = `
-      SELECT f.product_id, p.name, p.price, p.product_img
-      FROM favorites f
-      JOIN products p ON f.product_id = p.id
-      WHERE f.user_id = ?`;
+    SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
+           p.name, p.price, p.product_img
+    FROM favorites f
+    JOIN products p ON f.product_id = p.id
+    WHERE f.user_id = ?`;
     const [rows] = await pool.execute(sql, [userId]);
     res.json({ status: "success", data: rows });
   } catch (err) {
@@ -34,31 +42,118 @@ router.get("/favorites", checkToken, async (req, res) => {
 router.post("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
-    const { productId } = req.body;
-    await pool.execute(
-      "INSERT INTO favorites (user_id, product_id) VALUES (?, ?)",
-      [userId, productId]
+    const { productId, colorId, sizeId, quantity } = req.body;
+
+    const [existing] = await pool.execute(
+      "SELECT * FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
     );
+    if (existing.length > 0) {
+      return res.status(400).json({ status: "error", message: "此顏色尺寸已在收藏清單中" });
+    }
+
+    // 取得顏色名稱
+    const [colorResult] = await pool.execute("SELECT color_name FROM colors WHERE id = ?", [colorId]);
+    const colorName = colorResult[0]?.color_name || null;
+
+    await pool.execute(
+      "INSERT INTO favorites (user_id, product_id, color_id, size_id, color_name, quantity) VALUES (?, ?, ?, ?, ?, ?)",
+      [userId, productId, colorId || null, sizeId || null, colorName, quantity || 1]
+    );
+    console.log('查詢結果:', existing);
+
+
+
     res.json({ status: "success", message: "已加入收藏" });
   } catch (err) {
+    console.error("加入收藏錯誤:", err);
     res.status(500).json({ status: "error", message: "加入收藏失敗" });
   }
 });
-
-// 移除收藏
-router.delete("/favorites/:productId", checkToken, async (req, res) => {
+// 臨時調試用路由（記得之後要移除）
+// router.get("/favorites/debug/:userId", async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const sql = `
+//     SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
+//            p.name, p.price
+//     FROM favorites f
+//     JOIN products p ON f.product_id = p.id
+//     WHERE f.user_id = ?`;
+//     const [rows] = await pool.execute(sql, [userId]);
+//     res.json({ status: "success", data: rows });
+//   } catch (err) {
+//     res.status(500).json({ status: "error", message: err.message });
+//   }
+// });
+// 檢查收藏狀態
+router.get("/favorites/:productId/:colorId/:sizeId/check", checkToken, async (req, res) => {
   try {
+    
     const userId = req.decoded.id;
-    const productId = req.params.productId;
+    const { productId, colorId, sizeId } = req.params;
+
+    const [result] = await pool.execute(
+      "SELECT COUNT(*) as count FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
+    );
+
+    const isWishlisted = result[0].count > 0;
+
+    res.json({
+      status: "success",
+      data: { isWishlisted }
+    });
+  } catch (err) {
+    console.error("檢查收藏狀態錯誤:", err);
+    res.status(500).json({ status: "error", message: "檢查收藏狀態失敗" });
+  }
+});
+// 移除收藏
+router.delete("/favorites/:productId/:colorId/:sizeId", checkToken, async (req, res) => {
+  try {
+    
+    const userId = req.decoded.id;
+    const { productId, colorId, sizeId } = req.params;
     await pool.execute(
-      "DELETE FROM favorites WHERE user_id = ? AND product_id = ?",
-      [userId, productId]
+      "DELETE FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
     );
     res.json({ status: "success", message: "已取消收藏" });
   } catch (err) {
     res.status(500).json({ status: "error", message: "取消收藏失敗" });
   }
 });
+
+router.get("/favorites/:productId/:colorId/:sizeId/check", checkToken, async (req, res) => {
+  try {
+    const userId = req.decoded.id;
+    const { productId, colorId, sizeId } = req.params;
+    
+    console.log('檢查收藏 - 用戶ID:', userId);
+    console.log('檢查收藏 - 參數:', { productId, colorId, sizeId });
+    
+    const [result] = await pool.execute(
+      "SELECT COUNT(*) as count FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
+      [userId, productId, colorId || null, sizeId || null]
+    );
+    
+    console.log('SQL查詢結果:', result[0]);
+    
+    const isWishlisted = result[0].count > 0;
+    
+    console.log('最終結果:', isWishlisted);
+    
+    res.json({
+      status: "success",
+      data: { isWishlisted }
+    });
+  } catch (err) {
+    console.error("檢查收藏狀態錯誤:", err);
+    res.status(500).json({ status: "error", message: "檢查收藏狀態失敗" });
+  }
+});
+
 
 // 註冊（新增一個使用者----------------------------------
 router.post("/", upload.none(), async (req, res) => {
@@ -160,6 +255,65 @@ router.get("/search", (req, res) => {
   });
 });
 
+//0913怡卉新增 優惠券要抓的user
+router.get("/profile", checkToken, async (req, res) => {
+  console.log("=== 進入 /profile 路由 ===");
+  try {
+    const id = req.decoded.id;
+    console.log("從 token 取得的 id:", id);
+    console.log("id 的型別:", typeof id);
+    
+    const sqlCheck1 = "SELECT * FROM `users` WHERE `id` = ?;";
+    console.log("準備執行 SQL:", sqlCheck1);
+    console.log("查詢參數:", [id]);
+    
+    let user = await pool.execute(sqlCheck1, [id]).then(([result]) => {
+      console.log("原始查詢結果:", result);
+      console.log("結果數量:", result.length);
+      if (result.length > 0) {
+        console.log("第一筆資料:", result[0]);
+      }
+      return result[0];
+    });
+    
+    console.log("最終 user 變數:", user);
+    
+    if (!user) {
+      console.log("user 為空，準備拋出錯誤");
+      const err = new Error("找不到使用者");
+      err.code = 404;
+      err.status = "fail";
+      throw err;
+    }
+    // 剩餘參數 （不顯示出來的資料）
+    const {
+      id: userId,
+      password,
+      is_valid,
+      created_at,
+      updated_at,
+      ...data
+    } = user;
+
+    res.status(200).json({
+      status: "success",
+      data,
+      message: "查詢成功",
+    });
+  } catch (error) {
+    console.log(error);
+    const statusCode = error.code ?? 401;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "身份驗證錯誤，請洽管理人員";
+
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  }
+});
+
+
 // 獲取特定 ID的使用者----------------------------------
 router.get("/:id", async (req, res) => {
   // 路由參數
@@ -211,8 +365,6 @@ router.get("/:id", async (req, res) => {
     });
   }
 });
-
-
 
 
 // 更新(特定 ID 的)使用者-------------------------------

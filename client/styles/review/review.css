@@ -62,7 +62,19 @@ body {
 
 
 }
+.swal2-confirm:focus,
+.swal2-cancel:focus,
+.swal2-deny:focus,
+.swal2-close:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
 
+/* 也可以用通用選擇器 */
+.swal2-popup button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
 
 .review-page {
     display: flex;
@@ -585,6 +597,8 @@ textarea:focus {
     gap: 10px;
     justify-content: left;
 }
+
+
 
 .submit-btn,
 .return-btn {

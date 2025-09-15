@@ -78,13 +78,17 @@ body {
     font-weight: 700;
     color: #719A8B;
 }
-
+.product-item{
+    margin-top: 25px;
+}
 .nav-menu {
     display: flex;
     list-style: none;
     gap: 30px;
 }
-
+.more-items{
+    text-align: right;
+}
 .nav-link {
     color: #333;
     text-decoration: none;
@@ -145,7 +149,18 @@ body {
     width: 100%;
     padding: 0 10px;
 }
+.more-items{
+    color: #719A8B;
+}
+.more-items:hover{
+    color: #496e60;
+}
+.order-date{
+    color: #719A8B;
+    font-size: 14px;
+    text-align: left;
 
+}
 
 
 .tab-btn {
@@ -470,7 +485,6 @@ body {
     gap: 12px;
     padding-top: 6px;
     padding-bottom: 6px;
-    border-bottom: 1px #EDEDED solid;
     color: #6A6A6A;
     font-size: 16px;
     font-family: Noto Sans TC;
@@ -940,6 +954,7 @@ word-wrap: break-word
         justify-content: flex-start;
         align-items: flex-start;
         gap: 43px;
-        display: inline-flex
+        display: inline-flex;
+        box-shadow:rgba(113, 154, 139, 0.05)
     }
 }

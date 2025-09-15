@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export function useFetch(url, options) {
   // 記錄與伺服器fet後得到的資料
@@ -11,19 +11,25 @@ export function useFetch(url, options) {
   // 記錄錯誤/例外物件
   const [error, setError] = useState(null)
 
+    // 9/12新增 穩定化 options 的引用
+  const stableOptions = useMemo(() => options, [
+    options?.method,
+    JSON.stringify(options?.headers),
+    options?.body
+  ])
+
+
   useEffect(() => {
- const userStr = localStorage.getItem("user");
- const user = userStr ? JSON.parse(userStr) : null;
-  const userId = user?.id;
-    let connectedUrl = url
-    if(url && url.includes('undefined') && userId){
-       connectedUrl = connectedUrl.replace('undefined', userId)
+    // 9/12新增
+        if (!url) {
+      setLoading(false)
+      return
     }
 
     // 與伺服器進行fetch的異步函式
     async function fetchData() {
       try {
-        const res = await fetch(connectedUrl, options)
+        const res = await fetch(url, options)
         const json = await res.json()
         setData(json)
         setLoading(false) // 停止載入
@@ -34,7 +40,7 @@ export function useFetch(url, options) {
     }
     // fetch函式呼叫執行
     fetchData()
-  }, [url, options])
+  }, [url, stableOptions])
 
   return { data, loading, error }
 }

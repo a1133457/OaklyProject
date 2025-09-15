@@ -9,6 +9,8 @@ import Header from "./_components/header";
 import Footer from "./_components/footer"
 import { CartProvider } from "@/hooks/use-cart";
 // import { CartProvider } from './contexts/CartContext.js';
+import BackToTop from '@/app/products/_components/BackToTop';
+
 
 
 export const metadata = {
@@ -37,6 +39,7 @@ export default function RootLayout({ children }) {
             <ArticleProvider>
               <Header />
               {children}
+              <BackToTop />
               <Footer />
             </ArticleProvider>
           </CartProvider>

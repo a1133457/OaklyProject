@@ -11,6 +11,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")   // ✅ 錯誤訊息
+
     const { login } = useAuth()
     const router = useRouter()  // ✅ 宣告 router
 

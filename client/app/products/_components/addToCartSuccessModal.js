@@ -99,7 +99,7 @@ export default function AddToCartSuccessModal({ product, quantity, selectedColor
         <div className="cart-success-header">
           <div className="success-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="12" fill="#DBA783" />
+              <circle cx="12" cy="12" r="12" fill="#719A8B" />
               <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>

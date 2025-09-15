@@ -5,11 +5,16 @@ import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
 import { useCart } from '@/hooks/use-cart';
+import { useAuth } from "@/hooks/use-auth";
+import Swal from 'sweetalert2';
+
+
 
 
 
 
 const MainProduct = () => {
+  const { user } = useAuth();
   const [selectedFilters, setSelectedFilters] = useState({
     colors: [],
     materials: [],
@@ -43,7 +48,106 @@ const MainProduct = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showMobileSortDropdown, setShowMobileSortDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [wishlistSuccessModal, setWishlistSuccessModal] = useState({
+    isVisible: false,
+    product: null,
+    quantity: 0,
+    selectedColor: null,
+    selectedSize: null
+  });
+  const [expandedCategory, setExpandedCategory] = useState(null);
 
+// 切換分類展開狀態
+const toggleCategoryExpand = (category) => {
+  setExpandedCategory(expandedCategory === category ? null : category);
+};
+
+
+
+  // 收藏成功通知組件
+  const AddToWishlistSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
+    useEffect(() => {
+      if (isVisible) {
+        const timer = setTimeout(() => {
+          onClose();
+        }, 4000);
+
+        return () => clearTimeout(timer);
+      }
+    }, [isVisible, onClose]);
+
+    if (!isVisible || !product) return null;
+
+    const getProductImage = (product) => {
+      if (product.images && product.images.length > 0) {
+        const image = product.images[0];
+        if (typeof image === 'object' && image.url) {
+          return image.url.startsWith('http') ? image.url : `http://localhost:3005${image.url}`;
+        }
+        if (typeof image === 'string') {
+          return image.startsWith('http') ? image : `http://localhost:3005${image}`;
+        }
+      }
+      return "/img/lan/nana.webp";
+    };
+
+    return (
+      <div className="wishlist-success-overlay" onClick={onClose}>
+        <div className="wishlist-success-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="wishlist-success-header">
+            <div className="success-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="12" fill="#DBA783" />
+                <path d="M16.5 8.5l-8 8-4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h3>成功加入收藏清單！</h3>
+            <button className="close-btn" onClick={onClose}>
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="wishlist-success-content">
+            <div className="product-image2">
+              <img
+                src={getProductImage(product)}
+                alt={product.name}
+                onError={(e) => {
+                  e.target.src = "/img/lan/nana.webp";
+                }}
+              />
+            </div>
+            <div className="product-details">
+              <h4 className="product-name-m">{product.name}</h4>
+              <p className="product-price-p">NT$ {product.price?.toLocaleString()}</p>
+              <div className="product-info-o">
+                {selectedColor && (
+                  <span className="color-label">顏色: {selectedColor.color_name}</span>
+                )}
+                {selectedSize && (
+                  <span className="size-label">尺寸: {selectedSize.size_label}</span>
+                )}
+                <span className="quantity-info">數量: {quantity}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="wishlist-success-actions">
+            <button className="continue-shopping" onClick={onClose}>
+              繼續瀏覽
+            </button>
+            <button className="view-wishlist" onClick={() => {
+              window.location.href = '/user/favorites';
+            }}>
+              查看收藏清單
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,6 +184,8 @@ const MainProduct = () => {
 
     } catch (error) {
       console.error('獲取最新商品失敗:', error);
+    }finally {
+      setIsLoading(false); // ← 加入這行
     }
   };
 
@@ -106,6 +212,8 @@ const MainProduct = () => {
 
     } catch (error) {
       console.error('獲取熱賣商品失敗:', error);
+    }finally {
+      setIsLoading(false); // ← 加入這行
     }
   };
 
@@ -166,8 +274,12 @@ const MainProduct = () => {
 
   const addToCartFromModal = () => {
     if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
-      return;
+      Swal.fire({
+        title: "請選擇商品規格",
+        text: "請選擇顏色和尺寸後再加入購物車",
+        icon: "warning",
+        confirmButtonText: "我知道了"
+      }); return;
     }
 
     addToCart(currentCartProduct, cartQuantity, selectedColor, selectedSize);
@@ -189,6 +301,17 @@ const MainProduct = () => {
     }
 
     return '/img/lan/placeholder.jpeg';
+  };
+
+  // 關閉收藏成功通知
+  const closeWishlistSuccessModal = () => {
+    setWishlistSuccessModal({
+      isVisible: false,
+      product: null,
+      quantity: 0,
+      selectedColor: null,
+      selectedSize: null
+    });
   };
 
   // 新增分類資料映射
@@ -426,11 +549,15 @@ const MainProduct = () => {
 
 
 
-  // 處理頁面切換
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      // 滾動到商品區域頂部
+
+      // 只有換頁時才更新URL中的page參數
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('page', page.toString());
+      window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+
       document.querySelector('.products-grid')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
@@ -529,8 +656,12 @@ const MainProduct = () => {
     const category = decodeURIComponent(urlParams.get('category') || '');
     const subcategory = decodeURIComponent(urlParams.get('subcategory') || '');
     const type = urlParams.get('type') || '';
+    const page = parseInt(urlParams.get('page')) || 1;
 
     console.log('URL 參數:', { category, subcategory, type });
+
+    setCurrentPage(page);
+
 
     if (type === 'latest') {
       fetchLatestProducts();
@@ -598,7 +729,6 @@ const MainProduct = () => {
 
         // console.log('獲取的商品:', allProducts);
         setProducts(Array.isArray(allProducts) ? allProducts : []);
-        setCurrentPage(1);
       } catch (err) {
         console.error("產品 API 請求錯誤：", err);
         setProducts([]);
@@ -621,6 +751,41 @@ const MainProduct = () => {
   //       console.error("產品 API 請求錯誤：", err);
   //     });
   // }, []);
+
+  useEffect(() => {
+    const loadWishlistStatus = async () => {
+      const token = localStorage.getItem('reactLoginToken');
+      console.log('Token:', token);
+
+      if (!token) return;
+      try {
+        // 獲取用戶所有收藏
+        const response = await fetch('http://localhost:3005/api/users/favorites', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          const wishlistState = {};
+          result.data.forEach(favorite => {
+            const key = `${favorite.product_id}_${favorite.color_id}_${favorite.size_id}`;
+            wishlistState[key] = true;
+          });
+          setIsWishlisted(wishlistState);
+        }
+      } catch (error) {
+        console.error('載入收藏狀態失敗:', error);
+      }
+    };
+    loadWishlistStatus();
+  }, []);
+
+
+
 
   const currentProducts = getCurrentPageProducts();
 
@@ -649,35 +814,23 @@ const MainProduct = () => {
       const categoryInfo = categoryData[categoryName] || categoryData[''];
       setCurrentTitle(categoryInfo.title);
       setCurrentHeroImage(categoryInfo.image);
-
     }
 
     // 清除其他篩選條件
     clearFilters();
   };
-  // 添加收藏相關函數
-  const handleWishlistToggle = async (product, e) => {
-    e.stopPropagation();
-    e.preventDefault();
 
-    console.log('handleWishlistToggle 被調用', product.id);
-    console.log('isWishlisted 狀態:', isWishlisted[product.id]);
 
-    if (isWishlisted[product.id]) {
-      await removeFromWishlist(product.id);
-    } else {
-      openWishlistModal(product);
-    }
-  };
 
   const openWishlistModal = async (product) => {
     console.log('openWishlistModal 被調用', product);
     console.log('product.images:', product.images);
+
+    setCurrentWishlistProduct(product);
     setSelectedColor(product.colors?.[0] || null);
     setSelectedSize(product.sizes?.[0] || null);
     setWishlistQuantity(1);
     console.log('準備設置 showWishlistModal 為 true');
-
     setShowWishlistModal(true);
     document.body.classList.add('no-scroll');
 
@@ -702,97 +855,251 @@ const MainProduct = () => {
   };
 
   const addToWishlist = async () => {
-    if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
+    const isLoggedIn = await checkAuthStatus();
+    if (!isLoggedIn) {
+      Swal.fire({
+        title: "請先登入",
+        text: "您需要登入才能使用收藏功能",
+        icon: "info",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/auth/login';
+        }
+      });
       return;
     }
 
+    if (!selectedColor || !selectedSize) {
+      Swal.fire({
+        title: "請選擇商品規格",
+        text: "請選擇顏色和尺寸後再加入收藏",
+        icon: "warning",
+        confirmButtonText: "我知道了",
+        confirmButtonColor: "#DBA783"
+
+      }); return;
+    }
+
     try {
-      const userId = localStorage.getItem('userId') || 1;
       const wishlistData = {
-        userId: userId,
         productId: currentWishlistProduct.id,
         colorId: selectedColor.id,
         sizeId: selectedSize.id,
         quantity: wishlistQuantity
       };
 
-      const response = await fetch('http://localhost:3005/api/wishlist', {
+      const response = await fetch('http://localhost:3005/api/users/favorites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
         },
         body: JSON.stringify(wishlistData)
       });
 
       const result = await response.json();
+
       if (result.status === 'success') {
+        const key = `${currentWishlistProduct.id}_${selectedColor.id}_${selectedSize.id}`;
         setIsWishlisted(prev => ({
           ...prev,
-          [currentWishlistProduct.id]: true
+          [key]: true
         }));
         setShowWishlistModal(false);
         document.body.classList.remove('no-scroll');
 
-        // 顯示成功通知
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #9FA79A;
-        color: white;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        font-size: 14px;
-      `;
-        notification.textContent = '已加入收藏';
-        document.body.appendChild(notification);
+        setWishlistSuccessModal({
+          isVisible: true,
+          product: currentWishlistProduct,
+          quantity: wishlistQuantity,
+          selectedColor: selectedColor,
+          selectedSize: selectedSize
+        });
+      } else {
+        // 先關閉收藏彈窗
+        setShowWishlistModal(false);
+        document.body.classList.remove('no-scroll');
+        // 您的錯誤處理代碼放在這裡
+        if (result.message && result.message.includes("已在收藏清單中")) {
+          Swal.fire({
+            title: "已在收藏清單中",
+            text: "此商品的這個顏色和尺寸組合已經在您的收藏清單中了",
+            icon: "info",
+            confirmButtonText: "確定",
+            position: 'center',
+            confirmButtonColor: "#DBA783",
 
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 3000);
+
+
+          });
+        } else {
+          Swal.fire({
+            title: "加入收藏失敗",
+            text: "請稍後再試或聯絡客服",
+            icon: "error",
+            position: 'center',
+            confirmButtonText: "確定",
+            confirmButtonColor: "#DBA783"
+
+          });
+        }
       }
     } catch (err) {
       console.error('加入收藏失敗:', err);
-      alert('加入收藏時發生錯誤');
+      Swal.fire({
+        title: "發生錯誤",
+        text: "加入收藏時發生錯誤，請稍後再試",
+        icon: "error",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+
+      });
+    }
+  };
+  const checkAuthStatus = async () => {
+    const token = localStorage.getItem('reactLoginToken');
+    if (!token) return false;
+
+    try {
+      const response = await fetch('http://localhost:3005/api/users/status', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.status !== 401;
+    } catch {
+      return false;
+    }
+  };
+  // 添加收藏相關函數
+  const handleWishlistToggle = async (product, e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const isLoggedIn = await checkAuthStatus();
+    if (!isLoggedIn) {
+      Swal.fire({
+        title: "請先登入",
+        text: "您需要登入才能使用收藏功能",
+        icon: "info",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/auth/login';
+        }
+      });
+      return;
+    }
+
+    // 檢查是否有任何收藏組合
+    const hasWishlist = hasAnyWishlist(product.id);
+
+    if (hasWishlist) {
+      // 如果已收藏，找到第一個收藏的組合並移除
+      const wishlistKeys = Object.keys(isWishlisted).filter(key =>
+        key.startsWith(`${product.id}_`) && isWishlisted[key]
+      );
+
+      if (wishlistKeys.length > 0) {
+        const firstKey = wishlistKeys[0];
+        const [productId, colorId, sizeId] = firstKey.split('_');
+        await removeFromWishlist(productId, colorId, sizeId);
+      }
+    } else {
+      // 如果未收藏，打開選擇彈窗
+      openWishlistModal(product);
     }
   };
 
-  const removeFromWishlist = async (productId) => {
+
+
+
+  const removeFromWishlist = async (productId, colorId, sizeId) => {
     try {
-      const userId = localStorage.getItem('userId') || 1;
-      const response = await fetch(`http://localhost:3005/api/wishlist/${userId}/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const result = await Swal.fire({
+        title: "確定要移除收藏嗎？",
+        text: "此商品將從您的收藏清單中移除",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#DBA783",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "確定移除",
+        cancelButtonText: "取消"
       });
 
-      const result = await response.json();
-      if (result.status === 'success') {
+      if (!result.isConfirmed) return;
+
+      const response = await fetch(
+        `http://localhost:3005/api/users/favorites/${productId}/${colorId}/${sizeId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
+          }
+        }
+      );
+
+      const data = await response.json();
+      if (data.status === "success") {
+        const key = `${productId}_${colorId}_${sizeId}`;
         setIsWishlisted(prev => ({
           ...prev,
-          [productId]: false
+          [key]: false
         }));
+        Swal.fire({
+          title: "已移除收藏",
+          text: "商品已從收藏清單中移除",
+          icon: "success",
+          confirmButtonText: "確定",
+          confirmButtonColor: "#DBA783",
+          timer: 2000,
+          timerProgressBar: true
+        });
       }
     } catch (err) {
       console.error('移除收藏失敗:', err);
+      Swal.fire({
+        title: "移除失敗",
+        text: "移除收藏時發生錯誤，請稍後再試",
+        icon: "error",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#DBA783"
+      });
     }
   };
-
   const handleAddToCart = (product, e) => {
     e.stopPropagation();
 
     const defaultColor = product.colors?.[0] || null;
     const defaultSize = product.sizes?.[0] || null;
-
     addToCart(product, 1, defaultColor, defaultSize);
+  };
+
+  const checkWishlistStatus = (productId, colorId, sizeId) => {
+    const key = `${productId}_${colorId}_${sizeId}`;
+    const result = isWishlisted[key] || false;
+    console.log(`checkWishlistStatus(${productId}, ${colorId}, ${sizeId}) = ${result}`);
+    console.log('完整 isWishlisted:', isWishlisted);
+    return result;
+  };
+
+
+  const hasAnyWishlist = (productId) => {
+    console.log('=== hasAnyWishlist 被調用 ===');
+    console.log('檢查商品 ID:', productId);
+    console.log('當前 isWishlisted 狀態:', isWishlisted);
+
+    const productKeys = Object.keys(isWishlisted).filter(key =>
+      key.startsWith(`${productId}_`) && isWishlisted[key]
+    );
+    console.log('找到的相關 keys:', productKeys);
+    console.log('最終結果:', productKeys.length > 0);
+    return productKeys.length > 0;
   };
 
   const getColorCode = (colorName) => {
@@ -811,21 +1118,31 @@ const MainProduct = () => {
     return colorMap[colorName] || '#cccccc';
   };
 
+
+
+  const getProductColors = (product) => {
+    if (Array.isArray(product.colors)) return product.colors;
+    // 如果 colors 是 ID，需要從某處獲取完整數據
+    return [];
+  };
+
+  const getProductSizes = (product) => {
+    if (Array.isArray(product.sizes)) return product.sizes;
+    return [];
+  };
+
+
   return (
     <div className="main-product-page">
+
       {/* 子導航欄 */}
       <div className="breadcrumb-nav-top">
         <div className="sub-nav-content">
           <div className="breadcrumb">
             <a href="/" onClick={(e) => {
               e.preventDefault();
-              setSelectedCategory('');
-              setSelectedSubCategory('');
-              setCurrentTitle('全部商品');
-              setCurrentHeroImage('/img/lan/header.png');
-
-            }}>首頁</a>
-            <div className="arrow">&gt;</div>
+              window.location.href = '/';
+            }}>首頁</a>            <div className="arrow">&gt;</div>
             <a href="#" onClick={(e) => {
               e.preventDefault();
               setSelectedCategory('');
@@ -976,18 +1293,8 @@ const MainProduct = () => {
 
             <a href="/" onClick={(e) => {
               e.preventDefault();
-              setSelectedCategory('');
-              setSelectedSubCategory('');
-              setCurrentTitle('全部商品');
-              setCurrentHeroImage('/img/lan/header.png');
-              fetch("http://localhost:3005/api/products")
-                .then(res => res.json())
-                .then(json => setProducts(Array.isArray(json) ? json : []))
-                .catch(err => console.error(err));
-
-            }}>
-              首頁
-            </a>
+              window.location.href = '/';
+            }}>首頁</a>
             <div className="arrow">&gt;</div>
             <a href="#" onClick={(e) => {
               e.preventDefault();
@@ -1197,6 +1504,11 @@ const MainProduct = () => {
               </div>
             </aside>
 
+
+
+
+
+
             {/* 右側商品區域 */}
             <main className="products-section">
               <div className="per-page-select">
@@ -1283,12 +1595,10 @@ const MainProduct = () => {
 
                       {/* 右上角愛心按鈕 */}
                       <button
-                        className={`wishlist-heart-btn ${isWishlisted[product.id] ? 'active' : ''}`}
-                        onClick={(e) => {
-                          handleWishlistToggle(product, e);
-                        }}
+                        className={`wishlist-heart-btn ${hasAnyWishlist(product.id) ? 'active' : ''}`}
+                        onClick={(e) => handleWishlistToggle(product, e)}
                       >
-                        <i className={`fa-${isWishlisted[product.id] ? 'solid' : 'regular'} fa-heart`}></i>
+                        <i className={`fa-${hasAnyWishlist(product.id) ? 'solid' : 'regular'} fa-heart`}></i>
                       </button>
                     </div>
                   ))}
@@ -1558,7 +1868,184 @@ const MainProduct = () => {
 
             {/* Modal 內容 */}
             <div className="modal-body flex-grow-1 overflow-auto p-0">
-             
+{/* 移動版導航選單 */}
+<div className="mobile-sub-nav">
+  <div className="mobile-sub-nav-links">
+    <a href="#" className="mobile-sub-nav-link"
+      onClick={(e) => {
+        e.preventDefault();
+        fetchLatestProducts();
+        closeMobileFilter();
+      }}>
+      最新商品
+    </a>
+
+    <a href="#" className="mobile-sub-nav-link"
+      onClick={(e) => {
+        e.preventDefault();
+        fetchHotProducts();
+        closeMobileFilter();
+      }}>
+      熱賣
+    </a>
+
+    {/* 客廳分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '客廳'); closeMobileFilter(); }}
+        >
+          客廳
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '客廳' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('客廳'); }}
+        ></i>
+      </div>
+      {expandedCategory === '客廳' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '邊桌'); closeMobileFilter(); }}>
+            邊桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '單椅'); closeMobileFilter(); }}>
+            單椅/單人沙發
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '茶几'); closeMobileFilter(); }}>
+            茶几
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '書櫃'); closeMobileFilter(); }}>
+            書櫃 / 書架
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '書桌'); closeMobileFilter(); }}>
+            書桌 / 書桌椅
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '邊櫃'); closeMobileFilter(); }}>
+            邊櫃 / 收納櫃
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 廚房分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '廚房'); closeMobileFilter(); }}
+        >
+          廚房
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '廚房' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('廚房'); }}
+        ></i>
+      </div>
+      {expandedCategory === '廚房' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '實木餐桌'); closeMobileFilter(); }}>
+            實木餐桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '餐椅'); closeMobileFilter(); }}>
+            餐椅 / 椅子
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '吧台桌'); closeMobileFilter(); }}>
+            吧台桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '吧台椅'); closeMobileFilter(); }}>
+            吧台椅
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 臥室分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '臥室'); closeMobileFilter(); }}
+        >
+          臥室
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '臥室' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('臥室'); }}
+        ></i>
+      </div>
+      {expandedCategory === '臥室' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '床架'); closeMobileFilter(); }}>
+            床架
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '床邊桌'); closeMobileFilter(); }}>
+            床邊桌
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '化妝台'); closeMobileFilter(); }}>
+            化妝台
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '全身鏡'); closeMobileFilter(); }}>
+            全身鏡 / 鏡子
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '衣櫃'); closeMobileFilter(); }}>
+            衣櫃 / 衣架
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 兒童房分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '兒童房'); closeMobileFilter(); }}
+        >
+          兒童房
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '兒童房' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('兒童房'); }}
+        ></i>
+      </div>
+      {expandedCategory === '兒童房' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '桌椅組'); closeMobileFilter(); }}>
+            桌椅組
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '衣櫃'); closeMobileFilter(); }}>
+            衣櫃
+          </a>
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納櫃'); closeMobileFilter(); }}>
+            收納櫃
+          </a>
+        </div>
+      )}
+    </div>
+
+    {/* 收納用品分類 */}
+    <div className="mobile-dropdown">
+      <div className="mobile-dropdown-header-wrapper">
+        <a href="#" 
+          className="mobile-dropdown-header-link"
+          onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納用品'); closeMobileFilter(); }}
+        >
+          收納用品
+        </a>
+        <i className={`fas fa-chevron-${expandedCategory === '收納用品' ? 'up' : 'down'} dropdown-toggle-icon`}
+           onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('收納用品'); }}
+        ></i>
+      </div>
+      {expandedCategory === '收納用品' && (
+        <div className="mobile-dropdown-items slide-down">
+          <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納盒'); closeMobileFilter(); }}>
+            收納盒 / 收納箱
+          </a>
+        </div>
+      )}
+    </div>
+
+    <a href="#" className="mobile-sub-nav-link">
+      It's Oakly
+    </a>
+  </div>
+</div>
               {/* 價格 */}
               <div className="filter-section">
                 <h6 className="filter-title">價格</h6>
@@ -1639,7 +2126,7 @@ const MainProduct = () => {
 
             {/* Modal 底部 */}
             <div className="modal-footer">
-         
+
               <button
                 type="button"
                 className="btn btn-primary"
@@ -1648,7 +2135,7 @@ const MainProduct = () => {
               >
                 套用篩選
               </button>
-                   <button
+              <button
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={handleMobileFilterReset}
@@ -1662,6 +2149,15 @@ const MainProduct = () => {
 
       {/* Modal 背景遮罩 */}
       {isMobileFilterOpen && <div className="modal-backdrop fade show"></div>}
+      {/* 收藏成功通知 */}
+      <AddToWishlistSuccessModal
+        product={wishlistSuccessModal.product}
+        quantity={wishlistSuccessModal.quantity}
+        selectedColor={wishlistSuccessModal.selectedColor}
+        selectedSize={wishlistSuccessModal.selectedSize}
+        isVisible={wishlistSuccessModal.isVisible}
+        onClose={closeWishlistSuccessModal}
+      />
     </div>
   );
 };

@@ -15,6 +15,9 @@ import reviewsRouter from './routes/review.js';
 import cartRouter from './routes/cart/ecpay3.js';
 import shipRouter from './routes/seCallback.js';
 
+import notifyRoutes from './routes/notify.js';
+
+
 
 
 // 設定區
@@ -68,6 +71,8 @@ app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("api/ship/711", shipRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
+app.use('/api/notify', notifyRoutes);
+
 
 
 

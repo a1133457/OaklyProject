@@ -81,6 +81,8 @@ export function AuthProvider({ children }) {
         localStorage.setItem(appKey, token);
         localStorage.setItem(userKey, JSON.stringify(user));
         console.log("成功");
+        router.push("/");
+
         return { success: true, message: result.message };
       } else {
         console.log("失敗");
@@ -297,69 +299,11 @@ export function AuthProvider({ children }) {
   // 收藏 API ------------------------------
   const API_FAVORITES = "http://localhost:3005/api/users/favorites";
 
-  // 取得收藏清單
-  const getFavorites = async () => {
-    const token = localStorage.getItem(appKey);
-    
-    try {
-      const res = await fetch(API_FAVORITES, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const result = await res.json();
-      if (result.status === "success") {
-        return { success: true, data: result.data };
-      }
-      return { success: false, message: result.message };
-    } catch (err) {
-      console.error(err);
-      return { success: false, message: "伺服器錯誤" };
-    }
-  };
-
-  // 加入收藏
-  const addFavorite = async (productId) => {
-    const token = localStorage.getItem(appKey);
-    
-    try {
-      const res = await fetch(API_FAVORITES, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productId }),
-      });
-      const result = await res.json();
-      return result;
-    } catch (err) {
-      console.error(err);
-      return { success: false, message: "伺服器錯誤" };
-    }
-  };
-
-  // 取消收藏
-  const removeFavorite = async (productId) => {
-    const token = localStorage.getItem(appKey);
-    
-    try {
-      const res = await fetch(`${API_FAVORITES}/${productId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const result = await res.json();
-      return result;
-    } catch (err) {
-      console.error(err);
-      return { success: false, message: "伺服器錯誤" };
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
         user, register, login, logout, isLoading, users,
-        updateUser, updateUserEdit, updateUserPassword, updateUserAvatar,
-        getFavorites, addFavorite, removeFavorite
+        updateUser, updateUserEdit, updateUserPassword, updateUserAvatar
       }}>
       {children}
     </AuthContext.Provider>

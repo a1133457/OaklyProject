@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 
-// 學校電腦
+// // 學校電腦
 const pool = mysql.createPool({
   host: "localhost",
   port: 3306,
@@ -20,7 +20,7 @@ const pool = mysql.createPool({
 // });
 
 
-
+// 雅嵐
 // const pool = mysql.createPool({
 //   host: 'localhost',
 //   user: 'root',

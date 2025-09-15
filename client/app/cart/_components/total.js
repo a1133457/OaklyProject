@@ -109,6 +109,10 @@ export default function Total({ type }) {
     localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
     setSelectedCoupon(coupon);
     calculatedDiscount(coupon);
+    // 將選中的優惠券存到 localStorage
+    localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
+    setSelectedCoupon(coupon);
+    calculatedDiscount(coupon);
   };
 
   // 修正 handleNext 函數，只準備數據，不直接調用 API
