@@ -213,6 +213,7 @@
 @media (max-width: 768px) {
     .layout {
         flex-direction: column;
+        min-width: 430px;
     }
 
     .sidebarWrapper {
