@@ -55,11 +55,66 @@ CREATE TABLE IF NOT EXISTS favorites (
     CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_fav_product FOREIGN KEY (product_id) REFERENCES products (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+----加進去
+ALTER TABLE favorites 
+ADD COLUMN color_id INT NULL,
+ADD COLUMN size_id INT NULL,
+ADD COLUMN quantity INT DEFAULT 1;
 -- UNSIGNED 不一致
 -- product_id → INT UNSIGNED
 -- id → INT
--- 必須一致，否則會錯。
+-- 必須一致，否則會錯。 
+ALTER TABLE favorites
+DROP COLUMN id;
 
+ALTER TABLE favorites 
+ADD COLUMN color_name VARCHAR(50);
+
+-- 複合唯一索引（防止重複收藏同商品同顏色）
+
+DROP INDEX IF EXISTS idx_favorites_unique;
+CREATE UNIQUE INDEX idx_favorites_unique 
+ON favorites(user_id, product_id, color_id);
+SELECT * FROM favorites WHERE user_id = 1 AND product_id = 52 AND color_id = 1;
+
+CREATE TABLE stock_notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  product_id INT,
+  color_id INT,
+  size_id INT,
+  email VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 暫時關閉外鍵約束
+SET FOREIGN_KEY_CHECKS = 0;
+-- 更新 stocks 表
+UPDATE stocks
+SET size_id = 7
+WHERE id = 3;
+
+UPDATE stocks
+SET amount = 0
+WHERE id = 3;
+
+
+DELETE FROM stocks
+WHERE id = 2
+
+INSERT INTO stocks (id, color_id, size_id, amount)
+VALUES
+(3, 1, 2, 0),
+(3, 4, 3, 0),
+(3, 10, 6, 0);
+
+-- 重新開啟外鍵約束
+SET FOREIGN_KEY_CHECKS = 1;
+
+SELECT * FROM stocks WHERE id = 1 AND color_id = 1 AND size_id = 1;
+-------------------------------------
 -- 收藏文章
 CREATE TABLE IF NOT EXISTS bookmarks (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -324,27 +379,15 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id) REFERENCES products (id)
 )
 
--- 付款日誌表 
-CREATE TABLE payment_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_number VARCHAR(20),
-    user_id INT UNSIGNED,
-    amount INT,
-    status ENUM('success', 'failed', 'pending') NOT NULL,
-    error_message TEXT,
-    payment_data TEXT, -- 綠界回傳的完整資料（JSON格式）
-    create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    
-    INDEX idx_order_number (order_number),
-    INDEX idx_user_id (user_id),
-    INDEX idx_status (status),
-    INDEX idx_create_at (create_at),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
+UPDATE order_items oi
+JOIN product_sizes ps 
+  ON oi.product_id = ps.product_id
+JOIN sizes s 
+  ON ps.size_id = s.id
+  SET oi.size = s.size_label
+  WHERE oi.size = s.size_label;
 
-
-
-
+ALTER TABLE order_items MODIFY COLUMN size VARCHAR(500);
 
 -- 商品補充
 -- --------------------------------------------------------

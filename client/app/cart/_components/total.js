@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 
 export default function Total({ type }) {
   const [coupon, setCoupon] = useState([]);
+  const [coupon, setCoupon] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
@@ -105,6 +106,10 @@ export default function Total({ type }) {
 
   const handleSelectCoupon = (coupon) => {
     console.log("選擇的優惠券:", coupon);
+    // 將選中的優惠券存到 localStorage
+    localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
+    setSelectedCoupon(coupon);
+    calculatedDiscount(coupon);
     // 將選中的優惠券存到 localStorage
     localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
     setSelectedCoupon(coupon);

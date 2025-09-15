@@ -2,12 +2,14 @@
 
 import "@/styles/cart/cartCard.css";
 import React, { useState } from "react";
+import React, { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
 // sweetalert2 對話盒
 import Swal from "sweetalert2";
 // sweetalert2 整合 react 的函式
 import withReactContent from "sweetalert2-react-content";
 
+export default function CartCard({ type, selectedItems, onItemSelect }) {
 export default function CartCard({ type, selectedItems, onItemSelect }) {
   const [showForm, setShowForm] = useState(false);
   const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } =
@@ -65,6 +67,8 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                       <h6>{item.name}</h6>
                       <p>顏色: {item.color || "無顏色"}</p>
                       <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                      <p>顏色: {item.color || "無顏色"}</p>
+                      <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
                       {/* <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p> */}
                     </div>
                   </div>
@@ -106,6 +110,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
           {/* 手機-------------------------- */}
           <div className="cart-line phone"></div>
           <div className="cart-card phone">
+            {items.map((item, index) => (
             {items.map((item, index) => (
               <div key={index} className="cardAll">
                 <div className="cart-main phone">
@@ -167,6 +172,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
       return (
         <>
           <div className="cart-card pc">
+            {items.map((item, index) => (
             {items.map((item, index) => (
               <div key={index} className="cart-main">
                 <div className="card-left">

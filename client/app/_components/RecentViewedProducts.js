@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/app/contexts/CartContext';
+
 
 
 const RecentViewedProducts = ({ 
   currentProductId, 
   maxItems = 8,
   handleWishlistToggle,
+  hasAnyWishlist,
   isProductInWishlist,
   addToCart,
   handleCartClick
@@ -14,6 +16,8 @@ const RecentViewedProducts = ({
   const [recentProducts, setRecentProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const router = useRouter();
+
   
 
   // 響應式顯示數量
@@ -167,6 +171,7 @@ const RecentViewedProducts = ({
       </div>
     );
   }
+  
 
   return (
     <div className="recent-viewed-products">
@@ -208,7 +213,7 @@ const RecentViewedProducts = ({
             <div 
               key={`recent-${product.id}`} 
               className="product-card recent-product-card"
-              style={{ width: `${100 / recentProducts.length}%` }}
+              style={{ width: `${100 / recentProducts.length}%`,zIndex: 0 }}
             >
               <div className="product-image" onClick={() => handleProductClick(product.id)}>
                 <img 
@@ -218,16 +223,29 @@ const RecentViewedProducts = ({
                     e.target.src = "https://via.placeholder.com/300x200/f0f0f0/666?text=無圖片";
                   }}
                 />
-                {/* 收藏按鈕 */}
-                <div 
-                  className={`product-heart-icon ${isProductInWishlist && isProductInWishlist(product.id) ? 'wishlisted' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWishlistToggle && handleWishlistToggle(product, e);
-                  }}
-                >
-                  <i className={`fa-${isProductInWishlist && isProductInWishlist(product.id) ? 'solid' : 'regular'} fa-heart`}></i>
-                </div>
+          <button
+  className={`wishlist-heart-btn ${hasAnyWishlist(product.id) ? 'active' : ''}`}
+  onClick={async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // 總是獲取完整商品資料
+    try {
+      const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        handleWishlistToggle(result.data, e);
+      } else {
+        handleWishlistToggle(product, e);
+      }
+    } catch (error) {
+      handleWishlistToggle(product, e);
+    }
+  }}
+>
+                <i className={hasAnyWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+              </button>
               </div>
               <div className="product-info" onClick={() => handleProductClick(product.id)}>
                 <h3 className="product-name">{product.name}</h3>
