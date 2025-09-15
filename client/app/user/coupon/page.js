@@ -13,7 +13,6 @@ import UsedCoupon from "./_components/UsedCoupon";
 import Link from "next/link";
 import clsx from "clsx";
 
-
 export default function UserCouponPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("canUse");
@@ -24,9 +23,9 @@ export default function UserCouponPage() {
   const userCouponsResult = useFetch(
     isReady && token ? `http://localhost:3005/api/user/coupons` : null,
     {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       // 加上 key 來穩定請求
-      key: isReady && token ? 'user-coupons' : null
+      key: isReady && token ? "user-coupons" : null,
     }
   );
 
@@ -49,9 +48,8 @@ export default function UserCouponPage() {
   // }
 
   // 使用者優惠券資料
-  const userCoupons = userCouponsResult.data ? userCouponsResult.data.data : [];
+  const userCoupons = userCouponsResult.data?.data || [];
   console.log("使用者的優惠券資料", userCoupons);
-
 
   return (
     <>
@@ -83,14 +81,18 @@ export default function UserCouponPage() {
           </div>
 
           <div className="d-flex flex-wrap gap-lg align-items-xl-start align-items-center">
-            {!isReady ?
-              <div className="d-flex justify-content-center align-items-center w-100" style={{ minHeight: '200px' }}>
+            {!isReady ? (
+              <div
+                className="d-flex justify-content-center align-items-center w-100"
+                style={{ minHeight: "200px" }}
+              >
                 <div className="loaderLine"></div>
-              </div> :
+              </div>
+            ) : (
               <>
                 {activeTab === "canUse" &&
                   (userCoupons.filter((coupon) => coupon.status === 0).length >
-                    0 ? (
+                  0 ? (
                     userCoupons
                       .filter((coupon) => coupon.status === 0)
                       .map((coupon) => (
@@ -98,14 +100,15 @@ export default function UserCouponPage() {
                           key={coupon.id}
                           tag={
                             coupon.category_names &&
-                              coupon.category_names.split(",").length >= 6
+                            coupon.category_names.split(",").length >= 6
                               ? "全館適用"
                               : `${coupon.category_names}適用`
                           }
                           name={coupon.name}
                           smallCost={`滿 $${coupon.min_discount} 使用`}
-                          date={`${coupon.get_at.split("T")[0]} – ${coupon.expire_at.split("T")[0]
-                            }`}
+                          date={`${coupon.get_at.split("T")[0]} – ${
+                            coupon.expire_at.split("T")[0]
+                          }`}
                           costCate1={coupon.discount_type === 1 ? "$ " : ""}
                           cost={
                             coupon.discount_type === 1
@@ -116,11 +119,13 @@ export default function UserCouponPage() {
                         />
                       ))
                   ) : (
-                    <div className="text-center w-100 p-4">沒有可使用的優惠券</div>
+                    <div className="text-center w-100 p-4">
+                      沒有可使用的優惠券
+                    </div>
                   ))}
                 {activeTab === "used" &&
                   (userCoupons.filter((coupon) => coupon.status === 1).length >
-                    0 ? (
+                  0 ? (
                     userCoupons
                       .filter((coupon) => coupon.status === 1)
                       .map((coupon) => (
@@ -128,7 +133,7 @@ export default function UserCouponPage() {
                           key={coupon.id}
                           tag={
                             coupon.category_names &&
-                              coupon.category_names.split(",").length >= 6
+                            coupon.category_names.split(",").length >= 6
                               ? "全館適用"
                               : `${coupon.category_names}適用`
                           }
@@ -149,10 +154,12 @@ export default function UserCouponPage() {
                         />
                       ))
                   ) : (
-                    <div className="text-center w-100 p-4">沒有已使用的優惠券</div>
+                    <div className="text-center w-100 p-4">
+                      沒有已使用的優惠券
+                    </div>
                   ))}
               </>
-            }
+            )}
           </div>
         </div>
       </section>
