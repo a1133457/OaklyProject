@@ -9,12 +9,13 @@ import path from "path";
 
 const router = express.Router();
 const upload = multer();
+
 //測試用的 JWT 密鑰
-const secretKey = "myTestSecretKey123";
+// const secretKey = "myTestSecretKey123";
 
 
 
-// const secretKey = process.env.JWT_SECRET_KEY;
+const secretKey = process.env.JWT_SECRET_KEY;
 // console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
 
 // 預設頭像

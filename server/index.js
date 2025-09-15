@@ -42,7 +42,6 @@ let corsOptions = {
 
 // 路由區
 const app = express();
-app.use(cors(corsOptions));
 app.use(cors({ origin: ["http://localhost:3000"], credentials: true })); 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -62,6 +61,12 @@ app.get("/", (req, res) => {
   res.send("首頁");
 });
 
+// 登出 API：清掉 cookie，永遠回成功
+app.post("/api/users/logout", (req, res) => {
+  res.clearCookie("token", { path: "/" }); // 如果你設 cookie 時有 sameSite/secure，這裡也要加
+  return res.json({ status: "success" });
+});
+
 
 app.use("/api/users", usersRouter);
 app.use('/api', reviewsRouter);
@@ -73,7 +78,7 @@ app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
-app.use("api/ship/711", shipRouter);
+app.use("/api/ship/711", shipRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
 
