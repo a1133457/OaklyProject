@@ -62,6 +62,10 @@ CREATE TABLE IF NOT EXISTS favorites (
     ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+SELECT * FROM service_messages 
+WHERE conversation_id = 1 
+ORDER BY sent_at;
+
 ----加進去
 ALTER TABLE favorites 
 ADD COLUMN color_id INT NULL,

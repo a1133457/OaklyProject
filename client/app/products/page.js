@@ -7,6 +7,9 @@ import { Link } from "react-router-dom";
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from "@/hooks/use-auth";
 import Swal from 'sweetalert2';
+import IntegratedCustomerService from "@/app/_components/agent/IntegratedCustomerService";
+
+
 
 
 
@@ -2199,6 +2202,10 @@ const MainProduct = () => {
         isVisible={wishlistSuccessModal.isVisible}
         onClose={closeWishlistSuccessModal}
       />
+
+<IntegratedCustomerService />
+
+
     </div>
   );
 };
