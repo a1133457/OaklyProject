@@ -717,6 +717,7 @@ word-wrap: break-word
         min-height: 100vh;
         background: linear-gradient(135deg, #f8fffe 0%, #f0f9f7 100%);
         font-family: 'Noto Sans TC', sans-serif;
+        min-width: 430px;
     }
 
     .container {
@@ -728,6 +729,7 @@ word-wrap: break-word
         padding: 20px 0;
         flex-direction: column;
         gap: 20px;
+        width: 100%;
         background: transparent;
     }
 
@@ -739,7 +741,7 @@ word-wrap: break-word
     /* 右側訂單詳情內容調整 */
     .order-detail-content {
         width: 100%;
-        padding: 0;
+        padding: 0 20px;
         gap: 16px;
     }
 
@@ -754,6 +756,8 @@ word-wrap: break-word
         overflow-x: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
+
+
     }
 
     .order-tabs::-webkit-scrollbar {
@@ -762,7 +766,7 @@ word-wrap: break-word
 
     .tab-btn {
         flex: 1;
-        min-width: 80px;
+        min-width: 40px;
         padding: 12px 8px;
         font-size: 11px;
         font-weight: 600;
@@ -1238,6 +1242,21 @@ word-wrap: break-word
     .user_layout___Gpso{
         display: flex !important;
         min-width: 430px !important;
+        gap:0px
 
+
+    }
+    .user_userContainer__HVfA3{
+        min-width:100%;        
+    }
+    .container-fluid header{
+        width: fit-content;
+    }
+    .user_content__b3Bmk{
+        width: 430px !important;
+    }
+    .container-fluid{
+        margin: 0;
+        padding: 0;
     }
 }

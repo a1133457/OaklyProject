@@ -2586,50 +2586,50 @@ COMMIT;
 -- 在你的 MySQL 資料庫中執行以下 SQL
 USE your_database_name;
 
--- 客服人員表
-CREATE TABLE IF NOT EXISTS service_agents (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(100),
-  status ENUM('online', 'busy', 'offline') DEFAULT 'offline',
-  max_chats INT DEFAULT 3,
-  current_chats INT DEFAULT 0,
-  department VARCHAR(50) DEFAULT '一般客服',
-  avatar VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- -- 客服人員表
+-- CREATE TABLE IF NOT EXISTS service_agents (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   username VARCHAR(50) UNIQUE NOT NULL,
+--   password VARCHAR(255) NOT NULL,
+--   name VARCHAR(100) NOT NULL,
+--   email VARCHAR(100),
+--   status ENUM('online', 'busy', 'offline') DEFAULT 'offline',
+--   max_chats INT DEFAULT 3,
+--   current_chats INT DEFAULT 0,
+--   department VARCHAR(50) DEFAULT '一般客服',
+--   avatar VARCHAR(255),
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
 
--- 客服對話表  
-CREATE TABLE IF NOT EXISTS service_conversations (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  customer_id INT,
-  customer_name VARCHAR(100) NOT NULL,
-  customer_email VARCHAR(100),
-  agent_id INT,
-  status ENUM('waiting', 'active', 'ended') DEFAULT 'waiting',
-  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  ended_at TIMESTAMP NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- -- 客服對話表  
+-- CREATE TABLE IF NOT EXISTS service_conversations (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   customer_id INT,
+--   customer_name VARCHAR(100) NOT NULL,
+--   customer_email VARCHAR(100),
+--   agent_id INT,
+--   status ENUM('waiting', 'active', 'ended') DEFAULT 'waiting',
+--   started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   ended_at TIMESTAMP NULL,
+--   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
 
--- 客服訊息表
-CREATE TABLE IF NOT EXISTS service_messages (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  conversation_id INT NOT NULL,
-  sender_type ENUM('customer', 'agent', 'system') NOT NULL,
-  sender_id INT,
-  sender_name VARCHAR(100),
-  message TEXT NOT NULL,
-  message_type ENUM('text', 'image', 'file') DEFAULT 'text',
-  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  is_read BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (conversation_id) REFERENCES service_conversations(id) ON DELETE CASCADE
-);
+-- -- 客服訊息表
+-- CREATE TABLE IF NOT EXISTS service_messages (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   conversation_id INT NOT NULL,
+--   sender_type ENUM('customer', 'agent', 'system') NOT NULL,
+--   sender_id INT,
+--   sender_name VARCHAR(100),
+--   message TEXT NOT NULL,
+--   message_type ENUM('text', 'image', 'file') DEFAULT 'text',
+--   sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   is_read BOOLEAN DEFAULT FALSE,
+--   FOREIGN KEY (conversation_id) REFERENCES service_conversations(id) ON DELETE CASCADE
+-- );
 
--- 插入測試客服帳號
-INSERT INTO service_agents (username, password, name, email, department) VALUES
-('alice', '123456', '愛麗絲', 'alice@oakly.com', '一般客服'),
-('bob', '123456', '鮑伯', 'bob@oakly.com', '技術支援');
+-- -- 插入測試客服帳號
+-- INSERT INTO service_agents (username, password, name, email, department) VALUES
+-- ('alice', '123456', '愛麗絲', 'alice@oakly.com', '一般客服'),
+-- ('bob', '123456', '鮑伯', 'bob@oakly.com', '技術支援');

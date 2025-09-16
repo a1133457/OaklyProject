@@ -13,7 +13,8 @@ const upload = multer();
 const secretKey = "myTestSecretKey123";
 
 
-
+import dotenv from 'dotenv';
+dotenv.config();
 // const secretKey = process.env.JWT_SECRET_KEY;
 // console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
 

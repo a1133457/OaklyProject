@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import "@/styles/products/chat.css";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from "@/hooks/use-auth";
 import Swal from 'sweetalert2';
-import IntegratedCustomerService from "@/app/_components/agent/IntegratedCustomerService";
+import WebSocketCustomerService from "@/app/_components/agent/WebSocketCustomerService";
 
 
 
@@ -1601,8 +1602,12 @@ const MainProduct = () => {
                         cursor: 'pointer',
                         animationDelay: `${index * 0.1}s`
                       }}>
+                      <div className="badges">
+
                       {product.isNew && <span className="badge-new">新品</span>}
                       {product.isHot && <span className="badge-hot">熱賣</span>}
+                      </div>
+
                       <div className="image">
                         {product.images && product.images.length > 0 ? (
                           <img
@@ -2203,7 +2208,7 @@ const MainProduct = () => {
         onClose={closeWishlistSuccessModal}
       />
 
-<IntegratedCustomerService />
+<WebSocketCustomerService />
 
 
     </div>

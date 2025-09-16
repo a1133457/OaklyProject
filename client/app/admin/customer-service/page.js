@@ -1,7 +1,5 @@
-import SimpleCustomerServiceAdmin from '@/app/_components/agent/SimpleCustomerServiceAdmin.js';
+import WebSocketCustomerServiceAdmin from '@/app/_components/agent/WebSocketCustomerServiceAdmin'
 
 export default function CustomerServiceAdminPage() {
-  return <SimpleCustomerServiceAdmin />;
-  
+  return <WebSocketCustomerServiceAdmin />;
 }
-

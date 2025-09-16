@@ -1,4 +1,5 @@
 import express from "express";
+import { createServer } from 'http'; 
 import multer from "multer";
 import cors from "cors";
 import moment from "moment";
@@ -13,7 +14,8 @@ import articleRouter from "./routes/article.js";
 import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
 import notifyRoutes from './routes/notify.js';
-import agentRoutes from './routes/agent.js';
+import chatRouter, { initializeChatWebSocket } from "./routes/agent.js";
+
 
 
 
@@ -36,6 +38,8 @@ let corsOptions = {
 
 // 路由區
 const app = express();
+const server = createServer(app);  
+
 app.use(cors(corsOptions)); 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -59,9 +63,47 @@ app.use("/api/article", articleRouter);
 app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
-app.use('/api/service', agentRoutes);
+app.use("/api/chat", chatRouter);
 
 
+
+
+
+// 修改：啟動伺服器的方式
+const PORT = 3005;
+
+const startServer = async () => {
+  try {
+    // 初始化 WebSocket 聊天功能
+    const io = initializeChatWebSocket(server);
+    console.log('WebSocket 聊天功能已初始化');
+    
+    // 使用 server.listen 而不是 app.listen
+    server.listen(PORT, () => {
+      console.log("主機啟動 http://localhost:3005");
+      console.log("WebSocket 聊天服務已啟動");
+    });
+    
+  } catch (error) {
+    console.error('伺服器啟動失敗:', error);
+    process.exit(1);
+  }
+};
+
+// 優雅關閉處理
+const gracefulShutdown = () => {
+  console.log('正在關閉伺服器...');
+  server.close(() => {
+    console.log('伺服器已關閉');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+// 啟動伺服器
+startServer();
 
 
 
