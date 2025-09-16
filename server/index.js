@@ -25,14 +25,29 @@ import authGoogleRouter from "./routes/auth-google.js";
 
 // 設定區
 const upload = multer();
-let whitelist = ["http://localhost:5500", "http://localhost:3000"];
+let whitelist = [
+  "http://localhost:5500",
+  "http://localhost:3000",
+  "https://exit-mixture-spies-casinos.trycloudflare.com",
+  "https://emap.pcsc.com.tw",  // 添加 7-11 官方網域
+  "https://emap.presco.com.tw" // 也添加這個（可能會用到）
+];
 let corsOptions = {
   credentials: true,
   origin(origin, callback) {
-    if (!origin || whitelist.includes(origin)) {
+    if (!origin) {
       callback(null, true)
+      return;
+    }
+
+
+    // 檢查是否在白名單中
+    if (whitelist.includes(origin)) {
+      console.log('✅ CORS 允許:', origin);
+      callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'))
+      console.log('❌ CORS 拒絕:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   }
 }
@@ -42,9 +57,9 @@ let corsOptions = {
 // 路由區
 const app = express();
 app.use(cors(corsOptions));
-app.use(cors({ origin: ["http://localhost:3000"], credentials: true })); 
+// app.use(cors({ origin: ["http://localhost:3000"], credentials: true }));
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')) //後端提供public的靜態檔案
 app.use('/uploads', express.static('uploads'));
 
@@ -52,6 +67,7 @@ app.use('/uploads', express.static('uploads'));
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   console.log('Content-Type:', req.headers['content-type']);
+  console.log('Origin:', req.headers.origin);
   console.log('Body:', req.body);
   next();
 });
@@ -72,7 +88,7 @@ app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
-app.use("api/ship/711", shipRouter);
+app.use("/api/ship/711", shipRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
 

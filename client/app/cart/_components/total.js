@@ -248,7 +248,7 @@ export default function Total({ type }) {
         </div>
         <div className="nextOrBack-phone">
           <WhiteButton step={"繼續購物"} to="/products" />
-          <GreenButton step={"前往下一步"} to="/cart/detail" />
+          <GreenButton step={"前往下一步"} to="/cart/ecpay/check" onClick={handleNext} />
         </div>
       </>
     );

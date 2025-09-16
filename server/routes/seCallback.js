@@ -10,11 +10,11 @@ const upload = multer();
 // POST /api/ship/711/callback
 router.post("/callback", upload.none(), (req, res) => {
   try {
-    const body = req.body;
-    console.log("Received 711 store data:", body);
+    const storeData = req.body;
+    console.log("Received 711 store data:", storeData);
 
     // 驗證必要欄位
-    if (!body) {
+    if (!storeData.storeid && !storeData.POIid) {
       return res.status(400).json({
         success: false,
         message: "沒有接收到資料",
@@ -22,13 +22,14 @@ router.post("/callback", upload.none(), (req, res) => {
     }
 
     // 建立查詢字串
-    const queryParams = new URLSearchParams(body).toString();
+    const queryParams = new URLSearchParams(storeData).toString();
 
     // 組成重新導向 URL
-    const redirectUrl = `${process.env.FRONTEND_URL}/ship/callback?${queryParams}`;
-
+    const frontendUrl = 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/cart/shipCallback?${queryParams}`;
     // 重新導向到前端回調頁面
     res.redirect(302, redirectUrl);
+
   } catch (error) {
     console.error("711 callback error:", error);
     res.status(500).json({

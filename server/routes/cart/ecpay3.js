@@ -274,9 +274,10 @@ router.post("/ecpay/confirm", async (req, res) => {
           buyer_phone, 
           recipient_name, 
           recipient_phone, 
-          postal_code, 
-          address
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          address,
+          payment_status,
+          payment_method
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         orderNo,
         orderData.user_id,
@@ -286,8 +287,9 @@ router.post("/ecpay/confirm", async (req, res) => {
         orderData.buyer_phone,
         orderData.recipient_name,
         orderData.recipient_phone,
-        orderData.postal_code,
-        orderData.address
+        orderData.address,
+        orderData.payment_status,
+        orderData.payment_method
       ]);
 
       const orderId = orderResult.insertId;

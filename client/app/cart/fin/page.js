@@ -242,14 +242,12 @@ function CartFinContent() {
                                     <div className="info-1 pc">
                                         <h6>收件人</h6>
                                         <h6>收件人電話</h6>
-                                        <h6>郵遞區號</h6>
                                         <h6>收件地址</h6>
                                     </div>
                                     <div className="info-2 pc">
-                                        <p>{orderData?.recipient_name || "全圓佑"}</p>
-                                        <p>{orderData?.recipient_phone || "(+886) 912345678"}</p>
-                                        <p>{orderData?.postal_code || "320"}</p>
-                                        <p>{orderData?.address || "320 桃園市中壢區新生路二段421號"}</p>
+                                        <p>{orderData?.recipient_name}</p>
+                                        <p>{orderData?.recipient_phone}</p>
+                                        <p>{orderData?.address}</p>
                                     </div>
                                 </div>
                             </div>
@@ -274,7 +272,7 @@ function CartFinContent() {
                     </div>
                 </div>
 
-                {/* 手機版 */}
+                {/* 手機版 ---------------------------------------------- */}
                 <div className="main-side phone">
                     <div className="cart-main-first phone">
                         <h2>完成訂單</h2>

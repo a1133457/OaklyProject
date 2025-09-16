@@ -360,8 +360,11 @@ CREATE TABLE orders (
     -- 收件人資訊
     recipient_name VARCHAR(100) NOT NULL,
     recipient_phone VARCHAR(20) NOT NULL,
-    postal_code VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
+    -- 付款資訊
+    payment_created VARCHAR(20),
+    payment_status VARCHAR(20),
+    payment_method VARCHAR(20),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
