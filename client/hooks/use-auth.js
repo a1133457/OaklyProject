@@ -331,7 +331,7 @@ export function AuthProvider({ children }) {
   };
 
   // 加入收藏
-  const addFavorite = async (productId) => {
+  const addFavorite = async (productId, colorId, sizeId, colorName, quantity = 1) => {
     const token = localStorage.getItem(appKey);
 
     try {
@@ -341,7 +341,7 @@ export function AuthProvider({ children }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, colorId, sizeId, colorName, quantity  }),
       });
       const result = await res.json();
       return result;
@@ -352,11 +352,11 @@ export function AuthProvider({ children }) {
   };
 
   // 取消收藏
-  const removeFavorite = async (productId) => {
+  const removeFavorite = async (productId, colorId, sizeId) => {
     const token = localStorage.getItem(appKey);
 
     try {
-      const res = await fetch(`${API_FAVORITES}/${productId}`, {
+      const res = await fetch(`${API_FAVORITES}/${productId}/${colorId}/${sizeId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

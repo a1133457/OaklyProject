@@ -23,10 +23,16 @@ export default function FavoritesPage() {
         })();
     }, [getFavorites]);
 
-    const onRemove = async (productId) => {
-        const result = await removeFavorite(productId);
+    const onRemove = async (productId, colorId, sizeId) => {
+        const result = await removeFavorite(productId, colorId, sizeId);
         if (result.status === 'success') {
-            setList(prev => prev.filter(item => item.product_id !== productId));
+            setList(prev =>
+                prev.filter(item => 
+                    !(item.product_id === productId 
+                    && item.color_id === colorId 
+                    && item.size_id === sizeId)
+                )
+            );
         }
     };
 
@@ -42,7 +48,7 @@ export default function FavoritesPage() {
     return (
         <div>
             {list.map(item => (
-                <div key={item.product_id} className={styles.favoritesRow}>
+                <div key={`${item.product_id}-${item.color_id}-${item.size_id}`} className={styles.favoritesRow}>
                     <img
                         src={item.product_img}
                         alt={item.name}
@@ -55,7 +61,7 @@ export default function FavoritesPage() {
                     <div className={styles.iconActions}>
                         <i
                             className={`bi bi-heart-fill ${styles.heart}`}
-                            onClick={() => onRemove(item.product_id)}
+                            onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
                             role="button"
                             title="取消收藏"
                         />
