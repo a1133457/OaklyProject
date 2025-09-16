@@ -115,37 +115,25 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     console.log("logout");
     const API = "http://localhost:3005/api/users/logout";
-    const appKey = "reactLoginToken";
-    const userKey = "user";
-    const cart = "cart";
-    const token = localStorage.getItem(appKey);
+    
     try {
-      if (!token) throw new Error("Token 不存在");
-      const res = await fetch(API, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const result = await res.json();
-      if (result.status == "success") {
-        const token = result.data;
-        setUser(null);
-        //localStorage.setItem(appKey, token);
-        localStorage.clear();  //清空整個 localStorage
-        router.push("/");
-        // return { success: true };
-      } else {
-        //alert(result.message)
-        // 接 吐司？
-        throw new Error(result.message); //老師版
-        //return { success: false, message: result.message };
-      }
+      await fetch(API, {
+      method: "POST",
+      credentials: "include",   // 🔑 讓 cookie 帶過去，後端才能清掉
+    });
+
+    // 清掉前端狀態
+    setUser(null);
+    localStorage.removeItem(appKey);
+    localStorage.removeItem(userKey);
+
+    router.push("/"); // 導回首頁
     } catch (error) {
-      console.log(`解析token失敗: ${error.message}`);
+      console.log(`logout 失敗: ${error.message}`);
       setUser(null);
       localStorage.removeItem(appKey);
-      alert(error.message);
+      localStorage.removeItem(userKey);
+      // alert(error.message);
     }
   };
 
