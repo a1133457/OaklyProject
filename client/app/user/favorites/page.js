@@ -30,8 +30,16 @@ export default function FavoritesPage() {
     const { addToCart, openSuccessModal } = useCart();
     // 相對路徑 → 完整 URL（保險用）
     const toSrc = (p) => {
-        if (!p) return "/img/placeholder.png";
-        return p.startsWith("http") ? p : `http://localhost:3005/${p.replace(/^\/+/, "")}`;
+        if (!p) return "/img/placeholder.jpg";
+        if (p.startsWith("http")) return p;
+        const clean = p.replace(/^\/+/, "");
+        // 後端上傳檔：已含 uploads/
+        if (clean.startsWith("uploads/")) return `http://localhost:3005/${clean}`;
+        // 只有檔名（DB 只存 *.jpg）：補上 uploads/
+        if (!clean.includes("/")) return `http://localhost:3005/uploads/${clean}`;
+        // 其他相對路徑：先走前端 public
+        if (clean.startsWith("img/")) return `http://localhost:3000/${clean}`;
+        return `http://localhost:3000/${clean}`;
     };
 
     const toCartProduct = (item) => ({
@@ -42,14 +50,14 @@ export default function FavoritesPage() {
         name: item.name,
         price: Number(item.price) || 0,
         image: item.product_img,       // 你的 use-cart 會存整包物件到 localStorage
-        
+
         color_id: item.color_id || null,
         color_name: item.color_name || "無顏色",
         size_id: item.size_id || null,
         size_label: item.size_label || "無尺寸",
         // ⬇ 為了相容 cartCard.js 的讀法
         colors: { id: item.color_id ?? 0, color_name: item.color_name || "無顏色" },
-        sizes:  item.size_label ? [{ id: item.size_id ?? 0, size_label: item.size_label }] : [],
+        sizes: item.size_label ? [{ id: item.size_id ?? 0, size_label: item.size_label }] : [],
         materials_id: item.materials_id ?? 0,
         materials: { id: item.materials_id ?? 0, material_name: item.material_name || "無類別" },
     });
@@ -144,8 +152,7 @@ export default function FavoritesPage() {
             ))} */}
             {list.map(item => (
                 <div key={`${item.product_id}-${item.color_id}-${item.size_id}`} className={styles.favoritesCard}>
-                    <img src={item.product_img} alt={item.name} />
-
+                    <img src={toSrc(item.product_img)} alt={item.name} />
 
                     <div className={styles.favoritesBody}>
                         <div className={styles.productName}>{item.name}</div>

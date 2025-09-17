@@ -35,14 +35,29 @@ router.get("/favorites", checkToken, async (req, res) => {
         c.color_name,
         s.size_label,
         CASE
-          WHEN p.product_img LIKE 'http%' THEN p.product_img
-          ELSE CONCAT('http://localhost:3005/', TRIM(LEADING '/' FROM p.product_img))
+          WHEN pi.img LIKE 'http%' THEN pi.img
+          WHEN pi.img LIKE 'uploads/%' OR pi.img LIKE '/uploads/%'
+            THEN CONCAT('http://localhost:3005/', TRIM(LEADING '/' FROM pi.img))
+          WHEN pi.img IS NULL OR pi.img = ''
+            THEN NULL
+          ELSE CONCAT('http://localhost:3005/uploads/', TRIM(LEADING '/' FROM pi.img))
         END AS product_img
       FROM favorites f
       JOIN products p ON f.product_id = p.id
+
+      LEFT JOIN (
+        SELECT product_id, MIN(id) AS first_img_id
+        FROM product_img
+        GROUP BY product_id
+      ) pim ON pim.product_id = p.id
+
+      LEFT JOIN product_img pi ON pi.id = pim.first_img_id
+
       LEFT JOIN colors c ON f.color_id = c.id
       LEFT JOIN sizes s ON f.size_id = s.id
-      WHERE f.user_id = ?;
+      
+      WHERE f.user_id = ?
+      ORDER BY f.updated_at DESC
     `;
     const [rows] = await pool.execute(sql, [userId]);
     res.json({ status: "success", data: rows });
