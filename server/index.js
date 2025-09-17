@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: "chunny.env" });
 
 import express from "express";
+import { createServer } from 'http'; 
 import multer from "multer";
 import cors from "cors";
 import moment from "moment";
@@ -19,6 +20,10 @@ import cartRouter from './routes/cart/ecpay3.js';
 import shipRouter from './routes/seCallback.js';
 
 import notifyRoutes from './routes/notify.js';
+import chatRouter, { initializeChatWebSocket } from "./routes/agent.js";
+
+
+
 
 import authResetRouter from "./routes/authReset.js";
 import authGoogleRouter from "./routes/auth-google.js";
@@ -56,6 +61,8 @@ let corsOptions = {
 
 // 路由區
 const app = express();
+const server = createServer(app);  
+
 app.use(cors(corsOptions));
 // app.use(cors({ origin: ["http://localhost:3000"], credentials: true }));
 app.use(express.json());
@@ -100,6 +107,47 @@ app.use('/api/notify', notifyRoutes);
 
 app.use("/api/auth", authResetRouter);
 app.use("/api/auth", authGoogleRouter); // => POST /api/auth/google
+app.use("/api/chat", chatRouter);
+
+
+
+
+
+// 修改：啟動伺服器的方式
+const PORT = 3005;
+
+const startServer = async () => {
+  try {
+    // 初始化 WebSocket 聊天功能
+    const io = initializeChatWebSocket(server);
+    console.log('WebSocket 聊天功能已初始化');
+    
+    // 使用 server.listen 而不是 app.listen
+    server.listen(PORT, () => {
+      console.log("主機啟動 http://localhost:3005");
+      console.log("WebSocket 聊天服務已啟動");
+    });
+    
+  } catch (error) {
+    console.error('伺服器啟動失敗:', error);
+    process.exit(1);
+  }
+};
+
+// 優雅關閉處理
+const gracefulShutdown = () => {
+  console.log('正在關閉伺服器...');
+  server.close(() => {
+    console.log('伺服器已關閉');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+// 啟動伺服器
+startServer();
 
 
 
