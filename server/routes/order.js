@@ -196,11 +196,6 @@ ORDER BY o.create_at DESC, oi.id ASC;
       data: orders,
       message: orders.length === 0 ? "目前沒有訂單" : "訂單查詢成功",
     });
-    res.status(200).json({
-      status: "success",
-      data: orders,
-      message: "訂單查詢成功",
-    });
   } catch (error) {
     if (connection) await connection.rollback();
     const statusCode = typeof error.code === "number" ? error.code : 500;
