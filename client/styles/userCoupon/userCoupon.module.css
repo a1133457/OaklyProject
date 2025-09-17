@@ -2,6 +2,10 @@
   width: 48px;
   height: 180px;
   background-color: var(--primary-04, #9db8af);
+  transition: all 0.3s ease-in;
+  &:hover{
+    background-color: var(--primary-01);
+  }
   img {
     width: 16px;
     height: 26px;
@@ -33,6 +37,7 @@
   flex-shrink: 0; /* 防止被壓縮 */
 }
 
+
 .couponCardUsed {
   min-width: 382px;
   max-width: 450px;
@@ -42,8 +47,21 @@
   flex-shrink: 0; /* 防止被壓縮 */
 }
 
+.couponCardCart {
+  width: 310px;
+  height: 180px;
+  padding-left: 20px;
+  border: 2px solid var(--primary-04, #9db8af);
+
+  @media (min-width: 1200px) {
+    width: 340px;
+  }
+}
+
 .cost {
   font-size: 42px;
+  color: inherit !important; /* 加上 !important 強制覆蓋汙染問題 */
+  font-weight: inherit;
 }
 
 .brownBtn {
@@ -61,3 +79,4 @@
     color: white !important;
   }
 }
+

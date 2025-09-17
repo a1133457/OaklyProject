@@ -6,13 +6,17 @@ import Link from 'next/link'
 import styles from '@/app/auth/auth.module.css'
 import UserTextInput from '@/app/_components/UserTextInput'
 import Button from '@/app/_components/Button'
+import GoogleLoginButton from './GoogleLoginButton'
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")   // ✅ 錯誤訊息
+
     const { login } = useAuth()
     const router = useRouter()  // ✅ 宣告 router
+    const { loginWithGoogle } = useAuth()
 
     const onSubmit = async (e) => {
         e.preventDefault()
@@ -21,8 +25,8 @@ export default function LoginPage() {
         if (result.success) {
             alert("登入成功")
             router.push('/');   // ✅ 只在成功時才跳首頁
-            router.refresh();
-            window.location.reload();
+            // router.refresh();
+            // window.location.reload();
 
         } else {
             alert(result.message || "登入失敗，請再試一次")
@@ -61,8 +65,17 @@ export default function LoginPage() {
 
                     <Button type="submit" variant="primary01" size="userlg">登入</Button>
 
+                    <div className={styles.divider}><span>or</span></div>
+                    
+                    <GoogleLoginButton
+                        onSuccess={({ token, user }) => {
+                            loginWithGoogle(token, user)   // ✅ 呼叫 use-auth.js 新增的函式
+                            router.push("/")    // ✅ 成功後導頁
+                        }}
+                    />
+                    
                     <div className={styles.links}>
-                        <Link href="#">忘記密碼</Link>
+                        <Link href="/auth/forgotpassword">忘記密碼</Link>
                         <Link href="/auth/register">加入會員</Link>
                     </div>
                 </form>

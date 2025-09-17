@@ -2,7 +2,7 @@
 
 import styles from '@/styles/coupon/coupon.module.css'
 
-export default function CouponCard({ tag, date, discountNumber, discountType, smallSpend }) {
+export default function CouponCard({ tag, date, discountNumber, discountType, smallSpend, couponId, onClaim }) {
   return (
     <>
       <div
@@ -23,7 +23,7 @@ export default function CouponCard({ tag, date, discountNumber, discountType, sm
             <h6 className="t-primary03">{smallSpend}</h6>
           </div>
         </div>
-        <button className={`btn t-primary01 ${styles.btnGet}`}>點擊領取</button>
+        <button onClick={()=>{onClaim(couponId)}} className={`btn t-primary01 ${styles.btnGet}`}>點擊領取</button>
       </div>
     </>
   )

@@ -1,4 +1,3 @@
-// 建立新檔案: /app/_components/CategoryDropdown.js
 import React from 'react';
 import Link from 'next/link';
 

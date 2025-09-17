@@ -7,9 +7,10 @@
     color: #919191;
     /* 內容最大寬，但不超出視窗 */
     max-width: min(1440px, 100%);
-    margin-inline: auto; /* 置中 */
+    margin-inline: auto;
+    /* 置中 */
     /* 上方距離 */
-    padding-block: 40px; 
+    padding-block: 40px;
     /* RWD 左右留白：16px ~ 40px，會隨螢幕寬度平滑變化 */
     padding-inline: clamp(16px, 4vw, 60px);
 }
@@ -24,7 +25,7 @@
 
 /* Sidebar：固定寬度 + 與表單間距（依設計稿調整數值） */
 .sidebarWrapper {
-    
+
     /* padding: 60px; */
     /* 側欄固定 220px；想更寬就改 */
     flex: 0 0 256px;
@@ -93,10 +94,16 @@
 }
 
 .favoritesRow {
-    display: flex;
+    /* display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 20px;
+    border-bottom: 1px solid #9db8af; */
+    display: grid;
+    grid-template-columns: 140px 1fr 120px 80px;
+    /* 140px 放圖片，1fr 放商品名，120px 放價錢，80px 放 icon 區 */
+    align-items: center;
+    padding: 20px 0;
     border-bottom: 1px solid #9db8af;
 }
 
@@ -114,6 +121,11 @@
 
 .heart {
     color: #d4a373;
+    cursor: pointer;
+}
+
+.cart {
+    cursor: pointer;
 }
 
 
@@ -203,23 +215,48 @@
 
 
 
-/* 手機版：側欄改到上面、去掉分隔線與間距，表單全寬 */
-@media (max-width: 768px) {
+/* 手機版 (<= 430px) */
+@media (max-width: 430px) {
+    .userContainer {
+        padding-block: 50px;
+        /* 上下間距縮小 */
+        padding-inline: 50px;
+        /* 左右固定邊距，避免太擠 */
+    }
+
     .layout {
         flex-direction: column;
+        gap: 0px;
     }
 
     .sidebarWrapper {
-        margin-right: 0;
-        margin-bottom: 20px;
-        flex-basis: auto;
-        border-right: none;
-        padding-right: 0;
+        display: none;
+        /* 手機版隱藏側欄 */
     }
 
-    .formContainer {
-        max-width: 100%;
-        padding: 0 15px;
-        /* 手機左右留白 */
+    .content {
+        flex: 1;
+        min-width: 100%;
+        /* 表單內容滿版 */
     }
+
+    .avatarImg {
+        width: 120px;
+        /* 頭像縮小 */
+        height: 120px;
+    }
+
+    .formButtons {
+        margin-top: 50px;
+        /* 上方間隔加大 */
+        gap: 4px;
+        /* 兩顆按鈕之間縮小一點 */
+    }
+
+    .favoritesRow {
+        grid-template-columns: 100px 1fr;
+        /* 收藏清單：縮圖 + 內容 */
+        gap: 12px;
+    }
+
 }

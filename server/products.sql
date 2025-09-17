@@ -7,7 +7,7 @@ id INT PRIMARY KEY AUTO_INCREMENT,
 color_name VARCHAR(50)
 );
 
-
+UPDATE products SET is_valid = 0 WHERE id = 118;
 INSERT INTO colors (color_name) VALUES
 ('白色'),
 ('黑色'),

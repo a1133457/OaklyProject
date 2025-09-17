@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCart } from '@/app/contexts/CartContext';
 
-const RecentViewedProducts = ({ currentProductId, maxItems = 8 }) => {
+
+
+const RecentViewedProducts = ({ 
+  currentProductId, 
+  maxItems = 8,
+  handleWishlistToggle,
+  hasAnyWishlist,
+  isProductInWishlist,
+  addToCart,
+  handleCartClick
+}) => {
   const [recentProducts, setRecentProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
+
+  
 
   // 響應式顯示數量
   const [itemsToShow, setItemsToShow] = useState(4);
@@ -110,8 +123,6 @@ const RecentViewedProducts = ({ currentProductId, maxItems = 8 }) => {
     router.push(`/products/${productId}`);
   };
 
-
-
   // 滑動控制
   const maxIndex = Math.max(0, recentProducts.length - itemsToShow);
 
@@ -160,13 +171,13 @@ const RecentViewedProducts = ({ currentProductId, maxItems = 8 }) => {
       </div>
     );
   }
+  
 
   return (
     <div className="recent-viewed-products">
       <div className="section-header">
         <span className="section-title">最近瀏覽的商品</span>
         <div className="header-controls">
-       
           <div className="carousel-controls">
             <button 
               className={`nav-btn prev-btn ${currentIndex === 0 ? 'disabled' : ''}`}
@@ -202,10 +213,9 @@ const RecentViewedProducts = ({ currentProductId, maxItems = 8 }) => {
             <div 
               key={`recent-${product.id}`} 
               className="product-card recent-product-card"
-              onClick={() => handleProductClick(product.id)}
-              style={{ width: `${100 / recentProducts.length}%` }}
+              style={{ width: `${100 / recentProducts.length}%`,zIndex: 0 }}
             >
-              <div className="product-image">
+              <div className="product-image" onClick={() => handleProductClick(product.id)}>
                 <img 
                   src={getProductImage(product)} 
                   alt={product.name}
@@ -213,11 +223,44 @@ const RecentViewedProducts = ({ currentProductId, maxItems = 8 }) => {
                     e.target.src = "https://via.placeholder.com/300x200/f0f0f0/666?text=無圖片";
                   }}
                 />
+          <button
+  className={`wishlist-heart-btn ${hasAnyWishlist(product.id) ? 'active' : ''}`}
+  onClick={async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // 總是獲取完整商品資料
+    try {
+      const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        handleWishlistToggle(result.data, e);
+      } else {
+        handleWishlistToggle(product, e);
+      }
+    } catch (error) {
+      handleWishlistToggle(product, e);
+    }
+  }}
+>
+                <i className={hasAnyWishlist(product.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+              </button>
               </div>
-              <div className="product-info">
+              <div className="product-info" onClick={() => handleProductClick(product.id)}>
                 <h3 className="product-name">{product.name}</h3>
                 <p className="product-price">NT$ {product.price?.toLocaleString()}</p>
               </div>
+              {/* 加入購物車按鈕 */}
+              <button 
+                className="product-add-to-cart-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCartClick && handleCartClick(product, e);
+                }}
+              >
+                加入購物車
+              </button>
             </div>
           ))}
         </div>
@@ -234,8 +277,6 @@ const RecentViewedProducts = ({ currentProductId, maxItems = 8 }) => {
           ))}
         </div>
       )}
-
-     
     </div>
   );
 };
