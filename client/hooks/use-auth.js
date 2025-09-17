@@ -366,6 +366,25 @@ export function AuthProvider({ children }) {
       return { success: false, message: "伺服器錯誤" };
     }
   };
+  // 收藏數量調整
+  const updateFavoriteQty = async (productId, colorId, sizeId, quantity) => {
+  const token = localStorage.getItem(appKey);
+  try {
+    const res = await fetch(`${API_FAVORITES}/${productId}/${colorId}/${sizeId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ quantity }),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("updateFavoriteQty error:", err);
+    return { status: "error", message: "伺服器錯誤" };
+  }
+};
+
 
   // login with Google------------------------------------
   const loginWithGoogle = async (token, user) => {
@@ -399,6 +418,7 @@ export function AuthProvider({ children }) {
         addFavorite,
         removeFavorite,
         loginWithGoogle,
+        updateFavoriteQty
       }}
     >
       {children}

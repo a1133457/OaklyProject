@@ -21,9 +21,15 @@ const getColorCode = (colorName) => {
 
 export default function FavoritesPage() {
     // 管理清單
-    const { getFavorites, removeFavorite } = useAuth();
+    const { getFavorites, removeFavorite, updateFavoriteQty } = useAuth();
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pending, setPending] = useState({}); // key => 是否更新中
+    // 相對路徑 → 完整 URL（保險用）
+    const toSrc = (p) => {
+        if (!p) return "/img/placeholder.png";
+        return p.startsWith("http") ? p : `http://localhost:3005/${p.replace(/^\/+/, "")}`;
+    };
 
     useEffect(() => {
         (async () => {
@@ -54,6 +60,35 @@ export default function FavoritesPage() {
             目前沒有收藏。去逛逛商品，點愛心加入吧！
         </>
     );
+
+    const keyOf = (it) => `${it.product_id}-${it.color_id}-${it.size_id}`;
+
+    const applyLocalQty = (k, next) => {
+        setList((prev) =>
+            prev.map((it) => (keyOf(it) === k ? { ...it, quantity: next } : it))
+        );
+    };
+
+    const changeQty = async (item, nextQty) => {
+        const k = keyOf(item);
+        if (nextQty < 1 || nextQty > 99) return;
+
+        // 樂觀更新
+        applyLocalQty(k, nextQty);
+        setPending((p) => ({ ...p, [k]: true }));
+
+        const res = await updateFavoriteQty(item.product_id, item.color_id, item.size_id, nextQty);
+
+        setPending((p) => ({ ...p, [k]: false }));
+        if (res?.status !== "success") {
+            // 還原（失敗）
+            applyLocalQty(k, item.quantity);
+            alert(res?.message || "更新數量失敗");
+        }
+    };
+
+    const inc = (item) => changeQty(item, Number(item.quantity) + 1);
+    const dec = (item) => changeQty(item, Number(item.quantity) - 1);
 
     return (
         <div>
@@ -86,7 +121,7 @@ export default function FavoritesPage() {
             ))} */}
             {list.map(item => (
                 <div key={`${item.product_id}-${item.color_id}-${item.size_id}`} className={styles.favoritesCard}>
-                    <img src={item.product_img } alt={item.name} />
+                    <img src={item.product_img} alt={item.name} />
 
 
                     <div className={styles.favoritesBody}>
@@ -97,26 +132,49 @@ export default function FavoritesPage() {
                         {/* 價格下方：只顯示已選顏色 / 尺寸 */}
                         {/* 顏色 */}
                         <div className={styles.optionDisplay}>
-                        {item.color_name && (
-                            <span className={styles.optionPill} aria-label={`顏色：${item.color_name}`}>
-                                <span
-                                    className={styles.colorDotSm}
-                                    style={{ background: getColorCode(item.color_name) }}
-                                />
-                                {item.color_name}
-                            </span>
-                        )}
+                            {item.color_name && (
+                                <span className={styles.optionPill} aria-label={`顏色：${item.color_name}`}>
+                                    <span
+                                        className={styles.colorDotSm}
+                                        style={{ background: getColorCode(item.color_name) }}
+                                    />
+                                    {item.color_name}
+                                </span>
+                            )}
 
-                        {/* 尺寸 */}
-                        {item.size_label && (
-                            <span className={styles.optionPill} aria-label={`尺寸：${item.size_label}`}>
-                                {item.size_label}
-                            </span>
-                        )}
+                            {/* 尺寸 */}
+                            {item.size_label && (
+                                <span className={styles.optionPill} aria-label={`尺寸：${item.size_label}`}>
+                                    {item.size_label}
+                                </span>
+                            )}
+                        </div>
                     </div>
+
+                    <div className={styles.qtyControl}>
+                        <button
+                            type="button"
+                            onClick={() => dec(item)}
+                            disabled={pending[keyOf(item)] || Number(item.quantity) <= 1}
+                            className={styles.qtyBtn}
+                        >
+                            –
+                        </button>
+                        <span className={styles.qtyBox}>{item.quantity}</span>
+                        <button
+                            type="button"
+                            onClick={() => inc(item)}
+                            disabled={pending[keyOf(item)] || Number(item.quantity) >= 99}
+                            className={styles.qtyBtn}
+                        >
+                            +
+                        </button>
                     </div>
+
+
+
                     {/* 右側：收藏/購物車（原本就有） */}
-                    <div className={styles.iconActions}>
+                    <div className={styles.iconActions} >
                         <i
                             className={`bi bi-heart-fill ${styles.heart}`}
                             onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
@@ -131,7 +189,32 @@ export default function FavoritesPage() {
                         />
                     </div>
                 </div>
-            ))}
+            ))
+            }
         </div>
     )
 }
+
+/** 小小的內聯樣式：你也可以搬到 user.module.css */
+// const btnStyle = {
+//     width: 28,
+//     height: 28,
+//     border: "1px solid #ddd",
+//     borderRadius: 6,
+//     background: "#fff",
+//     cursor: "pointer",
+//     lineHeight: 1,
+//     fontSize: 16,
+// };
+
+
+// const qtyBoxStyle = {
+//     width: 28,             // 固定寬度，不要太長
+//     height: 28,
+//     border: "1px solid #ddd",
+//     borderRadius: 6,
+//     display: "inline-flex",
+//     alignItems: "center",
+//     justifyContent: "center",
+//     fontSize: 14,
+// };

@@ -80,6 +80,37 @@ router.post("/favorites", checkToken, async (req, res) => {
     res.status(500).json({ status: "error", message: "加入收藏失敗" });
   }
 });
+
+// 更新收藏數量
+router.patch("/favorites/:productId/:colorId/:sizeId", checkToken, async (req, res) => {
+  try {
+    const userId = req.decoded.id;
+    const { productId, colorId, sizeId } = req.params;
+    let { quantity } = req.body;
+
+    quantity = Number(quantity);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+      return res.status(400).json({ status: "error", message: "數量需為 1~99 的整數" });
+    }
+
+    const sql = `
+      UPDATE favorites
+      SET quantity = ?
+      WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?
+    `;
+    const [result] = await pool.execute(sql, [quantity, userId, productId, colorId, sizeId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ status: "error", message: "找不到這筆收藏" });
+    }
+
+    res.json({ status: "success", data: { productId, colorId, sizeId, quantity } });
+  } catch (err) {
+    console.error("PATCH /favorites error:", err);
+    res.status(500).json({ status: "error", message: "更新數量失敗" });
+  }
+});
+
 // 臨時調試用路由（記得之後要移除）
 // router.get("/favorites/debug/:userId", async (req, res) => {
 //   try {
@@ -96,6 +127,7 @@ router.post("/favorites", checkToken, async (req, res) => {
 //     res.status(500).json({ status: "error", message: err.message });
 //   }
 // });
+
 // 檢查收藏狀態
 router.get("/favorites/:productId/:colorId/:sizeId/check", checkToken, async (req, res) => {
   try {
