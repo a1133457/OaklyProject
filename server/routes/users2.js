@@ -11,11 +11,11 @@ const router = express.Router();
 const upload = multer();
 
 //測試用的 JWT 密鑰
-const secretKey = "myTestSecretKey123";
+// const secretKey = "myTestSecretKey123";
 
 
 
-// const secretKey = process.env.JWT_SECRET_KEY;
+const secretKey = process.env.JWT_SECRET_KEY;
 // console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
 
 // 預設頭像
@@ -572,8 +572,8 @@ router.post("/login", upload.none(), async (req, res) => {
 
     // 2) 比對密碼
     // 測試完要改回來
-    const isMatch = await bcrypt.compare(password, user.password);
-    // const isMatch = password === user.password;
+    // const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;

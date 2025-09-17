@@ -11,6 +11,8 @@
     /* 置中 */
     /* 上方距離 */
     padding-block: 40px;
+    /* 下方距離多一點 */
+    margin-bottom: 80px;
     /* RWD 左右留白：16px ~ 40px，會隨螢幕寬度平滑變化 */
     padding-inline: clamp(16px, 4vw, 60px);
 }
@@ -220,7 +222,7 @@
     .userContainer {
         padding-block: 50px;
         /* 上下間距縮小 */
-        padding-inline: 50px;
+        padding-inline: 24px;
         /* 左右固定邊距，避免太擠 */
     }
 
