@@ -78,6 +78,7 @@ export function useShip711StoreOpener(serverCallbackUrl, options = {}) {
         keyLocalStorage = 'store711'
     } = options
 
+    // 所有 Hooks 都必須在這裡，不能有條件式執行
     const [storedValue, setValue] = useLocalStorage(keyLocalStorage, {
         storeid: '',
         storename: '',
@@ -148,13 +149,20 @@ export function useShip711StoreOpener(serverCallbackUrl, options = {}) {
         setContDown(countDown - 1)
     }, startCountDown ? 1000 : null)
 
+    // 修正: openWindow 函數內部檢查，而不是提早返回
     const openWindow = () => {
         if (!serverCallbackUrl) {
             console.error('缺少 serverCallbackUrl')
+            alert('回調 URL 尚未設定，請稍後再試')
             return
         }
 
-        const url = `https://emap.presco.com.tw/c2cemap.ashx?eshopid=870&&servicetype=1&url=${serverCallbackUrl}`
+        console.log('🚀 準備開啟 7-11 門市選擇')
+        console.log('📍 回調 URL:', serverCallbackUrl)
+
+        const url = `https://emap.presco.com.tw/c2cemap.ashx?eshopid=870&&servicetype=1&url=${encodeURIComponent(serverCallbackUrl)}`
+        console.log('🔗 完整 URL:', url);
+
         newWindow.current = popupCenter(url, title, w, h)
         setStartCountDown(true)
     }

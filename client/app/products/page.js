@@ -1,12 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import "@/styles/products/chat.css";
 import "@/styles/products/products.css";
 import { Link } from "react-router-dom";
 // import { useCart } from '@/app/contexts/CartContext';
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2';
+import WebSocketCustomerService from "@/app/_components/agent/WebSocketCustomerService";
+
+
+
+
+
+
+
 
 const MainProduct = () => {
   const { user } = useAuth();
@@ -20,20 +29,17 @@ const MainProduct = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [filterPriceRange, setFilterPriceRange] = useState({
-    min: 0,
-    max: 50000,
-  });
+  const [filterPriceRange, setFilterPriceRange] = useState({ min: 0, max: 30000 });
   const [tempFilters, setTempFilters] = useState({
     colors: [],
     materials: [],
     series: [],
   });
-  const [tempPriceRange, setTempPriceRange] = useState({ min: 0, max: 50000 });
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
-  const [currentTitle, setCurrentTitle] = useState("");
-  const [currentHeroImage, setCurrentHeroImage] = useState("");
+  const [tempPriceRange, setTempPriceRange] = useState({ min: 0, max: 30000 });
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  const [currentTitle, setCurrentTitle] = useState('');
+  const [currentHeroImage, setCurrentHeroImage] = useState('');
   const [isWishlisted, setIsWishlisted] = useState({});
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -60,6 +66,8 @@ const MainProduct = () => {
   const toggleCategoryExpand = (category) => {
     setExpandedCategory(expandedCategory === category ? null : category);
   };
+
+
 
   // 收藏成功通知組件
   const AddToWishlistSuccessModal = ({
@@ -214,7 +222,7 @@ const MainProduct = () => {
       setSelectedSubCategory("");
       clearFilters();
     } catch (error) {
-      console.error("獲取最新商品失敗:", error);
+      console.error('獲取最新商品失敗:', error);
     } finally {
       setIsLoading(false); // ← 加入這行
     }
@@ -243,7 +251,7 @@ const MainProduct = () => {
       setSelectedSubCategory("");
       clearFilters();
     } catch (error) {
-      console.error("獲取熱賣商品失敗:", error);
+      console.error('獲取熱賣商品失敗:', error);
     } finally {
       setIsLoading(false); // ← 加入這行
     }
@@ -524,7 +532,7 @@ const MainProduct = () => {
       materials: [],
       series: [],
     };
-    const defaultPriceRange = { min: 0, max: 50000 };
+    const defaultPriceRange = { min: 0, max: 30000 };
 
     setTempFilters(defaultFilters); // 清除臨時篩選
     setTempPriceRange(defaultPriceRange); // 清除臨時價格
@@ -559,38 +567,81 @@ const MainProduct = () => {
   };
 
   const getFilteredProducts = () => {
-    // console.log("selectedFilters:", selectedFilters);
-    // console.log("filterPriceRange:", filterPriceRange);
-    const filtered = products.filter((product) => {
+    console.log("篩選條件:", selectedFilters);
+
+    const filtered = products.filter(product => {
+      // 價格篩選
       const price = product.price || 0;
-      const priceMatch =
-        price >= filterPriceRange.min && price <= filterPriceRange.max;
-      // console.log(`\n检查商品: ${product.name} (ID: ${product.id})`);
-      // console.log(`  价格: ${price}, 范围: ${filterPriceRange.min}-${filterPriceRange.max}, 匹配: ${priceMatch}`);
+      const priceMatch = price >= filterPriceRange.min && price <= filterPriceRange.max;
 
-      const productColor = colorMapping[product.colors];
-      const colorMatch =
-        !selectedFilters.colors?.length ||
-        selectedFilters.colors.includes(productColor);
-      // console.log(`  颜色ID: ${product.colors}, 颜色名稱: ${productColor}, 篩選条件: [${selectedFilters.colors}], 匹配: ${colorMatch}`);
+      // 顏色篩選 - 加強調試
+      let colorMatch = true;
+      if (selectedFilters.colors?.length > 0) {
+        // 特別檢查 EKTORP 商品
+        if (product.name.includes('EKTORP')) {
+          console.log('=== EKTORP 商品詳細檢查 ===');
+          console.log('product.colors 原始值:', product.colors);
+          console.log('product.colors 類型:', typeof product.colors);
+          console.log('完整商品資料:', product);
+        }
 
-      const productMaterial = materialMapping[product.materials_id];
-      const materialMatch =
-        !selectedFilters.materials?.length ||
-        selectedFilters.materials.includes(productMaterial);
-      // console.log(`  材質ID: ${product.materials_id}, 材質名稱: ${productMaterial}, 篩選条件: [${selectedFilters.materials}], 匹配: ${materialMatch}`);
+        let productColors = [];
+        if (Array.isArray(product.colors)) {
+          productColors = product.colors.map(color => color.color_name);
+        } else if (typeof product.colors === 'number') {
+          productColors = [colorMapping[product.colors]];
+        }
+        colorMatch = productColors.some(color =>
+          selectedFilters.colors.includes(color)
+        );
+        // 特別檢查 EKTORP
+        if (product.name.includes('EKTORP')) {
+          console.log('EKTORP 解析後的顏色:', productColors);
+          console.log('篩選條件包含的顏色:', selectedFilters.colors);
+          console.log('顏色匹配結果:', colorMatch);
+          console.log('=== 檢查結束 ===');
+        }
+      }
 
-      const seriesMatch =
-        !selectedFilters.series?.length ||
-        selectedFilters.series.includes(product.style);
+      // 材質篩選
+      let materialMatch = true;
+      if (selectedFilters.materials?.length > 0) {
+        let productMaterials = [];
 
-      // console.log(`  系列: ${product.style}, 篩選条件: [${selectedFilters.series}], 匹配: ${seriesMatch}`);
+        if (Array.isArray(product.materials) && product.materials.length > 0) {
+          productMaterials = product.materials.map(material => material.material_name);
+        }
 
-      return priceMatch && colorMatch && materialMatch && seriesMatch;
+        console.log('=== 材質篩選調試 ===');
+        console.log('商品:', product.name);
+        console.log('商品材質陣列:', product.materials);
+        console.log('解析後材質名稱:', productMaterials);
+        console.log('篩選條件:', selectedFilters.materials);
+
+        if (productMaterials.length > 0) {
+          materialMatch = productMaterials.some(material =>
+            selectedFilters.materials.some(filterMaterial => 
+              material.includes(filterMaterial) || filterMaterial.includes(material)
+            )
+          );
+        } else {
+          materialMatch = false;
+        }
+
+        console.log('匹配結果:', materialMatch);
+      }
+
+      let seriesMatch = true;
+      if (selectedFilters.series?.length > 0) {
+        seriesMatch = product.style ? selectedFilters.series.includes(product.style) : false;
+      }
+
+      const finalMatch = priceMatch && colorMatch && materialMatch && seriesMatch;
+
+      return finalMatch;
     });
-    // console.log("筛选结果:", filtered.length, "个商品");
-    // console.log("商品列表:", filtered.map(p => p.name));
 
+    console.log(`篩選結果: 從 ${products.length} 個商品中篩選出 ${filtered.length} 個`);
     return filtered;
   };
 
@@ -1195,6 +1246,7 @@ const MainProduct = () => {
 
   return (
     <div className="main-product-page">
+
       {/* 子導航欄 */}
       <div className="breadcrumb-nav-top">
         <div className="sub-nav-content">
@@ -1673,8 +1725,8 @@ const MainProduct = () => {
                       <input
                         type="range"
                         min="0"
-                        max="50000"
-                        step="1000"
+                        max="30000"
+                        step="100"
                         value={tempPriceRange.max}
                         onChange={(e) => {
                           const newMax = parseInt(e.target.value);
@@ -1772,6 +1824,11 @@ const MainProduct = () => {
               </div>
             </aside>
 
+
+
+
+
+
             {/* 右側商品區域 */}
             <main className="products-section">
               <div className="per-page-select">
@@ -1822,12 +1879,15 @@ const MainProduct = () => {
                       className="productcard fade-in-item"
                       onClick={() => handleProductClick(product.id)}
                       style={{
-                        cursor: "pointer",
-                        animationDelay: `${index * 0.1}s`,
-                      }}
-                    >
+                        cursor: 'pointer',
+                        animationDelay: `${index * 0.1}s`
+                      }}>
+                      <div className="badges">
+
                       {product.isNew && <span className="badge-new">新品</span>}
                       {product.isHot && <span className="badge-hot">熱賣</span>}
+                      </div>
+
                       <div className="image">
                         {product.images && product.images.length > 0 ? (
                           <img
@@ -2215,120 +2275,55 @@ const MainProduct = () => {
               {/* 移動版導航選單 */}
               <div className="mobile-sub-nav">
                 <div className="mobile-sub-nav-links">
-                  <a
-                    href="#"
-                    className="mobile-sub-nav-link"
+                  <a href="#" className="mobile-sub-nav-link"
                     onClick={(e) => {
                       e.preventDefault();
                       fetchLatestProducts();
                       closeMobileFilter();
-                    }}
-                  >
+                    }}>
                     最新商品
                   </a>
 
-                  <a
-                    href="#"
-                    className="mobile-sub-nav-link"
+                  <a href="#" className="mobile-sub-nav-link"
                     onClick={(e) => {
                       e.preventDefault();
                       fetchHotProducts();
                       closeMobileFilter();
-                    }}
-                  >
+                    }}>
                     熱賣
                   </a>
 
                   {/* 客廳分類 */}
                   <div className="mobile-dropdown">
                     <div className="mobile-dropdown-header-wrapper">
-                      <a
-                        href="#"
+                      <a href="#"
                         className="mobile-dropdown-header-link"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCategoryClick(e, "客廳");
-                          closeMobileFilter();
-                        }}
+                        onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '客廳'); closeMobileFilter(); }}
                       >
                         客廳
                       </a>
-                      <i
-                        className={`fas fa-chevron-${
-                          expandedCategory === "客廳" ? "up" : "down"
-                        } dropdown-toggle-icon`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategoryExpand("客廳");
-                        }}
+                      <i className={`fas fa-chevron-${expandedCategory === '客廳' ? 'up' : 'down'} dropdown-toggle-icon`}
+                        onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('客廳'); }}
                       ></i>
                     </div>
-                    {expandedCategory === "客廳" && (
+                    {expandedCategory === '客廳' && (
                       <div className="mobile-dropdown-items slide-down">
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "邊桌");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '邊桌'); closeMobileFilter(); }}>
                           邊桌
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "單椅");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '單椅'); closeMobileFilter(); }}>
                           單椅/單人沙發
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "茶几");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '茶几'); closeMobileFilter(); }}>
                           茶几
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "書櫃");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '書櫃'); closeMobileFilter(); }}>
                           書櫃 / 書架
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "書桌");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '書桌'); closeMobileFilter(); }}>
                           書桌 / 書桌椅
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "邊櫃");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '邊櫃'); closeMobileFilter(); }}>
                           邊櫃 / 收納櫃
                         </a>
                       </div>
@@ -2338,71 +2333,28 @@ const MainProduct = () => {
                   {/* 廚房分類 */}
                   <div className="mobile-dropdown">
                     <div className="mobile-dropdown-header-wrapper">
-                      <a
-                        href="#"
+                      <a href="#"
                         className="mobile-dropdown-header-link"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCategoryClick(e, "廚房");
-                          closeMobileFilter();
-                        }}
+                        onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '廚房'); closeMobileFilter(); }}
                       >
                         廚房
                       </a>
-                      <i
-                        className={`fas fa-chevron-${
-                          expandedCategory === "廚房" ? "up" : "down"
-                        } dropdown-toggle-icon`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategoryExpand("廚房");
-                        }}
+                      <i className={`fas fa-chevron-${expandedCategory === '廚房' ? 'up' : 'down'} dropdown-toggle-icon`}
+                        onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('廚房'); }}
                       ></i>
                     </div>
-                    {expandedCategory === "廚房" && (
+                    {expandedCategory === '廚房' && (
                       <div className="mobile-dropdown-items slide-down">
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "實木餐桌");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '實木餐桌'); closeMobileFilter(); }}>
                           實木餐桌
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "餐椅");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '餐椅'); closeMobileFilter(); }}>
                           餐椅 / 椅子
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "吧台桌");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '吧台桌'); closeMobileFilter(); }}>
                           吧台桌
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "吧台椅");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '吧台椅'); closeMobileFilter(); }}>
                           吧台椅
                         </a>
                       </div>
@@ -2412,82 +2364,31 @@ const MainProduct = () => {
                   {/* 臥室分類 */}
                   <div className="mobile-dropdown">
                     <div className="mobile-dropdown-header-wrapper">
-                      <a
-                        href="#"
+                      <a href="#"
                         className="mobile-dropdown-header-link"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCategoryClick(e, "臥室");
-                          closeMobileFilter();
-                        }}
+                        onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '臥室'); closeMobileFilter(); }}
                       >
                         臥室
                       </a>
-                      <i
-                        className={`fas fa-chevron-${
-                          expandedCategory === "臥室" ? "up" : "down"
-                        } dropdown-toggle-icon`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategoryExpand("臥室");
-                        }}
+                      <i className={`fas fa-chevron-${expandedCategory === '臥室' ? 'up' : 'down'} dropdown-toggle-icon`}
+                        onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('臥室'); }}
                       ></i>
                     </div>
-                    {expandedCategory === "臥室" && (
+                    {expandedCategory === '臥室' && (
                       <div className="mobile-dropdown-items slide-down">
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "床架");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '床架'); closeMobileFilter(); }}>
                           床架
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "床邊桌");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '床邊桌'); closeMobileFilter(); }}>
                           床邊桌
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "化妝台");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '化妝台'); closeMobileFilter(); }}>
                           化妝台
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "全身鏡");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '全身鏡'); closeMobileFilter(); }}>
                           全身鏡 / 鏡子
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "衣櫃");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '衣櫃'); closeMobileFilter(); }}>
                           衣櫃 / 衣架
                         </a>
                       </div>
@@ -2497,60 +2398,25 @@ const MainProduct = () => {
                   {/* 兒童房分類 */}
                   <div className="mobile-dropdown">
                     <div className="mobile-dropdown-header-wrapper">
-                      <a
-                        href="#"
+                      <a href="#"
                         className="mobile-dropdown-header-link"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCategoryClick(e, "兒童房");
-                          closeMobileFilter();
-                        }}
+                        onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '兒童房'); closeMobileFilter(); }}
                       >
                         兒童房
                       </a>
-                      <i
-                        className={`fas fa-chevron-${
-                          expandedCategory === "兒童房" ? "up" : "down"
-                        } dropdown-toggle-icon`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategoryExpand("兒童房");
-                        }}
+                      <i className={`fas fa-chevron-${expandedCategory === '兒童房' ? 'up' : 'down'} dropdown-toggle-icon`}
+                        onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('兒童房'); }}
                       ></i>
                     </div>
-                    {expandedCategory === "兒童房" && (
+                    {expandedCategory === '兒童房' && (
                       <div className="mobile-dropdown-items slide-down">
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "桌椅組");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '桌椅組'); closeMobileFilter(); }}>
                           桌椅組
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "衣櫃");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '衣櫃'); closeMobileFilter(); }}>
                           衣櫃
                         </a>
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "收納櫃");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納櫃'); closeMobileFilter(); }}>
                           收納櫃
                         </a>
                       </div>
@@ -2560,38 +2426,19 @@ const MainProduct = () => {
                   {/* 收納用品分類 */}
                   <div className="mobile-dropdown">
                     <div className="mobile-dropdown-header-wrapper">
-                      <a
-                        href="#"
+                      <a href="#"
                         className="mobile-dropdown-header-link"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCategoryClick(e, "收納用品");
-                          closeMobileFilter();
-                        }}
+                        onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納用品'); closeMobileFilter(); }}
                       >
                         收納用品
                       </a>
-                      <i
-                        className={`fas fa-chevron-${
-                          expandedCategory === "收納用品" ? "up" : "down"
-                        } dropdown-toggle-icon`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategoryExpand("收納用品");
-                        }}
+                      <i className={`fas fa-chevron-${expandedCategory === '收納用品' ? 'up' : 'down'} dropdown-toggle-icon`}
+                        onClick={(e) => { e.stopPropagation(); toggleCategoryExpand('收納用品'); }}
                       ></i>
                     </div>
-                    {expandedCategory === "收納用品" && (
+                    {expandedCategory === '收納用品' && (
                       <div className="mobile-dropdown-items slide-down">
-                        <a
-                          className="mobile-dropdown-item"
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCategoryClick(e, "收納盒");
-                            closeMobileFilter();
-                          }}
-                        >
+                        <a className="mobile-dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleCategoryClick(e, '收納盒'); closeMobileFilter(); }}>
                           收納盒 / 收納箱
                         </a>
                       </div>
@@ -2611,8 +2458,8 @@ const MainProduct = () => {
                     type="range"
                     className="form-range"
                     min="0"
-                    max="50000"
-                    step="1000"
+                    max="30000"
+                    step="100"
                     value={tempPriceRange.max}
                     onChange={(e) =>
                       setTempPriceRange({
@@ -2739,6 +2586,10 @@ const MainProduct = () => {
         isVisible={wishlistSuccessModal.isVisible}
         onClose={closeWishlistSuccessModal}
       />
+
+{/* <WebSocketCustomerService /> */}
+
+
     </div>
   );
 };

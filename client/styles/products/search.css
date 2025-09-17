@@ -1508,6 +1508,8 @@ span {
     flex-direction: column;
     gap: 15px;
     align-items: flex-start;
+    padding: 5px 16px;
+
   }
 
   .display-options {
@@ -1601,7 +1603,10 @@ span {
     text-align: center;
 
   }
-
+.dropdown-megamenu{
+  display: flex !important;
+  flex-direction: column !important;
+}
   .mobile-sort-option:last-child {
     border-bottom: none;
   }
@@ -1812,7 +1817,7 @@ span {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 10px;
+    margin-right: 2px;
   }
 .info{
   gap:0
@@ -1857,6 +1862,7 @@ span {
     margin-top: 50px;
 
   }
+ 
 
   /* Modal 從右側滑入 */
   .mobile-filter-modal {

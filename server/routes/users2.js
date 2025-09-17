@@ -11,6 +11,8 @@ const router = express.Router();
 const upload = multer();
 
 
+import dotenv from 'dotenv';
+dotenv.config();
 const secretKey = process.env.JWT_SECRET_KEY;
 // console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
 

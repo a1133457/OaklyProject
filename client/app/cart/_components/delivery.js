@@ -8,22 +8,46 @@ export default function Delivery() {
   const [showForm, setShowForm] = useState(false);
   // 先讀 localStorage，初始值如果沒存過就空字串
   const [selectedDelivery, setSelectedDelivery] = useState("");
+  const [callbackUrl, setCallbackUrl] = useState(""); //改名為 callbackUrl
 
-  // 取得當前網址，自動組成回調 URL
-  const currentUrl = typeof window === 'undefined' ? window.location.origin : '';
+  // 在客戶端獲取完整的回調 URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // 使用你
+      const CLOUDFLARE_URL = 'https://exit-mixture-spies-casinos.trycloudflare.com';
+
+      // 組成完整的 URL，包含 protocol + host + path
+      const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;
+      setCallbackUrl(fullCallbackUrl);
+      console.log('🔗 設定回調 URL:', fullCallbackUrl);
+
+      // 測試你的 Cloudflare Tunnel 是否正常
+      const testUrl = `${CLOUDFLARE_URL}/api/ship/711/test`;
+      fetch(testUrl)
+        .then(response => response.json())
+        .then(data => {
+          console.log('✅ Cloudflare Tunnel 連線成功:', data);
+        })
+        .catch(error => {
+          console.error('❌ Cloudflare Tunnel 連線失敗:', error);
+        });
+    }
+  }, []);
 
   // 整合 7-11 門市選擇功能
   const { store711, openWindow } = useShip711StoreOpener(
-    `${currentUrl}/ship/api`, // 駔動組成回調 API 路由
+    callbackUrl || null, // 駔動組成回調 API 路由
     { autoCloseMins: 3 }
   );
 
 
   // 在瀏覽器渲染後再讀取 localStorage
   useEffect(() => {
-    const savedDelivery = localStorage.getItem("delivery");
-    if (savedDelivery) {
-      setSelectedDelivery(savedDelivery);
+    if (typeof window !== 'undefined') {
+      const savedDelivery = localStorage.getItem("delivery");
+      if (savedDelivery) {
+        setSelectedDelivery(savedDelivery);
+      }
     }
   }, []);
 
@@ -32,6 +56,19 @@ export default function Delivery() {
       localStorage.setItem("delivery", selectedDelivery);
     }
   }, [selectedDelivery]);
+
+  // 安全的開啟視窗函數
+  const handleOpenWindow = () => {
+    if (!callbackUrl) {
+      console.error('❌ 回調 URL 還沒準備好');
+      alert('系統還在載入中，請稍後再試');
+      return;
+    }
+
+    console.log('🚀 開啟門市選擇');
+    console.log('📍 使用回調 URL:', callbackUrl);
+    openWindow();
+  };
 
   return (
     <>
@@ -85,7 +122,7 @@ export default function Delivery() {
                 type="button"
                 onClick={openWindow}
                 style={{
-                  background: '#007bff',
+                  background: 'var(--primary-01)',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
@@ -181,7 +218,7 @@ export default function Delivery() {
                       type="button"
                       onClick={openWindow}
                       style={{
-                        background: '#007bff',
+                        background: 'var(--primary-01)',
                         color: 'white',
                         border: 'none',
                         padding: '10px',

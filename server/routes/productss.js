@@ -16,15 +16,23 @@ router.get("/", async (req, res) => {
 
     if (category) {
       const query = `
-        SELECT 
-          p.*,
-          pc.category_name,
-          pi.img
-        FROM products p
-        LEFT JOIN products_category pc ON p.category_id = pc.category_id
-        LEFT JOIN product_img pi ON p.id = pi.product_id
-        WHERE pc.category_name LIKE ? AND p.is_valid = 1
-      `;
+      SELECT 
+        p.*,
+        pc.category_name,
+        pi.img,
+        GROUP_CONCAT(DISTINCT CONCAT(c.id, ':', c.color_name)) as colors_data,
+        GROUP_CONCAT(DISTINCT CONCAT(m.id, ':', m.material_name)) as materials_data
+      FROM products p
+      LEFT JOIN products_category pc ON p.category_id = pc.category_id
+      LEFT JOIN product_img pi ON p.id = pi.product_id
+      LEFT JOIN product_colors pcol ON p.id = pcol.product_id
+      LEFT JOIN colors c ON pcol.color_id = c.id
+      LEFT JOIN materials_list ml ON p.id = ml.product_id
+LEFT JOIN materials m ON ml.materials_id = m.id
+
+      WHERE pc.category_name LIKE ? AND p.is_valid = 1
+      GROUP BY p.id
+    `;
 
       try {
         const [rows] = await db.execute(query, [`%${category}%`]);
@@ -35,20 +43,79 @@ router.get("/", async (req, res) => {
         throw dbError;
       }
     } else {
-      products = await getProductsFromDB();
+      const allQuery = `
+      SELECT 
+        p.*,
+        pi.img,
+        GROUP_CONCAT(DISTINCT CONCAT(c.id, ':', c.color_name)) as colors_data,
+        GROUP_CONCAT(DISTINCT CONCAT(m.id, ':', m.material_name)) as materials_data
+      FROM products p
+      LEFT JOIN product_img pi ON p.id = pi.product_id
+      LEFT JOIN product_colors pcol ON p.id = pcol.product_id
+      LEFT JOIN colors c ON pcol.color_id = c.id
+      LEFT JOIN materials_list ml ON p.id = ml.product_id
+      LEFT JOIN materials m ON ml.materials_id = m.id
+      WHERE p.is_valid = 1
+      GROUP BY p.id
+    `;
+      const [allRows] = await db.execute(allQuery);
+      products = allRows;
     }
 
+    // 獲取最新商品列表用於標記
+    const latestQuery = `
+SELECT id FROM products 
+WHERE is_valid = 1 
+ORDER BY create_at DESC 
+LIMIT 50
+`;
+    const [latestProducts] = await db.execute(latestQuery);
+    const latestProductIds = latestProducts.map(p => p.id);
     const productMap = new Map();
+
     products.forEach(item => {
       if (!productMap.has(item.id)) {
+        let colors = [];
+        if (item.colors_data) {
+          colors = item.colors_data.split(',').map(colorStr => {
+            const [id, color_name] = colorStr.split(':');
+            return { id: parseInt(id), color_name };
+          });
+        }
+
+        // 加入材質處理
+        let materials = [];
+        if (item.materials_data) {
+          materials = item.materials_data.split(',').map(materialStr => {
+            const [id, material_name] = materialStr.split(':');
+            return { id: parseInt(id), material_name };
+          });
+        }
+
+        const isNew = latestProductIds.includes(item.id);
+        const isHot = item.quantity <= 20 && item.quantity > 0;
+
+
+
+
         productMap.set(item.id, {
           ...item,
-          images: item.img ? [`/uploads/${item.img}`] : []
+          images: item.img ? [`/uploads/${item.img}`] : [],
+          colors: colors,
+          materials: materials, // 加入這行
+          isNew: isNew,      // 加這行
+          isHot: isHot       // 加這行
+        });
+        console.log(`商品 ${item.id} (${item.name}) 的材質數據:`, {
+          materials_data: item.materials_data,
+          parsed_materials: materials
         });
       } else if (item.img) {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
       }
     });
+
+
 
     const productsWithImages = Array.from(productMap.values());
     console.log('最終回傳產品數量:', productsWithImages.length);
@@ -81,15 +148,47 @@ router.get("/search", async (req, res) => {
   if (isNaN(limit) || limit < 1) limit = 10;
 
   try {
-    // 直接使用現有的 getProductsFromDB 函數
-    const allProducts = await getProductsFromDB();
+    const allQuery = `
+    SELECT 
+      p.*,
+      pi.img,
+      GROUP_CONCAT(DISTINCT CONCAT(c.id, ':', c.color_name)) as colors_data,
+      GROUP_CONCAT(DISTINCT CONCAT(m.id, ':', m.material_name)) as materials_data
+    FROM products p
+    LEFT JOIN product_img pi ON p.id = pi.product_id
+    LEFT JOIN product_colors pcol ON p.id = pcol.product_id
+    LEFT JOIN colors c ON pcol.color_id = c.id
+    LEFT JOIN materials_list ml ON p.id = ml.product_id
+    LEFT JOIN materials m ON ml.materials_id = m.id
+    WHERE p.is_valid = 1
+    GROUP BY p.id
+  `;
+    const [allProducts] = await db.execute(allQuery);
 
     const productMap = new Map();
     allProducts.forEach(item => {
       if (!productMap.has(item.id)) {
+        let colors = [];
+        if (item.colors_data) {
+          colors = item.colors_data.split(',').map(colorStr => {
+            const [id, color_name] = colorStr.split(':');
+            return { id: parseInt(id), color_name };
+          });
+        }
+
+        let materials = [];
+        if (item.materials_data) {
+          materials = item.materials_data.split(',').map(materialStr => {
+            const [id, material_name] = materialStr.split(':');
+            return { id: parseInt(id), material_name };
+          });
+        }
+
         productMap.set(item.id, {
           ...item,
-          images: item.img ? [`/uploads/${item.img}`] : []
+          images: item.img ? [`/uploads/${item.img}`] : [],
+          colors: colors,
+          materials: materials
         });
       } else if (item.img) {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
@@ -120,15 +219,15 @@ router.get("/search", async (req, res) => {
         }
         return value;
       }
-      
+
     };
     const testProduct = productsWithImages[0];
-if (testProduct && testProduct.name) {
-  const expandedText = fuseOptions.getFn(testProduct, 'name');
-  console.log('原始名稱:', testProduct.name);
-  console.log('展開後的搜尋文字:', expandedText);
-}
-    
+    if (testProduct && testProduct.name) {
+      const expandedText = fuseOptions.getFn(testProduct, 'name');
+      console.log('原始名稱:', testProduct.name);
+      console.log('展開後的搜尋文字:', expandedText);
+    }
+
     //搜尋篩選
     let filteredProducts;
     if (/^\d+$/.test(q)) {
@@ -172,7 +271,6 @@ if (testProduct && testProduct.name) {
 `;
     const [latestProducts] = await db.execute(latestQuery);
     const latestProductIds = latestProducts.map(p => p.id);
-
     const resultsWithBadges = paginatedResults.map(product => {
       const isNew = latestProductIds.includes(product.id);
       const isHot = product.quantity <= 20 && product.quantity > 0;
@@ -206,26 +304,49 @@ router.get('/latest', async (req, res) => {
   try {
     const { limit = 50 } = req.query;
 
-    // 加入圖片查詢
     const query = `
-      SELECT 
-        p.*,
-        pi.img
-      FROM products p
-      LEFT JOIN product_img pi ON p.id = pi.product_id
-       WHERE p.is_valid = 1
-      ORDER BY p.create_at DESC 
-      LIMIT ?
-    `;
+    SELECT 
+      p.*,
+      pi.img,
+      GROUP_CONCAT(DISTINCT CONCAT(c.id, ':', c.color_name)) as colors_data,
+      GROUP_CONCAT(DISTINCT CONCAT(m.id, ':', m.material_name)) as materials_data
+    FROM products p
+    LEFT JOIN product_img pi ON p.id = pi.product_id
+    LEFT JOIN product_colors pcol ON p.id = pcol.product_id
+    LEFT JOIN colors c ON pcol.color_id = c.id
+    LEFT JOIN materials_list ml ON p.id = ml.product_id
+    LEFT JOIN materials m ON ml.materials_id = m.id
+    WHERE p.is_valid = 1
+    GROUP BY p.id
+    ORDER BY p.create_at DESC 
+    LIMIT ?
+  `;
 
     const [products] = await db.execute(query, [parseInt(limit)]);
-
     const productMap = new Map();
     products.forEach(item => {
       if (!productMap.has(item.id)) {
+        let colors = [];
+        if (item.colors_data) {
+          colors = item.colors_data.split(',').map(colorStr => {
+            const [id, color_name] = colorStr.split(':');
+            return { id: parseInt(id), color_name };
+          });
+        }
+
+        let materials = [];
+        if (item.materials_data) {
+          materials = item.materials_data.split(',').map(materialStr => {
+            const [id, material_name] = materialStr.split(':');
+            return { id: parseInt(id), material_name };
+          });
+        }
+
         productMap.set(item.id, {
           ...item,
-          images: item.img ? [`/uploads/${item.img}`] : []
+          images: item.img ? [`/uploads/${item.img}`] : [],
+          colors: colors,
+          materials: materials
         });
       } else if (item.img) {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
@@ -252,27 +373,51 @@ router.get('/hot-products', async (req, res) => {
 
     // 簡單查詢：quantity ≤ 20 的商品
     const query = `
-      SELECT 
-        p.*,
-        pi.img
-      FROM products p
-      LEFT JOIN product_img pi ON p.id = pi.product_id
-      WHERE p.quantity <= 20 
-        AND p.quantity > 0
-        AND p.is_valid = 1
-      ORDER BY p.quantity ASC
-      LIMIT ?
-    `;
-
+    SELECT 
+      p.*,
+      pi.img,
+      GROUP_CONCAT(DISTINCT CONCAT(c.id, ':', c.color_name)) as colors_data,
+      GROUP_CONCAT(DISTINCT CONCAT(m.id, ':', m.material_name)) as materials_data
+    FROM products p
+    LEFT JOIN product_img pi ON p.id = pi.product_id
+    LEFT JOIN product_colors pcol ON p.id = pcol.product_id
+    LEFT JOIN colors c ON pcol.color_id = c.id
+    LEFT JOIN materials_list ml ON p.id = ml.product_id
+    LEFT JOIN materials m ON ml.materials_id = m.id
+    WHERE p.quantity <= 20 
+      AND p.quantity > 0
+      AND p.is_valid = 1
+    GROUP BY p.id
+    ORDER BY p.quantity ASC
+    LIMIT ?
+  `;
     const [products] = await db.execute(query, [parseInt(limit)]);
 
     // 使用你現有的圖片處理邏輯
     const productMap = new Map();
     products.forEach(item => {
       if (!productMap.has(item.id)) {
+        let colors = [];
+        if (item.colors_data) {
+          colors = item.colors_data.split(',').map(colorStr => {
+            const [id, color_name] = colorStr.split(':');
+            return { id: parseInt(id), color_name };
+          });
+        }
+
+        let materials = [];
+        if (item.materials_data) {
+          materials = item.materials_data.split(',').map(materialStr => {
+            const [id, material_name] = materialStr.split(':');
+            return { id: parseInt(id), material_name };
+          });
+        }
+
         productMap.set(item.id, {
           ...item,
-          images: item.img ? [`/uploads/${item.img}`] : []
+          images: item.img ? [`/uploads/${item.img}`] : [],
+          colors: colors,
+          materials: materials
         });
       } else if (item.img) {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
@@ -444,44 +589,44 @@ router.get("/:id", async (req, res) => {
 
 
 
-  // 庫存檢查
-  router.post('/:id/stock', async (req, res) => {
-    console.log('headers:', req.headers);
+// 庫存檢查
+router.post('/:id/stock', async (req, res) => {
+  console.log('headers:', req.headers);
   console.log('req.body:', req.body);
-    console.log('req.body 是:', req.body);
+  console.log('req.body 是:', req.body);
 
-    try {
-      const { id: productId } = req.params;
-      const { colorId, sizeId, quantity } = req.body;
-  
-      console.log('庫存檢查請求:', { productId, colorId, sizeId, quantity });
+  try {
+    const { id: productId } = req.params;
+    const { colorId, sizeId, quantity } = req.body;
 
-  
-      const [stockRows] = await db.execute(
-        'SELECT amount FROM stocks WHERE id = ? AND color_id = ? AND size_id = ?',
-        [productId, colorId, sizeId]
-      );
-  
-      const availableStock = stockRows[0]?.amount || 0;
-      
-      console.log('查詢結果:', stockRows);
-      console.log('可用庫存:', availableStock);
-  
-      res.json({
-        status: 'success',
-        data: { 
-          availableStock, 
-          available: availableStock >= quantity 
-        }
-      });
-    } catch (error) {
-      console.error('庫存檢查錯誤:', error);
-      res.status(500).json({
-        status: 'error',
-        message: '庫存檢查失敗: ' + error.message
-      });
-    }
-  });
+    console.log('庫存檢查請求:', { productId, colorId, sizeId, quantity });
+
+
+    const [stockRows] = await db.execute(
+      'SELECT amount FROM stocks WHERE id = ? AND color_id = ? AND size_id = ?',
+      [productId, colorId, sizeId]
+    );
+
+    const availableStock = stockRows[0]?.amount || 0;
+
+    console.log('查詢結果:', stockRows);
+    console.log('可用庫存:', availableStock);
+
+    res.json({
+      status: 'success',
+      data: {
+        availableStock,
+        available: availableStock >= quantity
+      }
+    });
+  } catch (error) {
+    console.error('庫存檢查錯誤:', error);
+    res.status(500).json({
+      status: 'error',
+      message: '庫存檢查失敗: ' + error.message
+    });
+  }
+});
 
 
 
