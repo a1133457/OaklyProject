@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useCart } from "@/hooks/use-cart";
 import styles from '../user.module.css';
 import { FaCartShopping } from "react-icons/fa6";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
@@ -26,11 +27,32 @@ export default function FavoritesPage() {
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pending, setPending] = useState({}); // key => 是否更新中
+    const { addToCart, openSuccessModal } = useCart();
     // 相對路徑 → 完整 URL（保險用）
     const toSrc = (p) => {
         if (!p) return "/img/placeholder.png";
         return p.startsWith("http") ? p : `http://localhost:3005/${p.replace(/^\/+/, "")}`;
     };
+
+    const toCartProduct = (item) => ({
+        // 用複合 id 區分不同規格（避免被當成同一品項疊加）
+        id: `${item.product_id}-${item.color_id || 0}-${item.size_id || 0}`,
+        // 也保留原始 product_id，之後若要打 API 方便
+        product_id: item.product_id,
+        name: item.name,
+        price: Number(item.price) || 0,
+        image: item.product_img,       // 你的 use-cart 會存整包物件到 localStorage
+        
+        color_id: item.color_id || null,
+        color_name: item.color_name || "無顏色",
+        size_id: item.size_id || null,
+        size_label: item.size_label || "無尺寸",
+        // ⬇ 為了相容 cartCard.js 的讀法
+        colors: { id: item.color_id ?? 0, color_name: item.color_name || "無顏色" },
+        sizes:  item.size_label ? [{ id: item.size_id ?? 0, size_label: item.size_label }] : [],
+        materials_id: item.materials_id ?? 0,
+        materials: { id: item.materials_id ?? 0, material_name: item.material_name || "無類別" },
+    });
 
     useEffect(() => {
         (async () => {
@@ -151,7 +173,7 @@ export default function FavoritesPage() {
                             )}
                         </div>
                     </div>
-
+                    {/* 數量 */}
                     <div className={styles.qtyControl}>
                         <button
                             type="button"
@@ -174,7 +196,7 @@ export default function FavoritesPage() {
 
 
 
-                    {/* 右側：收藏/購物車（原本就有） */}
+                    {/* 右側：收藏/購物車 */}
                     <div className={styles.iconActions} >
                         <div
                             className={styles.heartWrapper}
@@ -187,7 +209,13 @@ export default function FavoritesPage() {
                         </div>
                         <FaCartShopping
                             className={styles.cart}
-                            onClick={() => console.log("加入購物車")}
+                            onClick={() => {
+                                const product = toCartProduct(item);
+                                const qty = Number(item.quantity) || 1; // 用你收藏裡的數量
+                                addToCart(product, qty);
+                                // 有共用的成功 Modal，可一起叫出（會由 CartProvider 渲染）：
+                                openSuccessModal(product, qty, item.color_name, item.size_label);
+                            }}
                             role="button"
                             title="加入購物車"
                         />
