@@ -11,7 +11,7 @@ import userOrganizersRouter from "./routes/userOrganizers.js";
 import couponRouter from "./routes/coupons.js";
 import userCouponRouter from "./routes/userCoupons.js";
 import articleRouter from "./routes/article.js";
-import orderRouter from "./routes/order.js";
+// import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
 import notifyRoutes from './routes/notify.js';
 import chatRouter, { initializeChatWebSocket } from "./routes/agent.js";
@@ -60,7 +60,7 @@ app.use("/api/coupons", couponRouter);
 app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
 // app.use("/api/cart", cartRouter);
-app.use("/api/order", orderRouter);
+// app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
 app.use("/api/chat", chatRouter);
@@ -76,14 +76,8 @@ const startServer = async () => {
   try {
     // 初始化 WebSocket 聊天功能
     const io = initializeChatWebSocket(server);
-    console.log('WebSocket 聊天功能已初始化');
-    
-    // 使用 server.listen 而不是 app.listen
     server.listen(PORT, () => {
-      console.log("主機啟動 http://localhost:3005");
-      console.log("WebSocket 聊天服務已啟動");
     });
-    
   } catch (error) {
     console.error('伺服器啟動失敗:', error);
     process.exit(1);
@@ -92,9 +86,7 @@ const startServer = async () => {
 
 // 優雅關閉處理
 const gracefulShutdown = () => {
-  console.log('正在關閉伺服器...');
   server.close(() => {
-    console.log('伺服器已關閉');
     process.exit(0);
   });
 };

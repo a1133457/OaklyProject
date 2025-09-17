@@ -56,7 +56,6 @@ export const initializeChatWebSocket = (server) => {
         )
       `);
 
-      console.log('聊天資料庫表初始化完成');
     } catch (error) {
       console.error('聊天資料庫初始化失敗:', error);
     }
@@ -320,12 +319,10 @@ socket.on('send_message', async (data) => {
       created_at: new Date().toISOString()
     };
 
-    console.log('廣播訊息給聊天室:', `room_${roomId}`, messageData);
 
     // 廣播訊息給聊天室內所有用戶
     io.to(`room_${roomId}`).emit('new_message', messageData);
 
-    console.log(`訊息發送: ${senderName} -> 聊天室 ${roomId}`);
 
   } catch (error) {
     console.error('發送訊息失敗:', error);
@@ -360,7 +357,6 @@ socket.on('get_active_chats', async (data) => {
     });
     
   } catch (error) {
-    console.error('載入進行中對話失敗:', error);
   }
 });// 確保加入聊天室並發送訊息
 socket.on('join_room_and_send', async (data) => {
@@ -372,7 +368,6 @@ socket.on('join_room_and_send', async (data) => {
     
     // 驗證客服確實在聊天室中
     const socketsInRoom = await io.in(`room_${roomId}`).fetchSockets();
-    console.log(`客服加入聊天室 room_${roomId} 後，房間內用戶數: ${socketsInRoom.length}`);
     
     // 發送訊息
     const senderId = socket.agentId;
@@ -400,12 +395,10 @@ socket.on('join_room_and_send', async (data) => {
       created_at: new Date().toISOString()
     };
 
-    console.log('廣播訊息給聊天室:', `room_${roomId}`, messageData);
 
     // 廣播給所有聊天室成員
     io.to(`room_${roomId}`).emit('new_message', messageData);
 
-    console.log(`訊息發送完成: ${senderName} -> 聊天室 ${roomId}`);
 
   } catch (error) {
     console.error('加入聊天室並發送訊息失敗:', error);
