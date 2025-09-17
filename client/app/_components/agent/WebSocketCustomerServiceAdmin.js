@@ -6,14 +6,14 @@ import io from 'socket.io-client';
 // import '@/styles/products/chat.css';
 
 
-const AgentDashboard = () => {
+const AgentDashboard = ({ user, onLogout }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [agentInfo, setAgentInfo] = useState({
-    id: 1,
-    name: '客服小美',
-    email: 'agent1@oakly.com'
-  });
+  // const [user, setAgentInfo] = useState({
+  //   id: 1,
+  //   name: '客服小美',
+  //   email: 'agent1@oakly.com'
+  // });
 
   const [waitingCustomers, setWaitingCustomers] = useState([]);
   const [activeChats, setActiveChats] = useState([]);
@@ -21,9 +21,19 @@ const AgentDashboard = () => {
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [agentStatus, setAgentStatus] = useState('available'); // available, busy, offline
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const messagesEndRef = useRef(null);
-
+  const handleLogout = () => setShowLogoutConfirm(true);
+  const confirmLogout = async () => {
+    if (socket) {
+      socket.emit('agent_logout', { agentId: user.id });
+      socket.disconnect();
+    }
+    setShowLogoutConfirm(false);
+    await onLogout();
+  };
+  const cancelLogout = () => setShowLogoutConfirm(false);
   useEffect(() => {
     // 建立 WebSocket 連接
     const newSocket = io('http://localhost:3005', {
@@ -36,8 +46,8 @@ const AgentDashboard = () => {
 
       // 以客服身份加入
       newSocket.emit('join_as_agent', {
-        agentId: agentInfo.id,
-        agentName: agentInfo.name
+        agentId: user.id,
+        agentName: user.name
       });
     });
 
@@ -45,7 +55,7 @@ const AgentDashboard = () => {
       console.log('客服連接成功:', data);
 
       // 請求載入進行中的對話
-      newSocket.emit('get_active_chats', { agentId: agentInfo.id });
+      newSocket.emit('get_active_chats', { agentId: user.id });
     });
 
 
@@ -119,19 +129,19 @@ const AgentDashboard = () => {
     // 新消息
     newSocket.on('new_message', (message) => {
       console.log('前端收到 new_message:', message);
-    
+
       setMessages(prev => {
         const updated = [...prev, message];
         console.log('更新後的訊息:', updated);
-        
+
         // 強制重新渲染
         setTimeout(() => {
           setMessages([...updated]);
         }, 10);
-        
+
         return updated;
       });
-    
+
       if (message.sender_type === 'customer') {
         playNotificationSound();
       }
@@ -164,7 +174,7 @@ const AgentDashboard = () => {
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -195,7 +205,7 @@ const AgentDashboard = () => {
 
     socket.emit('accept_chat', {
       roomId: customer.id,
-      agentId: agentInfo.id
+      agentId: user.id
     });
   };
 
@@ -215,8 +225,8 @@ const AgentDashboard = () => {
     const tempMessage = {
       id: `temp_${Date.now()}`,
       room_id: selectedChat.roomId,
-      sender_id: agentInfo.id,
-      sender_name: agentInfo.name,
+      sender_id: user.id,
+      sender_name: user.name,
       sender_type: 'agent',
       message: currentMessage.trim(),
       message_type: 'text',
@@ -280,15 +290,29 @@ const AgentDashboard = () => {
   return (
     <div className="agent-dashboard">
       <div className="dashboard-header">
+        {showLogoutConfirm && (
+          <div className="logout-overlay">
+            <div className="logout-dialog">
+              <div className="logout-icon">🚪</div>
+              <h3>確認登出</h3>
+              <p>確定要登出客服系統嗎？</p>
+              <p className="logout-warning">未完成的對話將會轉移給其他客服人員。</p>
+              <div className="logout-actions">
+                <button className="cancel-btn" onClick={cancelLogout}>取消</button>
+                <button className="confirm-btn" onClick={confirmLogout}>確認登出</button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="header-left">
           <h1>Oakly 客服後台</h1>
           <div className="agent-info">
             <div className="agent-avatar">
-              {agentInfo.name.charAt(0)}
+              {user.name.charAt(0)}
             </div>
             <div className="agent-details">
-              <div className="agent-name">{agentInfo.name}</div>
-              <div className="agent-email">{agentInfo.email}</div>
+              <div className="agent-name">{user.name}</div>
+              <div className="agent-email">{user.email}</div>
             </div>
           </div>
         </div>
@@ -311,6 +335,9 @@ const AgentDashboard = () => {
               <option value="offline">離線</option>
             </select>
           </div>
+          <button onClick={handleLogout} className="out">
+            登出
+          </button>
         </div>
       </div>
 
@@ -417,13 +444,13 @@ const AgentDashboard = () => {
 
 
               <div className="messages-container">
-      
+
                 {messages.map((message, index) => {
                   console.log('渲染訊息:', message.id || index, message.message); // 加這行除錯
                   return (
                     <div
                       key={message.id || `msg_${index}`} // 改善 key 的唯一性
-                      className={`message ${message.sender_type === 'agent' ? 'sent' : 'received'}`}   
+                      className={`message ${message.sender_type === 'agent' ? 'sent' : 'received'}`}
                     >
                       <div className="message-content">
                         <div className="sender-info">
@@ -1025,8 +1052,32 @@ const AgentDashboard = () => {
             font-size: 14px;
           }
         }
-        
-        /* 自定義滾動條 */
+        .logout-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.logout-dialog { background: white; border-radius: 12px; padding: 32px; text-align: center; max-width: 400px; margin: 20px; }
+.logout-icon { font-size: 48px; margin-bottom: 16px; }
+.logout-dialog h3 { margin: 0 0 12px 0; color: #2d3748; font-size: 20px; font-weight: 600; }
+.logout-dialog p { margin: 0 0 8px 0; color: #4a5568; font-size: 14px; }
+.logout-warning { color: #e53e3e !important; font-size: 13px !important; margin-bottom: 24px !important; }
+.logout-actions { display: flex; gap: 12px; justify-content: center; }
+.cancel-btn { background: #f7fafc; border: 1px solid #e2e8f0; color: #4a5568; padding: 8px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.confirm-btn { background: #e53e3e; color: white; padding: 8px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; }
+        .out{
+            background:#e53e3e
+;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius:8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s 
+ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);}
+
+
+
+/* 自定義滾動條 */
         .sidebar::-webkit-scrollbar,
         .messages-container::-webkit-scrollbar {
           width: 6px;

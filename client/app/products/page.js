@@ -511,7 +511,7 @@ const MainProduct = () => {
 
 
   const getFilteredProducts = () => {
-    console.log("篩選條件:", selectedFilters);
+    // console.log("篩選條件:", selectedFilters);
 
     const filtered = products.filter(product => {
       // 價格篩選
@@ -523,10 +523,10 @@ const MainProduct = () => {
       if (selectedFilters.colors?.length > 0) {
         // 特別檢查 EKTORP 商品
         if (product.name.includes('EKTORP')) {
-          console.log('=== EKTORP 商品詳細檢查 ===');
-          console.log('product.colors 原始值:', product.colors);
-          console.log('product.colors 類型:', typeof product.colors);
-          console.log('完整商品資料:', product);
+          // console.log('=== EKTORP 商品詳細檢查 ===');
+          // console.log('product.colors 原始值:', product.colors);
+          // console.log('product.colors 類型:', typeof product.colors);
+          // console.log('完整商品資料:', product);
         }
 
         let productColors = [];
@@ -540,10 +540,10 @@ const MainProduct = () => {
         );
         // 特別檢查 EKTORP
         if (product.name.includes('EKTORP')) {
-          console.log('EKTORP 解析後的顏色:', productColors);
-          console.log('篩選條件包含的顏色:', selectedFilters.colors);
-          console.log('顏色匹配結果:', colorMatch);
-          console.log('=== 檢查結束 ===');
+          // console.log('EKTORP 解析後的顏色:', productColors);
+          // console.log('篩選條件包含的顏色:', selectedFilters.colors);
+          // console.log('顏色匹配結果:', colorMatch);
+          // console.log('=== 檢查結束 ===');
         }
       }
 
@@ -556,11 +556,11 @@ const MainProduct = () => {
           productMaterials = product.materials.map(material => material.material_name);
         }
 
-        console.log('=== 材質篩選調試 ===');
-        console.log('商品:', product.name);
-        console.log('商品材質陣列:', product.materials);
-        console.log('解析後材質名稱:', productMaterials);
-        console.log('篩選條件:', selectedFilters.materials);
+        // console.log('=== 材質篩選調試 ===');
+        // console.log('商品:', product.name);
+        // console.log('商品材質陣列:', product.materials);
+        // console.log('解析後材質名稱:', productMaterials);
+        // console.log('篩選條件:', selectedFilters.materials);
 
         if (productMaterials.length > 0) {
           materialMatch = productMaterials.some(material =>
@@ -572,7 +572,7 @@ const MainProduct = () => {
           materialMatch = false;
         }
 
-        console.log('匹配結果:', materialMatch);
+        // console.log('匹配結果:', materialMatch);
       }
 
       let seriesMatch = true;
@@ -585,7 +585,7 @@ const MainProduct = () => {
       return finalMatch;
     });
 
-    console.log(`篩選結果: 從 ${products.length} 個商品中篩選出 ${filtered.length} 個`);
+    // console.log(`篩選結果: 從 ${products.length} 個商品中篩選出 ${filtered.length} 個`);
     return filtered;
   };
 
@@ -703,7 +703,7 @@ const MainProduct = () => {
     const type = urlParams.get('type') || '';
     const page = parseInt(urlParams.get('page')) || 1;
 
-    console.log('URL 參數:', { category, subcategory, type });
+    // console.log('URL 參數:', { category, subcategory, type });
 
     setCurrentPage(page);
 
@@ -868,14 +868,14 @@ const MainProduct = () => {
 
 
   const openWishlistModal = async (product) => {
-    console.log('openWishlistModal 被調用', product);
-    console.log('product.images:', product.images);
+    // console.log('openWishlistModal 被調用', product);
+    // console.log('product.images:', product.images);
 
     setCurrentWishlistProduct(product);
     setSelectedColor(product.colors?.[0] || null);
     setSelectedSize(product.sizes?.[0] || null);
     setWishlistQuantity(1);
-    console.log('準備設置 showWishlistModal 為 true');
+    // console.log('準備設置 showWishlistModal 為 true');
     setShowWishlistModal(true);
     document.body.classList.add('no-scroll');
 
@@ -885,8 +885,8 @@ const MainProduct = () => {
         const response = await fetch(`http://localhost:3005/api/products/${product.id}`);
         const result = await response.json();
         if (result.status === 'success') {
-          console.log('獲取到完整商品資料:', result.data);
-          console.log('完整商品的圖片資料:', result.data.images);
+          // console.log('獲取到完整商品資料:', result.data);
+          // console.log('完整商品的圖片資料:', result.data.images);
 
 
           setCurrentWishlistProduct(result.data);
@@ -1128,22 +1128,22 @@ const MainProduct = () => {
   const checkWishlistStatus = (productId, colorId, sizeId) => {
     const key = `${productId}_${colorId}_${sizeId}`;
     const result = isWishlisted[key] || false;
-    console.log(`checkWishlistStatus(${productId}, ${colorId}, ${sizeId}) = ${result}`);
-    console.log('完整 isWishlisted:', isWishlisted);
+    // console.log(`checkWishlistStatus(${productId}, ${colorId}, ${sizeId}) = ${result}`);
+    // console.log('完整 isWishlisted:', isWishlisted);
     return result;
   };
 
 
   const hasAnyWishlist = (productId) => {
-    console.log('=== hasAnyWishlist 被調用 ===');
-    console.log('檢查商品 ID:', productId);
-    console.log('當前 isWishlisted 狀態:', isWishlisted);
+    // console.log('=== hasAnyWishlist 被調用 ===');
+    // console.log('檢查商品 ID:', productId);
+    // console.log('當前 isWishlisted 狀態:', isWishlisted);
 
     const productKeys = Object.keys(isWishlisted).filter(key =>
       key.startsWith(`${productId}_`) && isWishlisted[key]
     );
-    console.log('找到的相關 keys:', productKeys);
-    console.log('最終結果:', productKeys.length > 0);
+    // console.log('找到的相關 keys:', productKeys);
+    // console.log('最終結果:', productKeys.length > 0);
     return productKeys.length > 0;
   };
 

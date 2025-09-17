@@ -15,6 +15,8 @@ import articleRouter from "./routes/article.js";
 import reviewsRouter from './routes/review.js';
 import notifyRoutes from './routes/notify.js';
 import chatRouter, { initializeChatWebSocket } from "./routes/agent.js";
+import agentAuthRoutes from './routes/agentAuth.js';
+
 
 
 
@@ -63,7 +65,9 @@ app.use("/api/article", articleRouter);
 // app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
-app.use("/api/chat", chatRouter);
+app.use("/api/chat", chatRouter); //聊天室
+app.use('/api/agents', agentAuthRoutes); //客服登入登出
+
 
 
 

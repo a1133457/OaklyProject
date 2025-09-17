@@ -592,8 +592,6 @@ router.post('/:id/stock', async (req, res) => {
 
     const availableStock = stockRows[0]?.amount || 0;
 
-    console.log('查詢結果:', stockRows);
-    console.log('可用庫存:', availableStock);
 
     res.json({
       status: 'success',

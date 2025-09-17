@@ -1,5 +1,5 @@
-import WebSocketCustomerServiceAdmin from '@/app/_components/agent/WebSocketCustomerServiceAdmin'
+import AgentAuthWrapper from '@/app/_components/agent/AgentAuthWrapper'
 
 export default function CustomerServiceAdminPage() {
-  return <WebSocketCustomerServiceAdmin />;
+  return <AgentAuthWrapper />;
 }
