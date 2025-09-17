@@ -399,7 +399,7 @@ html {
 }
 
 /* 左側邊欄 */
-.sidebar {
+.sidebar2 {
   padding-right: 80px;
   height: fit-content;
   /* 讓高度適應內容 */
@@ -1733,7 +1733,7 @@ span {
     gap: 20px;
   }
 
-  .sidebar {
+  .sidebar2 {
     order: 2;
   }
 
@@ -1981,7 +1981,7 @@ span {
     background-image: url(/img/lan/sofa.jpg);
   }
 
-  .sidebar {
+  .sidebar2 {
     display: none;
   }
 
@@ -2001,6 +2001,7 @@ span {
 
   .productcard {
     height: auto;
+    overflow: visible;
   }
 
   .image {
@@ -2012,6 +2013,7 @@ span {
   .image img {
     object-fit: cover;
     overflow: visible;
+    width: 100%;
 
   }
 
