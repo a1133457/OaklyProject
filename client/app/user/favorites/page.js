@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import styles from '../user.module.css'
+import styles from '../user.module.css';
+import { FaShoppingCart } from "react-icons/fa";
 
-// const datas = [
-//     { id: 1, name: 'LISABO 桌子', price: 4999, img: '/img/ting/桌子.webp' },
-//     { id: 2, name: 'LISABO 桌子', price: 4999, img: '/img/ting/桌子.webp' },
-// ]
+const getColorCode = (colorName) => {
+    const map = {
+        白色: "#ffffff", 黑色: "#000000", 原木色: "#DEB887", 淺灰: "#D3D3D3",
+        深灰: "#555555", 淺藍: "#ADD8E6", 深藍: "#62869D", 淺綠: "#DBE5DE",
+        深綠: "#6B826B", 米黃色: "#F5F5DC", white: "#ffffff", black: "#000000",
+        red: "#ff0000", blue: "#0000ff", green: "#008000", yellow: "#ffff00",
+        orange: "#ffa500", purple: "#800080", pink: "#ffc0cb", brown: "#a52a2a",
+        gray: "#808080", grey: "#808080",
+    };
+    return map[colorName] || "#cccccc";
+};
+
+
 
 export default function FavoritesPage() {
     // 管理清單
@@ -23,10 +33,16 @@ export default function FavoritesPage() {
         })();
     }, [getFavorites]);
 
-    const onRemove = async (productId) => {
-        const result = await removeFavorite(productId);
+    const onRemove = async (productId, colorId, sizeId) => {
+        const result = await removeFavorite(productId, colorId, sizeId);
         if (result.status === 'success') {
-            setList(prev => prev.filter(item => item.product_id !== productId));
+            setList(prev =>
+                prev.filter(item => !(
+                    Number(item.product_id) === Number(productId) &&
+                    Number(item.color_id) === Number(colorId) &&
+                    Number(item.size_id) === Number(sizeId)
+                ))
+            );
         }
     };
 
@@ -41,7 +57,7 @@ export default function FavoritesPage() {
 
     return (
         <div>
-            {list.map(item => (
+            {/* {list.map(item => (
                 <div key={item.product_id} className={styles.favoritesRow}>
                     <img
                         src={item.product_img}
@@ -55,7 +71,55 @@ export default function FavoritesPage() {
                     <div className={styles.iconActions}>
                         <i
                             className={`bi bi-heart-fill ${styles.heart}`}
-                            onClick={() => onRemove(item.product_id)}
+                            onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
+                            role="button"
+                            title="取消收藏"
+                        />
+                        <i
+                            className={`bi bi-cart ${styles.cart}`}
+                            onClick={() => console.log("加入購物車")}
+                            role="button"
+                            title="加入購物車"
+                        />
+                    </div>
+                </div>
+            ))} */}
+            {list.map(item => (
+                <div key={`${item.product_id}-${item.color_id}-${item.size_id}`} className={styles.favoritesCard}>
+                    <img src={item.product_img } alt={item.name} />
+
+
+                    <div className={styles.favoritesBody}>
+                        <div className={styles.productName}>{item.name}</div>
+                        <div className={styles.productPrice}>
+                            NT$ {Number(item.price).toLocaleString()}
+                        </div>
+                        {/* 價格下方：只顯示已選顏色 / 尺寸 */}
+                        {/* 顏色 */}
+                        <div className={styles.optionDisplay}>
+                        {item.color_name && (
+                            <span className={styles.optionPill} aria-label={`顏色：${item.color_name}`}>
+                                <span
+                                    className={styles.colorDotSm}
+                                    style={{ background: getColorCode(item.color_name) }}
+                                />
+                                {item.color_name}
+                            </span>
+                        )}
+
+                        {/* 尺寸 */}
+                        {item.size_label && (
+                            <span className={styles.optionPill} aria-label={`尺寸：${item.size_label}`}>
+                                {item.size_label}
+                            </span>
+                        )}
+                    </div>
+                    </div>
+                    {/* 右側：收藏/購物車（原本就有） */}
+                    <div className={styles.iconActions}>
+                        <i
+                            className={`bi bi-heart-fill ${styles.heart}`}
+                            onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
                             role="button"
                             title="取消收藏"
                         />

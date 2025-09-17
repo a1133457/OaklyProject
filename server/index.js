@@ -77,6 +77,12 @@ app.get("/", (req, res) => {
   res.send("首頁");
 });
 
+// 登出 API：清掉 cookie，永遠回成功
+app.post("/api/users/logout", (req, res) => {
+  res.clearCookie("token", { path: "/" }); // 如果你設 cookie 時有 sameSite/secure，這裡也要加
+  return res.json({ status: "success" });
+});
+
 
 app.use("/api/users", usersRouter);
 app.use('/api', reviewsRouter);
