@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import styles from '../user.module.css';
-import { FaShoppingCart } from "react-icons/fa";
+import { FaCartShopping } from "react-icons/fa6";
+import { FaHeart, FaRegHeart } from "react-icons/fa6";
 
 const getColorCode = (colorName) => {
     const map = {
@@ -175,14 +176,17 @@ export default function FavoritesPage() {
 
                     {/* 右側：收藏/購物車（原本就有） */}
                     <div className={styles.iconActions} >
-                        <i
-                            className={`bi bi-heart-fill ${styles.heart}`}
+                        <div
+                            className={styles.heartWrapper}
                             onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
                             role="button"
                             title="取消收藏"
-                        />
-                        <i
-                            className={`bi bi-cart ${styles.cart}`}
+                        >
+                            <FaHeart className={styles.heart} />
+                            <FaRegHeart className={styles.heartEmpty} />
+                        </div>
+                        <FaCartShopping
+                            className={styles.cart}
                             onClick={() => console.log("加入購物車")}
                             role="button"
                             title="加入購物車"
@@ -194,27 +198,3 @@ export default function FavoritesPage() {
         </div>
     )
 }
-
-/** 小小的內聯樣式：你也可以搬到 user.module.css */
-// const btnStyle = {
-//     width: 28,
-//     height: 28,
-//     border: "1px solid #ddd",
-//     borderRadius: 6,
-//     background: "#fff",
-//     cursor: "pointer",
-//     lineHeight: 1,
-//     fontSize: 16,
-// };
-
-
-// const qtyBoxStyle = {
-//     width: 28,             // 固定寬度，不要太長
-//     height: 28,
-//     border: "1px solid #ddd",
-//     borderRadius: 6,
-//     display: "inline-flex",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     fontSize: 14,
-// };
