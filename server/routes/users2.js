@@ -10,10 +10,6 @@ import path from "path";
 const router = express.Router();
 const upload = multer();
 
-//測試用的 JWT 密鑰
-// const secretKey = "myTestSecretKey123";
-
-
 
 const secretKey = process.env.JWT_SECRET_KEY;
 // console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
@@ -33,13 +29,19 @@ router.get("/favorites", checkToken, async (req, res) => {
         f.product_id,
         f.color_id,
         f.size_id,
-        f.color_name,
         f.quantity,
         p.name,
         p.price,
-        p.product_img
+        c.color_name,
+        s.size_label,
+        CASE
+          WHEN p.product_img LIKE 'http%' THEN p.product_img
+          ELSE CONCAT('http://localhost:3005/', TRIM(LEADING '/' FROM p.product_img))
+        END AS product_img
       FROM favorites f
-      JOIN products p ON p.id = f.product_id
+      JOIN products p ON f.product_id = p.id
+      LEFT JOIN colors c ON f.color_id = c.id
+      LEFT JOIN sizes s ON f.size_id = s.id
       WHERE f.user_id = ?;
     `;
     const [rows] = await pool.execute(sql, [userId]);
@@ -122,7 +124,7 @@ router.delete("/favorites/:productId/:colorId/:sizeId", checkToken, async (req, 
   try {
     const userId = req.decoded.id;
     const { productId, colorId, sizeId } = req.params;
-    
+
     await pool.execute(
       "DELETE FROM favorites WHERE user_id = ? AND product_id = ? AND color_id = ? AND size_id = ?",
       [userId, productId, colorId || null, sizeId || null]

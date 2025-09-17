@@ -343,8 +343,7 @@ export function AuthProvider({ children }) {
         },
         body: JSON.stringify({ productId, colorId, sizeId, colorName, quantity  }),
       });
-      const result = await res.json();
-      return result;
+      return await res.json();
     } catch (err) {
       console.error(err);
       return { success: false, message: "伺服器錯誤" };

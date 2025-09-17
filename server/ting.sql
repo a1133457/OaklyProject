@@ -30,6 +30,10 @@ DESCRIBE products;
 
 ALTER TABLE products ADD COLUMN product_img VARCHAR(500) NULL;
 
+DESCRIBE colors;
+DESCRIBE sizes;
+
+DESCRIBE product_images;
 
 -- 1) 基礎/父表
 
