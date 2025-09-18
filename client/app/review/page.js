@@ -22,6 +22,8 @@ const Review = ({ productId = 1 }) => {
   const [sortOptions, setSortOptions] = useState([]);
   const [editingReview, setEditingReview] = useState(null);
   const [reactionCounts, setReactionCounts] = useState({});
+  const editFileInputRef = useRef(null);
+
   const [editForm, setEditForm] = useState({
     rating: 0,
     comment: '',
@@ -166,13 +168,14 @@ const Review = ({ productId = 1 }) => {
     }
   };
 
-  // 處理圖片選擇
-  const handleImageSelect = (e) => {
+  const handleImageSelect = (e, isEditMode = false) => {
     const files = Array.from(e.target.files);
     const maxImages = 5;
     const maxFileSize = 5 * 1024 * 1024; // 5MB
 
-    if (images.length + files.length > maxImages) {
+    const currentImages = isEditMode ? editForm.images : images;
+
+    if (currentImages.length + files.length > maxImages) {
       Swal.fire({
         icon: 'warning',
         title: '圖片數量限制',
@@ -186,7 +189,6 @@ const Review = ({ productId = 1 }) => {
     const validPreviews = [];
 
     files.forEach(file => {
-      // 檢查檔案大小
       if (file.size > maxFileSize) {
         Swal.fire({
           icon: 'error',
@@ -197,7 +199,6 @@ const Review = ({ productId = 1 }) => {
         return;
       }
 
-      // 檢查檔案類型
       if (!file.type.startsWith('image/')) {
         Swal.fire({
           icon: 'error',
@@ -210,23 +211,35 @@ const Review = ({ productId = 1 }) => {
 
       validFiles.push(file);
 
-      // 建立預覽
       const reader = new FileReader();
       reader.onload = (e) => {
         validPreviews.push({
           id: Date.now() + Math.random(),
           url: e.target.result,
-          file: file
+          file: file,
+          isNew: true
         });
 
         if (validPreviews.length === validFiles.length) {
-          setImages(prev => [...prev, ...validPreviews]);
-          setImageFiles(prev => [...prev, ...validFiles]);
+          if (isEditMode) {
+            setEditForm(prev => ({
+              ...prev,
+              images: [...prev.images, ...validPreviews],
+              imageFiles: [...prev.imageFiles, ...validFiles]
+            }));
+          } else {
+            setImages(prev => [...prev, ...validPreviews]);
+            setImageFiles(prev => [...prev, ...validFiles]);
+          }
         }
       };
       reader.readAsDataURL(file);
-    }); // 清空 input
-    if (fileInputRef.current) {
+    });
+
+    // 清空 input
+    if (isEditMode && editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    } else if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
@@ -374,14 +387,8 @@ const Review = ({ productId = 1 }) => {
     setEditForm({ rating: 0, comment: '', images: [], imageFiles: [] });
   };
 
-  // 提交编辑
   const submitEdit = async (reviewId) => {
-    console.log('submitEdit 被调用，reviewId:', reviewId);
-    console.log('editForm 内容:', editForm);
-
     try {
-
-      // 验证必填字段
       if (!editForm.comment.trim()) {
         Swal.fire({
           icon: 'warning',
@@ -394,14 +401,29 @@ const Review = ({ productId = 1 }) => {
       if (editForm.rating === 0) {
         Swal.fire({
           icon: 'warning',
-          title: '请选择评分',
+          title: '請選擇評分',
           confirmButtonColor: '#DBA783'
         });
         return;
       }
+
+      // 上傳新圖片
       let newImageUrls = [];
       if (editForm.imageFiles.length > 0) {
-        newImageUrls = await uploadImages(editForm.imageFiles);
+        const formData = new FormData();
+        editForm.imageFiles.forEach((file) => {
+          formData.append(`images`, file);
+        });
+
+        const uploadResponse = await fetch('http://localhost:3005/api/upload/review-images', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          newImageUrls = uploadResult.imageUrls || [];
+        }
       }
 
       // 合并现有图片和新图片
@@ -439,7 +461,7 @@ const Review = ({ productId = 1 }) => {
       Swal.fire({
         icon: 'error',
         title: '修改失败',
-        text: '请稍后再试'
+        text: '請聯絡客服'
       });
     }
   };
@@ -448,7 +470,7 @@ const Review = ({ productId = 1 }) => {
     const token = localStorage.getItem('reactLoginToken');
     console.log('Token 存在:', !!token);
   }, []);
-  
+
 
   useEffect(() => {
     fetchReviews(sortBy);
@@ -470,79 +492,79 @@ const Review = ({ productId = 1 }) => {
   };
 
   const distribution = getRatingDistribution();
-// 删除评论
-const deleteReview = async (reviewId) => {
-  const result = await Swal.fire({
-    title: '確認删除',
-    text: '删除後無法復原，確定要删除此評論嗎？',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: '確定删除',
-    cancelButtonText: '取消'
-  });
+  // 删除评论
+  const deleteReview = async (reviewId) => {
+    const result = await Swal.fire({
+      title: '確認删除',
+      text: '删除後無法復原，確定要删除此評論嗎？',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '確定删除',
+      cancelButtonText: '取消'
+    });
 
-  if (result.isConfirmed) {
-    try {
-      const response = await fetch(`http://localhost:3005/api/reviews/${reviewId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
-        }
-      });
-
-      const deleteResult = await response.json();
-
-      if (deleteResult.status === 'success') {
-        await Swal.fire({
-          icon: 'success',
-          title: '删除成功',
-          text: '評論已成功删除',
-          confirmButtonColor: '#DBA783'
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`http://localhost:3005/api/reviews/${reviewId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
+          }
         });
-        
-        fetchReviews(sortBy);
-      } else {
+
+        const deleteResult = await response.json();
+
+        if (deleteResult.status === 'success') {
+          await Swal.fire({
+            icon: 'success',
+            title: '删除成功',
+            text: '評論已成功删除',
+            confirmButtonColor: '#DBA783'
+          });
+
+          fetchReviews(sortBy);
+        } else {
+          await Swal.fire({
+            icon: 'error',
+            title: '删除失败',
+            text: deleteResult.message || '請稍後再試',
+            confirmButtonColor: '#DBA783'
+          });
+        }
+      } catch (error) {
+        console.error('删除評論失敗:', error);
         await Swal.fire({
           icon: 'error',
           title: '删除失败',
-          text: deleteResult.message || '請稍後再試',
+          text: '請稍後再試',
           confirmButtonColor: '#DBA783'
         });
       }
-    } catch (error) {
-      console.error('删除評論失敗:', error);
-      await Swal.fire({
-        icon: 'error',
-        title: '删除失败',
-        text: '請稍後再試',
-        confirmButtonColor: '#DBA783'
-      });
-    }
-  }
-};
-const handleReaction = (reviewId, type) => {
-  const storageKey = 'reviewReactions';
-  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-  
-  const newCounts = {
-    ...saved,
-    [reviewId]: {
-      likes: saved[reviewId]?.likes || 0,
-      dislikes: saved[reviewId]?.dislikes || 0,
-      [type === 'like' ? 'likes' : 'dislikes']: (saved[reviewId]?.[type === 'like' ? 'likes' : 'dislikes'] || 0) + 1
     }
   };
-  
-  localStorage.setItem(storageKey, JSON.stringify(newCounts));
-  setReactionCounts(newCounts);
-};
+  const handleReaction = (reviewId, type) => {
+    const storageKey = 'reviewReactions';
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
 
-useEffect(() => {
-  const saved = JSON.parse(localStorage.getItem('reviewReactions') || '{}');
-  setReactionCounts(saved);
-}, []);
+    const newCounts = {
+      ...saved,
+      [reviewId]: {
+        likes: saved[reviewId]?.likes || 0,
+        dislikes: saved[reviewId]?.dislikes || 0,
+        [type === 'like' ? 'likes' : 'dislikes']: (saved[reviewId]?.[type === 'like' ? 'likes' : 'dislikes'] || 0) + 1
+      }
+    };
+
+    localStorage.setItem(storageKey, JSON.stringify(newCounts));
+    setReactionCounts(newCounts);
+  };
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('reviewReactions') || '{}');
+    setReactionCounts(saved);
+  }, []);
 
   return (
     <div className="review-page">
@@ -611,9 +633,34 @@ useEffect(() => {
                     />
                   ))}
                 </div>
-                {editForm.images.length > 0 && (
-                  <div className="edit-images" style={{ marginBottom: '15px' }}>
-                    <span>現有圖片：</span>
+                <div className="edit-images" style={{ marginBottom: '15px' }}>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ marginRight: '10px' }}>圖片 (最多5張)：</label>
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleImageSelect(e, true)}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editFileInputRef.current?.click()}
+                      style={{
+                        backgroundColor: '#DBA783',
+                        color: 'white',
+                        padding: '5px 10px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <i className="fas fa-camera"></i> 新增圖片
+                    </button>
+                  </div>
+
+                  {editForm.images.length > 0 && (
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                       {editForm.images.map((image) => (
                         <div key={image.id} style={{ position: 'relative' }}>
@@ -623,10 +670,14 @@ useEffect(() => {
                             style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px' }}
                           />
                           <button
+                            type="button"
                             onClick={() => {
                               setEditForm(prev => ({
                                 ...prev,
-                                images: prev.images.filter(img => img.id !== image.id)
+                                images: prev.images.filter(img => img.id !== image.id),
+                                imageFiles: image.isNew
+                                  ? prev.imageFiles.filter(file => file !== image.file)
+                                  : prev.imageFiles
                               }));
                             }}
                             style={{
@@ -648,8 +699,8 @@ useEffect(() => {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
                 <textarea
                   value={editForm.comment}
                   onChange={(e) => setEditForm(prev => ({ ...prev, comment: e.target.value }))}
@@ -674,22 +725,22 @@ useEffect(() => {
               </div>
             ) : (
               <>
-               
+
                 <div className="user-info">
                   <img src={review.avatar} alt={review.user_name} className="user-avatar" />
                   <div className="user-details">
                     <div className="user-name">{review.user_name} {user && review.user_id && review.user_id === user.id && (
-                  <div className="review-actions">
-                    <button onClick={() => startEdit(review)} className="edit-btn">
-                      <i className="fas fa-edit"></i> 編輯
-                    </button>
-                    <button onClick={() => deleteReview(review.id)} className="delete-btn">
-      <i className="fas fa-trash"></i> 刪除
-    </button>
-                  </div>
-                )}</div>
+                      <div className="review-actions">
+                        <button onClick={() => startEdit(review)} className="edit-btn">
+                          <i className="fas fa-edit"></i> 編輯
+                        </button>
+                        <button onClick={() => deleteReview(review.id)} className="delete-btn">
+                          <i className="fas fa-trash"></i> 刪除
+                        </button>
+                      </div>
+                    )}</div>
                     <div className="review-time">{formatTime(review.created_at)}</div>
-                    
+
                   </div>
                 </div>
                 <div className="review-rating">
@@ -721,24 +772,24 @@ useEffect(() => {
                   </div>
                 )}
 
-<div className="review-engagement">
-  <div 
-    className="thumbs-up"
-    onClick={() => handleReaction(review.id, 'like')}
-    style={{cursor: 'pointer'}}
-  >
-    <i className="fas fa-thumbs-up"></i>
-    <span>{reactionCounts[review.id]?.likes || 0}</span>
-  </div>
-  <div 
-    className="thumbs-down"
-    onClick={() => handleReaction(review.id, 'dislike')}
-    style={{cursor: 'pointer'}}
-  >
-    <i className="fas fa-thumbs-down"></i>
-    <span>{reactionCounts[review.id]?.dislikes || 0}</span>
-  </div>
-</div>
+                <div className="review-engagement">
+                  <div
+                    className="thumbs-up"
+                    onClick={() => handleReaction(review.id, 'like')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-thumbs-up"></i>
+                    <span>{reactionCounts[review.id]?.likes || 0}</span>
+                  </div>
+                  <div
+                    className="thumbs-down"
+                    onClick={() => handleReaction(review.id, 'dislike')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-thumbs-down"></i>
+                    <span>{reactionCounts[review.id]?.dislikes || 0}</span>
+                  </div>
+                </div>
               </>
             )}
           </div>
