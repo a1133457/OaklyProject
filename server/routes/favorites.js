@@ -77,5 +77,21 @@ router.delete("/:productId", checkToken, async (req, res) => {
         res.status(500).json({ status: "error", message: "取消收藏失敗" });
     }
 });
+// 修改後端路由為
+router.delete("/:productId/:colorId/:sizeId", checkToken, async (req, res) => {
+    try {
+        const userId = req.decoded.id;
+        const { productId, colorId, sizeId } = req.params;
+        
+        await pool.execute(
+            "DELETE FROM favorites WHERE user_id=? AND product_id=? AND color_id=? AND size_id=?",
+            [userId, productId, colorId, sizeId]
+        );
+        
+        res.status(200).json({ status: "success", message: "已取消收藏" });
+    } catch (e) {
+        res.status(500).json({ status: "error", message: "取消收藏失敗" });
+    }
+});
 
 export default router;

@@ -11,17 +11,36 @@ import styles from '../user.module.css'
 
 export default function FavoritesPage() {
     // 管理清單
-    const { getFavorites, removeFavorite } = useAuth();
+    // const { getFavorites, removeFavorite } = useAuth();
+    const { user, removeFavorite } = useAuth()
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const getFavorites = async () => {
+        try {
+            if (!user?.id) return { success: false, message: '請先登入' };
+
+            const response = await fetch(`http://localhost:3005/api/favorites`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error('獲取收藏失敗:', error);
+            return { success: false, message: error.message };
+        }
+    };
     useEffect(() => {
         (async () => {
             const result = await getFavorites();
             if (result.success) setList(result.data || []);
             setLoading(false);
         })();
-    }, [getFavorites]);
+    }, [user?.id]);
 
     const onRemove = async (productId) => {
         const result = await removeFavorite(productId);

@@ -11,11 +11,13 @@ import userOrganizersRouter from "./routes/userOrganizers.js";
 import couponRouter from "./routes/coupons.js";
 import userCouponRouter from "./routes/userCoupons.js";
 import articleRouter from "./routes/article.js";
-// import orderRouter from "./routes/order.js";
+import orderRouter from "./routes/order.js";
 import reviewsRouter from './routes/review.js';
 import notifyRoutes from './routes/notify.js';
 import chatRouter, { initializeChatWebSocket } from "./routes/agent.js";
 import agentAuthRoutes from './routes/agentAuth.js';
+import favRouter from './routes/favorites.js';
+
 
 
 
@@ -62,11 +64,13 @@ app.use("/api/coupons", couponRouter);
 app.use("/api/user/coupons", userCouponRouter);
 app.use("/api/article", articleRouter);
 // app.use("/api/cart", cartRouter);
-// app.use("/api/order", orderRouter);
+app.use("/api/order", orderRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
 app.use("/api/chat", chatRouter); //聊天室
 app.use('/api/agents', agentAuthRoutes); //客服登入登出
+app.use("/api/favorites", favRouter); 
+
 
 
 
@@ -81,6 +85,8 @@ const startServer = async () => {
     // 初始化 WebSocket 聊天功能
     const io = initializeChatWebSocket(server);
     server.listen(PORT, () => {
+    console.log("主機啟動 http://localhost:3005"); 
+
     });
   } catch (error) {
     console.error('伺服器啟動失敗:', error);
