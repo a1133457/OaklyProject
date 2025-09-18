@@ -127,7 +127,7 @@
 }
 
 .search-input {
-  width: 320px;
+  width: 360px;
   padding: 12px 16px;
   border-radius: 50px;
   font-size: 14px;
@@ -371,6 +371,28 @@
   .user-log {
     display: none !important;
   }
+  .search-input{    width: 130px;
+  }
+
+  .search-input:hover{
+    width: 130px;
+  }
+  .search-input:focus{
+    width: 130px;
+  }
+  .search-input:active{
+    width: 130px;
+  }
+
+  .search-input-container{
+    position: absolute;
+    right: 100%;
+    bottom: 0%;
+    z-index: 1000;
+   margin: 0;
+  width: 130px; }
+
+
 
   .icon-group {
     width: 100%;

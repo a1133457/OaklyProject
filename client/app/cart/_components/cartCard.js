@@ -1,14 +1,14 @@
 "use client";
 
 import "@/styles/cart/cartCard.css";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
 // sweetalert2 對話盒
 import Swal from "sweetalert2";
 // sweetalert2 整合 react 的函式
 import withReactContent from "sweetalert2-react-content";
 
-export default function CartCard({ type }) {
+export default function CartCard({ type, selectedItems, onItemSelect }) {
   const [showForm, setShowForm] = useState(false);
   const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } =
     useCart();
@@ -29,7 +29,6 @@ export default function CartCard({ type }) {
     }).then((result) => {
       // 如果使用者按下確認按鈕後執行這裡
       if (result.isConfirmed) {
-        // 執行刪除
         onRemove(item.id);
 
         // 跳出刪除成功對話盒
@@ -51,7 +50,11 @@ export default function CartCard({ type }) {
               <div key={index} className="cardAll">
                 <div className="cart-main">
                   <div className="card-left">
-                    <input type="checkbox" />
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.has(item.id)}
+                      onChange={(e) => onItemSelect(item.id, e.target.checked)}
+                    />
                     <img
                       src={`http://localhost:3005/uploads/${item.img}`}
                       alt={item.name}
@@ -60,9 +63,9 @@ export default function CartCard({ type }) {
                     />
                     <div className="card-title">
                       <h6>{item.name}</h6>
-                      <p>顏色: {item.colors.color_name || "無顏色"}</p>
-                      <p>size: {item.sizes.size_label || "無尺寸"}</p>
-                      {/* <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p> */}
+                      <p>顏色: {item.color || "無顏色"}</p>
+                      <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                      <p>材質: {item.materials.id===item.materials_id ? item.materials.material_name: '無材質'}</p>
                     </div>
                   </div>
                   <div className="card-right">
@@ -103,7 +106,7 @@ export default function CartCard({ type }) {
           {/* 手機-------------------------- */}
           <div className="cart-line phone"></div>
           <div className="cart-card phone">
-            {items.map((item,index) => (
+            {items.map((item, index) => (
               <div key={index} className="cardAll">
                 <div className="cart-main phone">
                   <div className="card-left">
@@ -164,7 +167,7 @@ export default function CartCard({ type }) {
       return (
         <>
           <div className="cart-card pc">
-            {items.map((item,index) => (
+            {items.map((item, index) => (
               <div key={index} className="cart-main">
                 <div className="card-left">
                   <img
@@ -177,7 +180,7 @@ export default function CartCard({ type }) {
                     <h5>{item.name}</h5>
                     <p>顏色: {item.colors.color_name || "無顏色"}</p>
                     <p>size: {item.sizes.size_label || "無尺寸"}</p>
-                    {/* <p>材質: {item.material}</p> */}
+                    {/* <p>材質: {item.</p> */}
                   </div>
                 </div>
                 <div className="card-right">

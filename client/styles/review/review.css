@@ -62,7 +62,19 @@ body {
 
 
 }
+.swal2-confirm:focus,
+.swal2-cancel:focus,
+.swal2-deny:focus,
+.swal2-close:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
 
+/* 也可以用通用選擇器 */
+.swal2-popup button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
 
 .review-page {
     display: flex;
@@ -586,6 +598,8 @@ textarea:focus {
     justify-content: left;
 }
 
+
+
 .submit-btn,
 .return-btn {
     padding: 12px 32px;
@@ -697,6 +711,64 @@ textarea:focus {
         width: 100%;
         padding: 14px 24px;
     }
+    /* 修復1920px雙滾輪問題 - 簡化版 */
+@media (min-width: 1920px) {
+    
+    /* 如果Review組件在modal容器內 */
+    .modal-open body,
+    .review-modal-open body {
+        overflow: hidden !important;
+        height: 100vh;
+        position: fixed;
+        width: 100%;
+    }
+    
+    /* Review頁面本身的滾動修復 */
+    .review-page {
+        max-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    /* 自定義滾動條樣式 */
+    .review-page::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .review-page::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .review-page::-webkit-scrollbar-thumb {
+        background: #719A8B;
+        border-radius: 4px;
+        opacity: 0.7;
+    }
+    
+    .review-page::-webkit-scrollbar-thumb:hover {
+        background: #5d8a7a;
+        opacity: 1;
+    }
+    
+    /* 確保SweetAlert2圖片彈窗不會產生雙滾輪 */
+    body.swal2-shown {
+        overflow: hidden !important;
+    }
+    
+    /* 防止內容區域產生額外滾輪 */
+    .review-summary,
+    .review-list,
+    .write-review {
+        overflow: visible;
+    }
+    
+    /* 確保圖片容器不會產生滾輪 */
+    .review-images,
+    .image-preview-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+}
 }
 
 /* 平板版樣式 */
@@ -739,4 +811,106 @@ textarea:focus {
         justify-content: center;
     }
 
+
+
+}
+
+
+/* 修復評論列表雙滾輪問題 - 針對截圖問題 */
+@media (min-width: 1920px) {
+    
+    /* 修復評論列表區域的雙滾輪 */
+    .review-list {
+        width: 100%;
+        height: auto; /* 移除固定高度 */
+        overflow: visible; /* 移除overflow設定，讓它不產生滾輪 */
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        display: flex; /* 保持flex，但移除inline-flex */
+    }
+    
+    /* 確保review-page是主要滾動容器 */
+    .review-page {
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* 美化主滾動條 */
+    .review-page::-webkit-scrollbar {
+        width: 12px;
+    }
+    
+    .review-page::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    
+    .review-page::-webkit-scrollbar-thumb {
+        background: #719A8B;
+        border-radius: 6px;
+        border: 2px solid #f8f9fa;
+    }
+    
+    .review-page::-webkit-scrollbar-thumb:hover {
+        background: #5d8a7a;
+    }
+    
+    /* 確保每個評論項目不會產生滾輪 */
+    .review-item {
+        width: 100%;
+        padding: 46px 60px;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-content: center;
+        display: flex;
+        overflow: visible; /* 重要：移除可能的overflow設定 */
+    }
+    
+    /* 確保其他區域也不會產生滾輪 */
+    .review-summary,
+    .write-review {
+        overflow: visible;
+        flex-shrink: 0;
+    }
+    
+    /* 禁用body滾動 */
+    html, body {
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    /* 特殊處理圖片容器 */
+    .review-images {
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    
+    .image-preview-container {
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+}
+
+/* 確保在小於1920px時恢復正常 */
+@media (max-width: 1919px) {
+    html, body {
+        overflow: auto !important;
+        height: auto !important;
+    }
+    
+    .review-page {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    .review-list {
+        overflow: hidden !important; /* 保持原有設定 */
+    }
 }

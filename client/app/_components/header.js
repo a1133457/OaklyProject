@@ -76,12 +76,12 @@ export default function Header() {
   };
 
   // 登入/註冊頁，不顯示 header
-  if (
-    pathname.startsWith("/auth/login") ||
-    pathname.startsWith("/auth/register")
-  ) {
-    return null;
-  }
+  // if (
+  //   pathname.startsWith("/auth/login") ||
+  //   pathname.startsWith("/auth/register")
+  // ) {
+  //   return null;
+  // }
 
   return (
     <div className="container-fluid header">
@@ -97,9 +97,9 @@ export default function Header() {
           <Link className="nav-items" href="/organizer">
             <h6>預約整理師</h6>
           </Link>
-          {/* <Link className="nav-items" href="/article">
-            <h6>精選文章</h6>
-          </Link> */}
+          <Link className="nav-items" href="/coupon">
+            <h6>優惠專區</h6>
+          </Link>
           {/* <Link className="nav-items" href="/faq">
             <h6>常見問題</h6>
           </Link> */}

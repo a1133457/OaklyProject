@@ -57,7 +57,7 @@ export default function UserOrganizerPage() {
   const filteredOrganizers = userOrganizers.filter((organizer) => {
     return organizer.status === currentTab;
   });
-  // console.log(filteredOrganizers);
+   console.log('l60',filteredOrganizers);
 
   // 狀態文字對應表
   const statusTexts = {
@@ -72,7 +72,7 @@ export default function UserOrganizerPage() {
     <>
       <section>
         <div className="container-xl">
-          <div className="d-flex flex-column gap-lg pt-4">
+          <div className="d-flex flex-column gap-lg pt-2">
             <h2 className="t-primary01 text-center">預約紀錄</h2>
             <ItemTab currentTab={currentTab} onTabChange={setCurrentTab} />
             {!isReady ?

@@ -120,7 +120,7 @@ export default function CouponPage() {
             <div
               className={`d-flex justify-content-center align-items-center ${styles.couponContent}`}
             >
-              {coupons.map((coupon) => (
+{(coupons || []).map((coupon) => (
                 <CouponCard
                   key={coupon.id}
                   tag={`適用${coupon.category_ids
