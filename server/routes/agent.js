@@ -3,12 +3,46 @@ import express from "express";
 import { Server } from "socket.io";
 import connection from "../connect.js";
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 // const secretKey = process.env.JWT_SECRET_KEY;
 //要切換
 // const secretKey = "myTestSecretKey123";
 const secretKey = process.env.JWT_SECRET_KEY || "myTestSecretKey123";
 
 const router = express.Router();
+
+
+const uploadDir = 'public/uploads/chat';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// 配置 multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB 限制
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('只允许上传图片文件'), false);
+    }
+  }
+});
 
 // 在線用戶管理 (全域變數，在整個應用中共享)
 let onlineUsers = new Map();
@@ -724,5 +758,32 @@ router.get("/stats", async (req, res) => {
     });
   }
 });
+
+router.post('/upload-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上傳文件'
+      });
+    }
+
+    const imageUrl = `/uploads/chat/${req.file.filename}`;
+    
+    res.json({
+      success: true,
+      imageUrl: `http://localhost:3005${imageUrl}`,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('圖片上傳失敗:', error);
+    res.status(500).json({
+      success: false,
+      message: '圖片上传失败'
+    });
+  }
+});
+
+
 
 export default router;

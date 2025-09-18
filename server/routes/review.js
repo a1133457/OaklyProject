@@ -4,11 +4,39 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import jwt from 'jsonwebtoken';
+
+
+const secretKey = process.env.JWT_SECRET_KEY || "myTestSecretKey123";
+
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({
+      status: 'error',
+      message: '需要登入'
+    });
+  }
+
+  jwt.verify(token, secretKey, (err, user) => {
+    if (err) {
+      return res.status(403).json({
+        status: 'error',
+        message: '無效的token'
+      });
+    }
+    req.user = user;
+    next();
+  });
+};
 
 const router = express.Router();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 // 確保上傳目錄存在
 const uploadDir = path.join(__dirname, '../public/uploads/reviews');
 if (!fs.existsSync(uploadDir)) {
@@ -96,7 +124,7 @@ router.get('/products/:productId/reviews', async (req, res) => {
 
     // 基本查詢 SQL
     let sql = `
-      SELECT id, user_name, email, rating, comment, avatar, reviews_img, created_at,
+      SELECT id, user_id,  user_name, email, rating, comment, avatar, reviews_img, created_at,
              DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as formatted_date
       FROM reviews 
       WHERE product_id = ? 
@@ -176,9 +204,6 @@ router.get('/reviews/sort-options', (req, res) => {
 });
 
 router.post('/reviews', async (req, res) => {
-  console.log('req.body 存在嗎?', !!req.body);
-  console.log('req.body 內容:', req.body);
-  console.log('req.body 類型:', typeof req.body);
 
   if (!req.body) {
     return res.status(400).json({
@@ -255,5 +280,47 @@ router.use((error, req, res, next) => {
   });
 });
 
+router.put('/reviews/:reviewId', authenticateToken, async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const { rating, comment, reviews_img } = req.body;
+    const userId = req.user.id; 
+  
+    const [existingReview] = await db.execute(
+      'SELECT user_id FROM reviews WHERE id = ?',
+      [reviewId]
+    );
+
+    if (existingReview.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: '評論不存在'
+      });
+    }
+
+    if (existingReview[0].user_id !== userId) {
+      return res.status(403).json({
+        status: 'error',
+        message: '無權編輯此評論'
+      });
+    }
+
+    // 更新
+    await db.execute(
+      'UPDATE reviews SET rating = ?, comment = ?, reviews_img = ? WHERE id = ?',
+      [rating, comment, reviews_img, reviewId]
+    );
+
+    res.json({
+      status: 'success',
+      message: '評論修改成功'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: '修改評論失敗，請洽客服'
+    });
+  }
+});
 
 export default router;

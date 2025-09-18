@@ -106,7 +106,7 @@ const AgentLoginPage = ({ onLogin }) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg,rgb(37, 78, 63) 0%,rgb(27, 89, 67) 100%);
+          background: linear-gradient(136deg,rgb(217, 217, 217) 0%,rgb(27, 89, 67) 100%);
           padding: 20px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -196,8 +196,8 @@ const AgentLoginPage = ({ onLogin }) => {
         .form-group input:focus {
           outline: none;
           ring: 2px;
-          ring-color: #fbbf24;
-          border-color: #fbbf24;
+          ring-color: #D9A778;
+          border-color: #D9A778;
           box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
         }
 
@@ -208,7 +208,7 @@ const AgentLoginPage = ({ onLogin }) => {
 
         .login-btn {
           width: 100%;
-          background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+background: linear-gradient(90deg, #E7B091 0%, #C8906C 100%);
           color: white;
           padding: 12px 24px;
           border-radius: 8px;
@@ -224,9 +224,9 @@ const AgentLoginPage = ({ onLogin }) => {
         }
 
         .login-btn:hover:not(:disabled) {
-          background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(90deg, #D6A679 0%,rgb(198, 125, 80) 100%);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+box-shadow: 0 4px 12px rgba(201, 104, 52, 0.3);
         }
 
         .login-btn:disabled {

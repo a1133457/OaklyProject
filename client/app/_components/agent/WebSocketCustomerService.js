@@ -16,6 +16,8 @@ const CustomerChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [agentName, setAgentName] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -178,13 +180,14 @@ const CustomerChat = () => {
         setMessages(data.messages || []);
         setAgentName(data.agentName || '客服專員');
         setUnreadCount(0);
+
       });
 
       // 新訊息
       newSocket.on('new_message', (message) => {
         // console.log('收到新訊息:', message);
         setMessages(prev => [...prev, message]);
-        if (!isChatOpen) {
+        if (!isChatOpen && message.sender_type !== 'customer') {
           setUnreadCount(prev => prev + 1);
         }
         setTimeout(scrollToBottom, 100);
@@ -230,7 +233,51 @@ const CustomerChat = () => {
   }, [isLoading, isLoggedIn, user?.id]);
 
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
+    // 验证文件类型和大小
+    if (!file.type.startsWith('image/')) {
+      alert('请选择图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB限制
+      alert('图片大小不能超过5MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('roomId', roomId);
+
+    try {
+      const response = await fetch('http://localhost:3005/api/chat/upload-image', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // 发送图片消息
+        socket.emit('send_message', {
+          roomId,
+          message: result.imageUrl,
+          messageType: 'image'
+        });
+      }
+    } catch (error) {
+      console.error('上传失败:', error);
+      alert('图片上传失败');
+    } finally {
+      setIsUploading(false);
+      event.target.value = '';
+    }
+  };
 
 
 
@@ -435,8 +482,16 @@ const CustomerChat = () => {
                 >
                   <div className="message-content">
                     <div className="message-bubble">
-                      {message.message}
-                    </div>
+                    {message.message_type === 'image' ? (  
+                        <img
+                          src={message.message}
+                          alt="上传的图片"
+                          className="chat-image"
+                          style={{ maxWidth: '200px', borderRadius: '8px' }}
+                        />
+                      ) : (
+                        message.message
+                      )}                    </div>
                     <div className="message-time">
                       {formatTime(message.created_at)}
                     </div>
@@ -464,6 +519,23 @@ const CustomerChat = () => {
                   disabled={!isConnected || !roomId}
                   className="message-input"
                 />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!isConnected || !roomId || isUploading}
+                  className="image-upload-btn"
+                  style={{background: 'transparent', border: 'none'}}
+
+                >
+  <i className="fa-solid fa-images fa-2x" style={{color: '#cccccc'}}></i>
+  </button>
                 <button
                   onClick={sendMessage}
                   disabled={!currentMessage.trim() || !isConnected || !roomId}

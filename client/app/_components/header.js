@@ -9,6 +9,7 @@ import "@/styles/header.css";
 import UserSidebarPage from "../user/_components/sidebar";
 import styles from "../user/_components/sidebar.module.css";
 
+
 export default function Header() {
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
@@ -29,6 +30,11 @@ export default function Header() {
   //     alert(result?.message || "登出失敗");
   //   }
   // };
+  const hideHeaderPaths = ['/admin/customer-service'];
+
+  if (hideHeaderPaths.includes(pathname)) {
+    return null; // 客服不渲染 Header
+  }
 
   const searchInputRef = useRef(null);
 

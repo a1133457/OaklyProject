@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-
 import io from 'socket.io-client';
+
 // import '@/styles/products/chat.css';
 
 
@@ -22,6 +22,8 @@ const AgentDashboard = ({ user, onLogout }) => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [agentStatus, setAgentStatus] = useState('available'); // available, busy, offline
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const messagesEndRef = useRef(null);
   const handleLogout = () => setShowLogoutConfirm(true);
@@ -286,7 +288,37 @@ const AgentDashboard = ({ user, onLogout }) => {
     '如果還有其他問題，歡迎隨時詢問。',
     '感謝您選擇 Oakly,祝您有愉快的一天!'
   ];
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !selectedChat) return;
 
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('http://localhost:3005/api/chat/upload-image', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        socket.emit('join_room_and_send', {
+          roomId: selectedChat.roomId,
+          message: result.imageUrl,
+          messageType: 'image'
+        });
+      }
+    } catch (error) {
+      console.error('上传失败:', error);
+    } finally {
+      setIsUploading(false);
+      event.target.value = '';
+    }
+  };
   return (
     <div className="agent-dashboard">
       <div className="dashboard-header">
@@ -419,7 +451,7 @@ const AgentDashboard = ({ user, onLogout }) => {
                       </div>
                       <div className="chat-status">
                         進行中
-                      
+
                       </div>
                     </div>
                     <div className="chat-indicator">
@@ -463,8 +495,22 @@ const AgentDashboard = ({ user, onLogout }) => {
                           {message.sender_type === 'customer' ? selectedChat.customerName : '我'}
                         </div>
                         <div className="message-bubble">
-                          {message.message}
-                        </div>
+                          <div className="message-bubble">
+                            {message.message_type === 'image' ? (
+                              <img
+                                src={message.message}
+                                alt="聊天图片"
+                                style={{
+                                  maxWidth: '200px',
+                                  height: 'auto',
+                                  borderRadius: '8px',
+                                  display: 'block'
+                                }}
+                              />
+                            ) : (
+                              message.message
+                            )}
+                          </div>                        </div>
                         <div className="message-time">
                           {formatTime(message.created_at)}
                         </div>
@@ -507,6 +553,23 @@ const AgentDashboard = ({ user, onLogout }) => {
                     className="message-input"
                     rows="3"
                   />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading || !selectedChat}
+                    className="upload-btn"
+                    style={{background: 'transparent', border: 'none'}}
+
+                  >
+  <i className="fa-solid fa-images fa-2x" style={{color: '#cccccc'}}></i>
+  </button>
                   <button
                     onClick={sendMessage}
                     disabled={!currentMessage.trim()}
