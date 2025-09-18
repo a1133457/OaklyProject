@@ -65,7 +65,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                       <h6>{item.name}</h6>
                       <p>顏色: {item.color || "無顏色"}</p>
                       <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
-                      <p>材質: {item.materials.id===item.materials_id ? item.materials.material_name: '無材質'}</p>
+                      <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
                     </div>
                   </div>
                   <div className="card-right">
