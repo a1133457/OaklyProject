@@ -5,7 +5,9 @@ import connection from "../connect.js";
 import jwt from 'jsonwebtoken';
 // const secretKey = process.env.JWT_SECRET_KEY;
 //要切換
-const secretKey = "myTestSecretKey123";
+// const secretKey = "myTestSecretKey123";
+const secretKey = process.env.JWT_SECRET_KEY || "myTestSecretKey123";
+
 const router = express.Router();
 
 // 在線用戶管理 (全域變數，在整個應用中共享)
