@@ -330,7 +330,12 @@ body {
   z-index: 1000;
 }
 
-
+.swal2-success-ring,
+.swal2-success-line-tip,
+.swal2-success-line-long {
+  color: #ba5252 !important;
+  border: 3px solid #ba5252 !important;
+}
 /* 每一欄 */
 .megamenu-column {
   display: flex;

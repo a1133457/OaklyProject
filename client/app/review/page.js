@@ -21,6 +21,7 @@ const Review = ({ productId = 1 }) => {
   const [sortBy, setSortBy] = useState('newest');
   const [sortOptions, setSortOptions] = useState([]);
   const [editingReview, setEditingReview] = useState(null);
+  const [reactionCounts, setReactionCounts] = useState({});
   const [editForm, setEditForm] = useState({
     rating: 0,
     comment: '',
@@ -446,9 +447,6 @@ const Review = ({ productId = 1 }) => {
   useEffect(() => {
     const token = localStorage.getItem('reactLoginToken');
     console.log('Token 存在:', !!token);
-  
-
-    
   }, []);
   
 
@@ -472,7 +470,79 @@ const Review = ({ productId = 1 }) => {
   };
 
   const distribution = getRatingDistribution();
+// 删除评论
+const deleteReview = async (reviewId) => {
+  const result = await Swal.fire({
+    title: '確認删除',
+    text: '删除後無法復原，確定要删除此評論嗎？',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: '確定删除',
+    cancelButtonText: '取消'
+  });
 
+  if (result.isConfirmed) {
+    try {
+      const response = await fetch(`http://localhost:3005/api/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
+        }
+      });
+
+      const deleteResult = await response.json();
+
+      if (deleteResult.status === 'success') {
+        await Swal.fire({
+          icon: 'success',
+          title: '删除成功',
+          text: '評論已成功删除',
+          confirmButtonColor: '#DBA783'
+        });
+        
+        fetchReviews(sortBy);
+      } else {
+        await Swal.fire({
+          icon: 'error',
+          title: '删除失败',
+          text: deleteResult.message || '請稍後再試',
+          confirmButtonColor: '#DBA783'
+        });
+      }
+    } catch (error) {
+      console.error('删除評論失敗:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: '删除失败',
+        text: '請稍後再試',
+        confirmButtonColor: '#DBA783'
+      });
+    }
+  }
+};
+const handleReaction = (reviewId, type) => {
+  const storageKey = 'reviewReactions';
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  
+  const newCounts = {
+    ...saved,
+    [reviewId]: {
+      likes: saved[reviewId]?.likes || 0,
+      dislikes: saved[reviewId]?.dislikes || 0,
+      [type === 'like' ? 'likes' : 'dislikes']: (saved[reviewId]?.[type === 'like' ? 'likes' : 'dislikes'] || 0) + 1
+    }
+  };
+  
+  localStorage.setItem(storageKey, JSON.stringify(newCounts));
+  setReactionCounts(newCounts);
+};
+
+useEffect(() => {
+  const saved = JSON.parse(localStorage.getItem('reviewReactions') || '{}');
+  setReactionCounts(saved);
+}, []);
 
   return (
     <div className="review-page">
@@ -613,6 +683,9 @@ const Review = ({ productId = 1 }) => {
                     <button onClick={() => startEdit(review)} className="edit-btn">
                       <i className="fas fa-edit"></i> 編輯
                     </button>
+                    <button onClick={() => deleteReview(review.id)} className="delete-btn">
+      <i className="fas fa-trash"></i> 刪除
+    </button>
                   </div>
                 )}</div>
                     <div className="review-time">{formatTime(review.created_at)}</div>
@@ -648,16 +721,24 @@ const Review = ({ productId = 1 }) => {
                   </div>
                 )}
 
-                <div className="review-engagement">
-                  <div className="thumbs-up">
-                    <i className="fas fa-thumbs-up"></i>
-                    <span>0</span>
-                  </div>
-                  <div className="thumbs-down">
-                    <i className="fas fa-thumbs-down"></i>
-                    <span>0</span>
-                  </div>
-                </div>
+<div className="review-engagement">
+  <div 
+    className="thumbs-up"
+    onClick={() => handleReaction(review.id, 'like')}
+    style={{cursor: 'pointer'}}
+  >
+    <i className="fas fa-thumbs-up"></i>
+    <span>{reactionCounts[review.id]?.likes || 0}</span>
+  </div>
+  <div 
+    className="thumbs-down"
+    onClick={() => handleReaction(review.id, 'dislike')}
+    style={{cursor: 'pointer'}}
+  >
+    <i className="fas fa-thumbs-down"></i>
+    <span>{reactionCounts[review.id]?.dislikes || 0}</span>
+  </div>
+</div>
               </>
             )}
           </div>

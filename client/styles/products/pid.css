@@ -2412,7 +2412,12 @@ body.modal-open {
     z-index: 1;
     background: white;
   }
-
+  .swal2-success-ring,
+  .swal2-success-line-tip,
+.swal2-success-line-long {
+    color: #ba5252 !important;
+    border: 3px solid #ba5252 !important;
+  }
   .swal2-cancel.swal2-styled{
     background-color: #6A6A6A;
   }

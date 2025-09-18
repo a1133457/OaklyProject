@@ -323,4 +323,51 @@ router.put('/reviews/:reviewId', authenticateToken, async (req, res) => {
   }
 });
 
+// 删除评论
+router.delete('/reviews/:reviewId', authenticateToken, async (req, res) => {
+  console.log('DELETE路由被調用');
+  console.log('reviewId:', req.params.reviewId);
+  console.log('req.user:', req.user);
+
+  try {
+    const { reviewId } = req.params;
+    const userId = req.user.id;
+
+    // 验证评论所有权
+    const [existingReview] = await db.execute(
+      'SELECT user_id FROM reviews WHERE id = ?',
+      [reviewId]
+    );
+
+    if (existingReview.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: '評論不存在'
+      });
+    }
+
+    if (existingReview[0].user_id !== userId) {
+      return res.status(403).json({
+        status: 'error',
+        message: '無權删除此評論'
+      });
+    }
+
+    // 删除
+    await db.execute('DELETE FROM reviews WHERE id = ?', [reviewId]);
+
+    res.json({
+      status: 'success',
+      message: '評論删除成功'
+    });
+  } catch (error) {
+    console.error('DELETE路由错误详情:', error);
+    res.status(500).json({
+      status: 'error',
+      message: '删除評論失敗',
+      error: error.message
+    });
+  }
+});
+
 export default router;

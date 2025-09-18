@@ -2653,7 +2653,12 @@ span {
 .swal2-confirm:focus {
   outline: none !important;
 }
-
+.swal2-success-ring,
+.swal2-success-line-tip,
+.swal2-success-line-long {
+  color: #ba5252 !important;
+  border: 3px solid #ba5252 !important;
+}
 /* 3. 取消按鈕樣式和 hover 效果 */
 .swal2-cancel {
   background-color: #6c757d !important;
