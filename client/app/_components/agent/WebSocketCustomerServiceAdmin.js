@@ -365,6 +365,11 @@ const AgentDashboard = ({ user, onLogout }) => {
                     <div className="customer-info">
                       <div className="customer-name">
                         {customer.customer_name || '訪客'}
+                        {customer.is_authenticated ? (
+                          <span className="auth-badge">會員</span>
+                        ) : (
+                          <span className="guest-badge">訪客</span>
+                        )}
                       </div>
                       <div className="customer-message">
                         {customer.initial_message || '客戶正在等待服務...'}
@@ -414,6 +419,7 @@ const AgentDashboard = ({ user, onLogout }) => {
                       </div>
                       <div className="chat-status">
                         進行中
+                      
                       </div>
                     </div>
                     <div className="chat-indicator">
@@ -632,7 +638,23 @@ const AgentDashboard = ({ user, onLogout }) => {
           display: flex;
           overflow: hidden;
         }
-        
+        .auth-badge {
+  background: #38a169;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
+
+.guest-badge {
+  background: #718096;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
         .sidebar {
           width: 350px;
           background: white;

@@ -103,10 +103,7 @@ LIMIT 50
           isNew: isNew,      // 加這行
           isHot: isHot       // 加這行
         });
-        console.log(`商品 ${item.id} (${item.name}) 的材質數據:`, {
-          materials_data: item.materials_data,
-          parsed_materials: materials
-        });
+       
       } else if (item.img) {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
       }

@@ -16,7 +16,7 @@ const secretKey = "myTestSecretKey123";
 import dotenv from 'dotenv';
 dotenv.config();
 // const secretKey = process.env.JWT_SECRET_KEY;
-console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
+// console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
 
 // 預設頭像
 const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
