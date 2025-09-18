@@ -56,6 +56,13 @@ CREATE TABLE IF NOT EXISTS favorites (
     CONSTRAINT fk_fav_product FOREIGN KEY (product_id) REFERENCES products (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+ALTER TABLE service_conversations ADD COLUMN guest_id VARCHAR(50);
+SELECT * FROM service_conversations WHERE id = 16;
+SELECT current_chats, max_chats FROM service_agents WHERE status = 'online';
+SELECT * FROM service_messages 
+WHERE conversation_id = 1 
+ORDER BY sent_at;
+UPDATE service_agents SET max_chats = 20 WHERE username = 'alice';
 ----加進去
 ALTER TABLE favorites 
 ADD COLUMN color_id INT NULL,
@@ -67,8 +74,17 @@ ADD COLUMN quantity INT DEFAULT 1;
 -- 必須一致，否則會錯。 
 ALTER TABLE favorites
 DROP COLUMN id;
-
-ALTER TABLE favorites 
+SELECT 
+  p.id,
+  p.name,
+  m.material_name,
+  ml.product_id,
+  ml.materials_id
+FROM products p
+LEFT JOIN materials_list ml ON p.id = ml.product_id
+LEFT JOIN materials m ON ml.materials_id = m.id
+WHERE p.id = 1
+LIMIT 5;ALTER TABLE favorites 
 ADD COLUMN color_name VARCHAR(50);
 
 -- 複合唯一索引（防止重複收藏同商品同顏色）
@@ -88,32 +104,6 @@ CREATE TABLE stock_notifications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- 暫時關閉外鍵約束
-SET FOREIGN_KEY_CHECKS = 0;
--- 更新 stocks 表
-UPDATE stocks
-SET size_id = 7
-WHERE id = 3;
-
-UPDATE stocks
-SET amount = 0
-WHERE id = 3;
-
-
-DELETE FROM stocks
-WHERE id = 2
-
-INSERT INTO stocks (id, color_id, size_id, amount)
-VALUES
-(3, 1, 2, 0),
-(3, 4, 3, 0),
-(3, 10, 6, 0);
-
--- 重新開啟外鍵約束
-SET FOREIGN_KEY_CHECKS = 1;
-
-SELECT * FROM stocks WHERE id = 1 AND color_id = 1 AND size_id = 1;
 -------------------------------------
 -- 收藏文章
 CREATE TABLE IF NOT EXISTS bookmarks (

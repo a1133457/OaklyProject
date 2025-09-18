@@ -330,7 +330,7 @@ export default function UserOrganizerEditPage() {
     <>
       <section>
         <div className="container-xl">
-          <div className="d-flex flex-column gap-lg pt-4">
+          <div className="d-flex flex-column gap-lg pt-2">
             <h2 className="t-primary01 text-center">編輯預約</h2>
             <form className="d-flex flex-column">
               {/* 第一個 row - 姓名 + 手機 */}
@@ -619,29 +619,11 @@ export default function UserOrganizerEditPage() {
                 />
                 請確認以上資訊無誤，整理師將依據您提供的資料安排聯繫！
               </label>
-              {/* <ButtonGroup align="Center">
-                <Button
-                  type="reset"
-                  variant="white"
-                  size="sm"
-                  onClick={handleDelete}
-                >
-                  取消預約
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary01"
-                  size="sm"
-                  onClick={handleSubmit}
-                >
-                  修改完成
-                </Button>
-              </ButtonGroup> */}
               <div className="d-flex justify-content-center flex-wrap gap-md">
                 <GreenBorderButton onClick={handleDelete} type="button">
                   取消預約
                 </GreenBorderButton>
-                <GreenBorderButton onClick={handleSubmit} type="button">
+                <GreenBorderButton onClick={handleSubmit} type="button" bgGreen="1">
                   修改完成
                 </GreenBorderButton>
               </div>

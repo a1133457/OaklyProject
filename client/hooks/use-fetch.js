@@ -42,5 +42,7 @@ export function useFetch(url, options) {
     fetchData()
   }, [url, stableOptions])
 
+
+  
   return { data, loading, error }
 }

@@ -42,7 +42,7 @@ export default function UserTextInput({
                         aria-label={visible ? '隱藏密碼' : '顯示密碼'}
                         aria-pressed={visible}
                     >
-                        {visible ? <LuEyeClosed /> : <LuEye />}
+                        {visible ? <LuEye /> : <LuEyeClosed />}
                     </button>
                 )}
             {hint && !error && <div className="form-text">{hint}</div>}

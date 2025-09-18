@@ -51,6 +51,8 @@ export default function Total({ type }) {
   useEffect(() => {
     const loadCouponData = () => {
       try {
+        console.log("useEffect - totalAmount 變化:", totalAmount);
+
         // 檢查是否有選中優惠券
         const storedCoupon = localStorage.getItem("selectedCoupon");
 
@@ -63,9 +65,13 @@ export default function Total({ type }) {
           console.log("找到優惠券:", couponData);
 
           setSelectedCoupon(couponData);
-          calculatedDiscount(couponData);
+          // 重要：確保 totalAmount 有值才計算折扣
+          if (totalAmount > 0) {
+            const discount = calculatedDiscount(couponData, totalAmount);
+          }
         } else {
           // 沒有優惠券，重置折扣
+          console.log("沒有優惠券，重置折扣");
           setSelectedCoupon(null);
           setDiscountAmount(0);
         }
@@ -75,27 +81,74 @@ export default function Total({ type }) {
         setDiscountAmount(0);
       }
     };
-    loadCouponData();
+    // 只有當 totalAmount 大於 0 時才執行
+    if (totalAmount >= 0) {
+      loadCouponData();
+    }
   }, [totalAmount]);
 
-  const calculatedDiscount = (coupon) => {
-    if (!coupon || !totalAmount) {
+  const calculatedDiscount = (coupon, amount) => {
+    console.log("=== 開始計算折扣 ===");
+    console.log("輸入優惠券:", coupon);
+    console.log("輸入金額:", amount);
+    if (!coupon || !amount || amount <= 0) {
+      console.log("沒有優惠券或總金額為0，設定折扣為0");
       setDiscountAmount(0);
       return;
     }
     let discount = 0;
 
-    // 根據優惠券類型計算折扣
-    if (coupon.discountType === "percentage") {
-      // 百分比折扣 (例如：10% = 0.1)
-      discount = Math.floor(totalAmount * coupon.discountValue);
-    } else if (coupon.discountType === "fixed") {
-      // 固定金額折扣
-      discount = Math.min(coupon.discountValue, totalAmount);
-    }
-    setDiscountAmount(discount);
-  };
+    try {
+      if (coupon.discountType === "percentage") {
+        // 處理百分比折扣 - 計算實際節省的金額
+        let discountRate = coupon.discountValue;
 
+        console.log("原始 discountValue:", discountRate);
+
+        if (discountRate >= 10 && discountRate <= 100) {
+          // 如果是 95，表示 95 折
+          // 折價金額 = 原價 - (原價 × 0.95) = 原價 × (1 - 0.95) = 原價 × 0.05
+          const discountPercent = (100 - discountRate) / 100; // 95折 -> 0.05 (5%折扣)
+          discount = Math.floor(amount * discountPercent);
+          console.log(`95折計算: 原價 ${amount} - 折後價 ${Math.floor(amount * discountRate / 100)} = 節省 ${discount}`);
+
+        } else if (discountRate > 0 && discountRate < 1) {
+          // 如果是 0.95，表示打折後的比例
+          // 折價金額 = 原價 × (1 - 0.95) = 原價 × 0.05
+          discount = Math.floor(amount * (1 - discountRate));
+          console.log(`小數折扣計算: 原價 ${amount} × (1 - ${discountRate}) = 節省 ${discount}`);
+
+        } else if (discountRate >= 1 && discountRate < 10) {
+          // 如果是 1.5，可能表示 1.5% 的折扣
+          discount = Math.floor(amount * (discountRate / 100));
+          console.log(`百分比折扣計算: 原價 ${amount} × ${discountRate}% = 節省 ${discount}`);
+
+        } else {
+          console.log("無法識別的百分比折扣值:", discountRate);
+          discount = 0;
+        }
+
+      } else if (coupon.discountType === "fixed") {
+        // 處理固定金額折扣 - 直接就是節省的金額
+        discount = Math.min(coupon.discountValue, amount);
+        console.log(`固定折扣: 直接節省 ${discount} 元`);
+
+      } else {
+        console.log("未知的折扣類型:", coupon.discountType);
+        discount = 0;
+      }
+    } catch (error) {
+      console.error("計算折扣時發生錯誤:", error);
+      discount = 0;
+    }
+
+    console.log("最終計算的折扣:", discount);
+    console.log("=== 折扣計算結束 ===");
+
+    // 確保設置狀態
+    setDiscountAmount(discount);
+    return discount;
+  };
   // 移除優惠券
   const removeCoupon = () => {
     localStorage.removeItem("selectedCoupon");
@@ -107,16 +160,29 @@ export default function Total({ type }) {
   const finalAmount = Math.max(0, totalAmount - discountAmount);
 
   const handleSelectCoupon = (coupon) => {
+    console.log("=== 選擇優惠券 ===");
     console.log("選擇的優惠券:", coupon);
+    console.log("當前總金額:", totalAmount);
+
+    if (!coupon) {
+      // 如果沒有優惠券（取消選擇）
+      localStorage.removeItem("selectedCoupon");
+      setSelectedCoupon(null);
+      setDiscountAmount(0);
+      console.log("已取消選擇優惠券");
+      return;
+    }
+
     // 將選中的優惠券存到 localStorage
     localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
     setSelectedCoupon(coupon);
-    calculatedDiscount(coupon);
-    // 將選中的優惠券存到 localStorage
-    localStorage.setItem("selectedCoupon", JSON.stringify(coupon));
-    setSelectedCoupon(coupon);
-    calculatedDiscount(coupon);
-  };
+
+    // 修復：傳遞 totalAmount 參數
+    const discount = calculatedDiscount(coupon, totalAmount);
+    setDiscountAmount(discount);
+
+    console.log("優惠券選擇完成，折扣金額:", discount);
+  }
 
   // 修正 handleNext 函數，只準備數據，不直接調用 API
   const handleNext = async () => {
@@ -187,11 +253,11 @@ export default function Total({ type }) {
           </div>
           <div className="choose-cp">
             <p>選擇優惠券</p>
-            <CouponSelect onSelectCoupon={handleSelectCoupon} />
+            <CouponSelect onSelect={handleSelectCoupon} />
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>
-            <h6>-${discountAmount}</h6>
+            <h6>${discountAmount}</h6>
           </div>
           <div className="t-line"></div>
           <div className="total">
@@ -226,7 +292,7 @@ export default function Total({ type }) {
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>
-            <h6>-${discountAmount}</h6>
+            <h6>${discountAmount}</h6>
           </div>
           <div className="t-line"></div>
           <div className="total">
@@ -262,7 +328,7 @@ export default function Total({ type }) {
           </div>
           <div className="cp-discount">
             <p>優惠券折抵</p>
-            <h6>-${discountAmount}</h6>
+            <h6>${discountAmount}</h6>
           </div>
           <div className="t-line"></div>
           <div className="total">
@@ -273,4 +339,8 @@ export default function Total({ type }) {
       </>
     );
   }
+
+
+
+
 }

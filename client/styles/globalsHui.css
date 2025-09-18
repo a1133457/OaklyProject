@@ -353,6 +353,32 @@ p {
   }
 }
 
+.btn-green1 {
+  display: inline-flex;
+  padding: 16px 48px;
+  justify-content: center;
+  align-items: center;
+  background-color:  var(--primary-01, #6f9b8c);
+  border: 1px solid var(--primary-01, #6f9b8c);
+  color: white;
+  font-family: var(--font-noto-sans);
+  font-weight: 700;
+  border-radius: 0;
+
+  @media (min-width: 1200px) {
+    padding: 16px 62px;
+  }
+
+  &:hover {
+    color: white;
+    background-color: var(--primary-05);
+  }
+  &:active {
+    background-color: var(--primary-05) !important;
+    border: 1px solid var(--primary-05) !important;
+    color: white !important;
+  }
+}
 
 .container-xl{
     @media (max-width: 1200px) {

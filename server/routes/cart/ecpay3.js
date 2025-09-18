@@ -114,14 +114,6 @@ router.post("/ecpay/create", async (req, res) => {
       const product = products[0];
       console.log("找到商品:", product);
 
-      // 檢查庫存（如果有庫存欄位）
-      // if (product.stock !== undefined && product.stock < item.quantity) {
-      //   return res.status(400).json({
-      //     status: "fail",
-      //     message: `商品 ${product.name} 庫存不足，目前庫存: ${product.stock}`
-      //   });
-      // }
-
       // 使用資料庫的最新價格計算
       const itemTotal = product.price * item.quantity;
       calculatedAmount += itemTotal;
@@ -140,6 +132,20 @@ router.post("/ecpay/create", async (req, res) => {
 
     console.log("計算總金額:", calculatedAmount);
     console.log("傳入總金額:", totalAmount);
+
+    // 處理優惠券邏輯
+    let discountAmount = 0;
+    let appiedCoupon = null;
+
+    // // 檢查是否有優惠券
+    // if(couponCode){
+    //   try{
+    //     // 查詢優惠券
+    //     const coupon = await connection.execute(
+    //       `SELECT * FROM cou`
+    //     )
+    //   }
+    // }
 
     // 驗證總金額
     if (Math.abs(calculatedAmount - parseInt(totalAmount)) > 1) {
