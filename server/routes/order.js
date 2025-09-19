@@ -378,10 +378,10 @@ router.post("/create", async (req, res) => {
       buyerPhone,
       recipientName,
       recipientPhone,
-      postcode,
       address,
       paymentMethod,
       coupon,
+      coupon_id,
       discountAmount
     } = req.body;
 
@@ -519,7 +519,7 @@ router.post("/create", async (req, res) => {
         address,
         'pending', // 超商付款狀態為待付款
         paymentMethod || '超商付款',
-        coupon?.id || null // 使用 coupon_id 而不是 coupon_code
+        coupon_id|| null // 使用 coupon_id 而不是 coupon_code
       ]);
 
       const orderId = orderResult.insertId;

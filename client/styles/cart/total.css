@@ -24,7 +24,10 @@
   align-self: stretch;
 }
 
-
+.coupon-select-container{
+  display: flex;
+  flex-direction: row;
+}
 
 .cp-discount {
   display: flex;
@@ -105,5 +108,9 @@
   }
   .nextOrBack-phone .green-button{
     border-radius: 5px;
+  }
+
+  .choose-cp{
+    gap: 0;
   }
 }

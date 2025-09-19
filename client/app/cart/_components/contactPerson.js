@@ -227,9 +227,15 @@ export default function ContactPerson() {
                   <h6>{buyer.address}</h6>
                 </div>
               </div>
-              <button className="detail-button phone">
+              <button
+                className="detail-button phone"
+                onClick={() => {
+                  setIsOpenB(!isOpenB);
+                }}
+              >
                 <p>編輯</p>
               </button>
+              {isOpenB && <EditInfoBuyer onClose={() => setIsOpenB(false)} />}
             </div>
             <div className="contact-line phone"></div>
             <div className="contact-detail phone">
@@ -251,9 +257,15 @@ export default function ContactPerson() {
                   <h6>{recipient.address}</h6>
                 </div>
               </div>
-              <button className="detail-button phone">
+              <button
+                className="detail-button phone"
+                onClick={() => setIsOpenR(!isOpenR)}
+              >
                 <p>編輯</p>
               </button>
+              {isOpenR && (
+                <EditInfoRecipient onClose={() => setIsOpenR(false)} />
+              )}
             </div>
           </div>
         )}

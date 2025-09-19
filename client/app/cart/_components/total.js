@@ -110,29 +110,32 @@ export default function Total({ type }) {
           // 折價金額 = 原價 - (原價 × 0.95) = 原價 × (1 - 0.95) = 原價 × 0.05
           const discountPercent = (100 - discountRate) / 100; // 95折 -> 0.05 (5%折扣)
           discount = Math.floor(amount * discountPercent);
-          console.log(`95折計算: 原價 ${amount} - 折後價 ${Math.floor(amount * discountRate / 100)} = 節省 ${discount}`);
-
+          console.log(
+            `95折計算: 原價 ${amount} - 折後價 ${Math.floor(
+              (amount * discountRate) / 100
+            )} = 節省 ${discount}`
+          );
         } else if (discountRate > 0 && discountRate < 1) {
           // 如果是 0.95，表示打折後的比例
           // 折價金額 = 原價 × (1 - 0.95) = 原價 × 0.05
           discount = Math.floor(amount * (1 - discountRate));
-          console.log(`小數折扣計算: 原價 ${amount} × (1 - ${discountRate}) = 節省 ${discount}`);
-
+          console.log(
+            `小數折扣計算: 原價 ${amount} × (1 - ${discountRate}) = 節省 ${discount}`
+          );
         } else if (discountRate >= 1 && discountRate < 10) {
           // 如果是 1.5，可能表示 1.5% 的折扣
           discount = Math.floor(amount * (discountRate / 100));
-          console.log(`百分比折扣計算: 原價 ${amount} × ${discountRate}% = 節省 ${discount}`);
-
+          console.log(
+            `百分比折扣計算: 原價 ${amount} × ${discountRate}% = 節省 ${discount}`
+          );
         } else {
           console.log("無法識別的百分比折扣值:", discountRate);
           discount = 0;
         }
-
       } else if (coupon.discountType === "fixed") {
         // 處理固定金額折扣 - 直接就是節省的金額
         discount = Math.min(coupon.discountValue, amount);
         console.log(`固定折扣: 直接節省 ${discount} 元`);
-
       } else {
         console.log("未知的折扣類型:", coupon.discountType);
         discount = 0;
@@ -182,7 +185,7 @@ export default function Total({ type }) {
     setDiscountAmount(discount);
 
     console.log("優惠券選擇完成，折扣金額:", discount);
-  }
+  };
 
   // 修正 handleNext 函數，只準備數據，不直接調用 API
   const handleNext = async () => {
@@ -218,6 +221,7 @@ export default function Total({ type }) {
         totalAmount: finalAmount,
         originalAmount: totalAmount,
         coupon: selectedCoupon,
+        coupon_id: selectedCoupon ? selectedCoupon.coupon_id : null,
         discountAmount: discountAmount,
         paymentMethod: currentPaymentMethod,
         delivery: delivery,
@@ -230,7 +234,7 @@ export default function Total({ type }) {
 
         buyerName: buyerName,
         buyerEmail: buyerEmail,
-        buyerPhone: buyerPhone
+        buyerPhone: buyerPhone,
       };
 
       // 儲存 localStorage 供下一頁使用
@@ -243,28 +247,35 @@ export default function Total({ type }) {
       console.log("recipientName:", recipientName);
       console.log("recipientPhone:", recipientPhone);
       console.log("address:", address);
+      console.log("=== 信用卡付款數據檢查 ===");
+      console.log("selectedCoupon:", selectedCoupon);
+      console.log("selectedCoupon?.coupon_id:", selectedCoupon?.coupon_id);
+      console.log(
+        "orderDataForPayment.coupon_id:",
+        orderDataForPayment.coupon_id
+      );
 
       if (currentPaymentMethod === "信用卡") {
         router.push("/cart/ecpay/check");
       } else if (currentPaymentMethod === "超商付款") {
         // ✅ 超商付款：先建立訂單到資料庫
-        const response = await fetch('http://localhost:3005/api/order/create', {
-          method: 'POST',
+        const response = await fetch("http://localhost:3005/api/order/create", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             ...orderDataForPayment,
-            payment_status: 'pending', // 超商付款狀態為待付款
-            payment_method: '超商付款'
-          })
+            payment_status: "pending", // 超商付款狀態為待付款
+            payment_method: "超商付款",
+          }),
         });
 
         const result = await response.json();
 
         if (result.success) {
           // 清理購物車
-          localStorage.removeItem('cart');
+          localStorage.removeItem("cart");
           // 導向完成頁面（不需要 orderNo 參數）
           router.push("/cart/fin");
         } else {
@@ -357,7 +368,11 @@ export default function Total({ type }) {
         </div>
         <div className="nextOrBack-phone">
           <WhiteButton step={"繼續購物"} to="/products" />
-          <GreenButton step={"前往下一步"} to="/cart/ecpay/check" onClick={handleNext} />
+          <GreenButton
+            step={"前往下一步"}
+            to="/cart/ecpay/check"
+            onClick={handleNext}
+          />
         </div>
       </>
     );
@@ -382,8 +397,4 @@ export default function Total({ type }) {
       </>
     );
   }
-
-
-
-
 }
