@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useContext, createContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const AuthContext = createContext(null);
 AuthContext.displayName = "AuthContext";
@@ -60,8 +61,10 @@ export function AuthProvider({ children }) {
 
       // 後端成功：{ status: "success", message: "註冊成功" }
       if (result.status === "success") {
+        toast.success(result.message || "註冊成功"); // ✅ 新增
         return { success: true, message: result.message || "註冊成功" };
       } else {
+        toast.error(result.message || "註冊失敗，請稍後再試"); // ✅ 新增
         return {
           success: false,
           message: result.message || "註冊失敗，請稍後再試",
@@ -69,6 +72,7 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       console.log(error);
+      toast.error("伺服器錯誤，請稍後再試"); // ✅ 新增
       return { success: false, message: "伺服器錯誤，請稍後再試" };
     }
   };
@@ -96,18 +100,23 @@ export function AuthProvider({ children }) {
         localStorage.setItem(appKey, token);
         localStorage.setItem(userKey, JSON.stringify(user));
         console.log("成功");
+        // ✅ 新增成功提示
+        // toast.success("登入成功！");
         router.push("/");
-
         return { success: true, message: result.message };
       } else {
         console.log("失敗");
-        //alert(result.message);
+        // ✅ 新增失敗提示
+        toast.error(result.message || "登入失敗");
         return { success: false, message: result.message };
-        // 接 吐司？
+
       }
     } catch (error) {
       console.log(error);
+      // ✅ 新增伺服器錯誤提示
+      toast.error("伺服器錯誤，請稍後再試");
       return { success: false, message: "伺服器錯誤，請稍後再試" };
+
     }
   };
 
@@ -115,24 +124,27 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     console.log("logout");
     const API = "http://localhost:3005/api/users/logout";
-    
+
     try {
       await fetch(API, {
-      method: "POST",
-      credentials: "include",   // 🔑 讓 cookie 帶過去，後端才能清掉
-    });
+        method: "POST",
+        credentials: "include",   // 🔑 讓 cookie 帶過去，後端才能清掉
+      });
 
-    // 清掉前端狀態
-    setUser(null);
-    localStorage.clear();
+      // 清掉前端狀態
+      setUser(null);
+      localStorage.clear();
+      // ✅ 新增登出提示
+      toast.success("已登出");
+      router.push("/"); // 導回首頁
 
-    router.push("/"); // 導回首頁
     } catch (error) {
       console.log(`logout 失敗: ${error.message}`);
       setUser(null);
       localStorage.removeItem(appKey);
       localStorage.removeItem(userKey);
-      // alert(error.message);
+      // ✅ 新增登出失敗提示
+      toast.error("登出失敗，請稍後再試");
     }
   };
 
@@ -163,11 +175,14 @@ export function AuthProvider({ children }) {
           : { ...user, ...data };
         setUser(newUser);
         localStorage.setItem(userKey, JSON.stringify(newUser));
+        toast.success(result.message || "資料已更新"); // ✅ 新增
         return { success: true, message: result.message };
       } else {
+        toast.error(result.message || "更新失敗"); // ✅ 新增
         return { success: false, message: result.message };
       }
     } catch (error) {
+      toast.error("伺服器錯誤"); // ✅ 新增
       return { success: false, message: "伺服器錯誤" };
     }
   };
@@ -183,10 +198,13 @@ export function AuthProvider({ children }) {
       });
       const result = await res.json();
       if (result.status === "success") {
+        toast.success(result.message || "密碼更新成功"); // ✅ 新增
         return { success: true, message: result.message || "密碼更新成功" };
       }
+      toast.error(result.message || "密碼更新失敗"); // ✅ 新增
       return { success: false, message: result.message || "密碼更新失敗" };
     } catch {
+      toast.error("伺服器錯誤"); // ✅ 新增
       return { success: false, message: "伺服器錯誤" };
     }
   };
@@ -210,15 +228,18 @@ export function AuthProvider({ children }) {
         const newUser = result.data?.user
           ? result.data.user
           : result.data?.avatar
-          ? { ...user, avatar: result.data.avatar }
-          : user;
+            ? { ...user, avatar: result.data.avatar }
+            : user;
 
         setUser(newUser);
         localStorage.setItem(userKey, JSON.stringify(newUser));
+        toast.success(result.message || "頭像更新成功"); // ✅ 新增
         return { success: true, message: result.message || "頭像更新成功" };
       }
+      toast.error(result.message || "頭像更新失敗"); // ✅ 新增
       return { success: false, message: result.message || "頭像更新失敗" };
     } catch {
+      toast.error("伺服器錯誤"); // ✅ 新增
       return { success: false, message: "伺服器錯誤" };
     }
   };
@@ -290,18 +311,18 @@ export function AuthProvider({ children }) {
           localStorage.setItem(appKey, token); // 覆蓋舊的 token
           setIsLoading(false);
         } else {
-          //alert(result.message);
+
           setIsLoading(false);
-          // setUser(null);
           localStorage.clear();
+          toast.warning(result.message || "登入已過期，請重新登入"); // ✅ 新增
           // router.push('/auth/login');
-          // 接 吐司？
+
         }
       } catch (error) {
         console.log(`解析token失敗: ${error.message}`);
         setUser(null);
         localStorage.removeItem(appKey);
-        // router.push('/auth/login');
+        router.push('/auth/login');
       }
     };
     checkToken();
@@ -322,9 +343,12 @@ export function AuthProvider({ children }) {
       if (result.status === "success") {
         return { success: true, data: result.data };
       }
+      // 失敗才提示
+      toast.error(result.message || "取得收藏失敗"); // ✅ 新增
       return { success: false, message: result.message };
     } catch (err) {
       console.error(err);
+      toast.error("伺服器錯誤"); // ✅ 新增
       return { success: false, message: "伺服器錯誤" };
     }
   };
@@ -340,11 +364,19 @@ export function AuthProvider({ children }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId, colorId, sizeId, colorName, quantity  }),
+        body: JSON.stringify({ productId, colorId, sizeId, colorName, quantity }),
       });
-      return await res.json();
+
+      const result = await res.json();
+      if (result.status === "success") {
+        toast.success(result.message || "已加入收藏"); // ✅ 新增
+        return result;
+      }
+      toast.error(result.message || "加入收藏失敗"); // ✅ 新增
+      return result;
     } catch (err) {
       console.error(err);
+      toast.error("伺服器錯誤"); // ✅ 新增
       return { success: false, message: "伺服器錯誤" };
     }
   };
@@ -359,6 +391,11 @@ export function AuthProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
+      if (result.status === "success") {
+        toast.success(result.message || "已取消收藏"); // ✅ 新增
+        return result;
+      }
+      toast.error(result.message || "取消收藏失敗"); // ✅ 新增
       return result;
     } catch (err) {
       console.error(err);
@@ -367,22 +404,22 @@ export function AuthProvider({ children }) {
   };
   // 收藏數量調整
   const updateFavoriteQty = async (productId, colorId, sizeId, quantity) => {
-  const token = localStorage.getItem(appKey);
-  try {
-    const res = await fetch(`${API_FAVORITES}/${productId}/${colorId}/${sizeId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ quantity }),
-    });
-    return await res.json();
-  } catch (err) {
-    console.error("updateFavoriteQty error:", err);
-    return { status: "error", message: "伺服器錯誤" };
-  }
-};
+    const token = localStorage.getItem(appKey);
+    try {
+      const res = await fetch(`${API_FAVORITES}/${productId}/${colorId}/${sizeId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ quantity }),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error("updateFavoriteQty error:", err);
+      return { status: "error", message: "伺服器錯誤" };
+    }
+  };
 
 
   // login with Google------------------------------------
@@ -396,6 +433,7 @@ export function AuthProvider({ children }) {
       return { success: true, message: "Google 登入成功" };
     } catch (error) {
       console.error(error);
+      toast.error("Google 登入失敗"); // ✅ 新增
       return { success: false, message: "Google 登入失敗" };
     }
   };

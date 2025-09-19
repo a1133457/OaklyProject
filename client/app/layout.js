@@ -12,6 +12,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import RootHeader from './_components/RootHeader';
 // import { CartProvider } from './contexts/CartContext.js';
 import BackToTop from '@/app/products/_components/BackToTop';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 
@@ -43,6 +45,7 @@ export default function RootLayout({ children }) {
             <ArticleProvider>
               <RootHeader />
               {children}
+              <ToastContainer position="top-center" autoClose={2000} hideProgressBar={true} closeOnClick />
               <BackToTop />
               <Footer />
             </ArticleProvider>
