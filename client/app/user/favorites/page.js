@@ -123,33 +123,7 @@ export default function FavoritesPage() {
 
     return (
         <div>
-            {/* {list.map(item => (
-                <div key={item.product_id} className={styles.favoritesRow}>
-                    <img
-                        src={item.product_img}
-                        alt={item.name}
-                        width={140}
-                        height={120}
-                        style={{ objectFit: 'cover' }}
-                    />
-                    <div className={styles.productName}>{item.name}</div>
-                    <div className={styles.productPrice}>${Number(item.price).toLocaleString()}</div>
-                    <div className={styles.iconActions}>
-                        <i
-                            className={`bi bi-heart-fill ${styles.heart}`}
-                            onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
-                            role="button"
-                            title="取消收藏"
-                        />
-                        <i
-                            className={`bi bi-cart ${styles.cart}`}
-                            onClick={() => console.log("加入購物車")}
-                            role="button"
-                            title="加入購物車"
-                        />
-                    </div>
-                </div>
-            ))} */}
+
             {list.map(item => (
                 <div key={`${item.product_id}-${item.color_id}-${item.size_id}`} className={styles.favoritesCard}>
                     <img src={toSrc(item.product_img)} alt={item.name} />
@@ -159,20 +133,14 @@ export default function FavoritesPage() {
                         <div className={styles.productPrice}>
                             NT$ {Number(item.price).toLocaleString()}
                         </div>
-                        {/* 價格下方：只顯示已選顏色 / 尺寸 */}
-                        {/* 顏色 */}
+
                         <div className={styles.optionDisplay}>
                             {item.color_name && (
                                 <span className={styles.optionPill} aria-label={`顏色：${item.color_name}`}>
-                                    <span
-                                        className={styles.colorDotSm}
-                                        style={{ background: getColorCode(item.color_name) }}
-                                    />
+                                    <span className={styles.colorDotSm} style={{ background: getColorCode(item.color_name) }} />
                                     {item.color_name}
                                 </span>
                             )}
-
-                            {/* 尺寸 */}
                             {item.size_label && (
                                 <span className={styles.optionPill} aria-label={`尺寸：${item.size_label}`}>
                                     {item.size_label}
@@ -180,56 +148,43 @@ export default function FavoritesPage() {
                             )}
                         </div>
                     </div>
-                    {/* 數量 */}
-                    <div className={styles.qtyControl}>
-                        <button
-                            type="button"
-                            onClick={() => dec(item)}
-                            disabled={pending[keyOf(item)] || Number(item.quantity) <= 1}
-                            className={styles.qtyBtn}
-                        >
-                            –
-                        </button>
-                        <span className={styles.qtyBox}>{item.quantity}</span>
-                        <button
-                            type="button"
-                            onClick={() => inc(item)}
-                            disabled={pending[keyOf(item)] || Number(item.quantity) >= 99}
-                            className={styles.qtyBtn}
-                        >
-                            +
-                        </button>
-                    </div>
 
-
-
-                    {/* 右側：收藏/購物車 */}
-                    <div className={styles.iconActions} >
-                        <div
-                            className={styles.heartWrapper}
-                            onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
-                            role="button"
-                            title="取消收藏"
-                        >
-                            <FaHeart className={styles.heart} />
-                            <FaRegHeart className={styles.heartEmpty} />
+                    {/* ✅ 這一列是數量＋icon：桌機在最右欄；手機會跑到文字下方 */}
+                    <div className={styles.actionsRow}>
+                        <div className={styles.qtyControl}>
+                            <button type="button"
+                                onClick={() => dec(item)}
+                                disabled={pending[keyOf(item)] || Number(item.quantity) <= 1}
+                                className={styles.qtyBtn}>–</button>
+                            <span className={styles.qtyBox}>{item.quantity}</span>
+                            <button type="button"
+                                onClick={() => inc(item)}
+                                disabled={pending[keyOf(item)] || Number(item.quantity) >= 99}
+                                className={styles.qtyBtn}>+</button>
                         </div>
-                        <FaCartShopping
-                            className={styles.cart}
-                            onClick={() => {
-                                const product = toCartProduct(item);
-                                const qty = Number(item.quantity) || 1; // 用你收藏裡的數量
-                                addToCart(product, qty);
-                                // 有共用的成功 Modal，可一起叫出（會由 CartProvider 渲染）：
-                                openSuccessModal(product, qty, item.color_name, item.size_label);
-                            }}
-                            role="button"
-                            title="加入購物車"
-                        />
+
+                        <div className={styles.iconActions}>
+                            <div className={styles.heartWrapper}
+                                onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
+                                role="button" title="取消收藏">
+                                <FaHeart className={styles.heart} />
+                                <FaRegHeart className={styles.heartEmpty} />
+                            </div>
+                            <FaCartShopping
+                                className={styles.cart}
+                                onClick={() => {
+                                    const product = toCartProduct(item);
+                                    const qty = Number(item.quantity) || 1;
+                                    addToCart(product, qty);
+                                    openSuccessModal(product, qty, item.color_name, item.size_label);
+                                }}
+                                role="button"
+                                title="加入購物車"
+                            />
+                        </div>
                     </div>
                 </div>
-            ))
-            }
+            ))}
         </div>
     )
 }
