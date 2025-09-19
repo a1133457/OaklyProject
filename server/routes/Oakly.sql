@@ -61,6 +61,11 @@ CREATE TABLE IF NOT EXISTS favorites (
     FOREIGN KEY (product_id) REFERENCES products(id)
     ON UPDATE CASCADE ON DELETE CASCADE
 );
+SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
+       p.name, p.price, p.product_img
+FROM favorites f
+JOIN products p ON f.product_id = p.id
+WHERE f.user_id = 3;
 
 ALTER TABLE service_conversations ADD COLUMN guest_id VARCHAR(50);
 SELECT * FROM service_conversations WHERE id = 16;

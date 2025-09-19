@@ -26,6 +26,7 @@ import favRouter from './routes/favorites.js';
 
 
 
+
 // 設定區
 const upload = multer();
 let whitelist = ["http://localhost:5500", "http://localhost:3000"];
@@ -77,6 +78,8 @@ app.use("/api/favorites", favRouter);
 
 
 
+
+
 // 修改：啟動伺服器的方式
 const PORT = 3005;
 
@@ -85,8 +88,6 @@ const startServer = async () => {
     // 初始化 WebSocket 聊天功能
     const io = initializeChatWebSocket(server);
     server.listen(PORT, () => {
-    console.log("主機啟動 http://localhost:3005"); 
-
     });
   } catch (error) {
     console.error('伺服器啟動失敗:', error);
@@ -94,7 +95,6 @@ const startServer = async () => {
   }
 };
 
-// 優雅關閉處理
 const gracefulShutdown = () => {
   server.close(() => {
     process.exit(0);

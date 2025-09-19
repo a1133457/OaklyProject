@@ -190,8 +190,8 @@ router.get("/search", async (req, res) => {
 
     //搜尋篩選
     const fuseOptions = {
-      keys: ['name', 'description'],
-      threshold: 0.6,
+      keys: ['name'],
+      threshold: 0.5,
       ignoreLocation: true,
       getFn: (obj, path) => {
         const value = Fuse.config.getFn(obj, path);

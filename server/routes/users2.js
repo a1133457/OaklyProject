@@ -22,16 +22,33 @@ dotenv.config();
 const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 
 // 把route(s)(路由規則) 整理在 routers(路由物件器) 裡
+
+
 // 取得收藏清單-------------------------------------------
 router.get("/favorites", checkToken, async (req, res) => {
   try {
     const userId = req.decoded.id;
     const sql = `
-    SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
-           p.name, p.price, p.product_img
+    SELECT 
+      f.product_id, 
+      f.color_id, 
+      f.color_name, 
+      f.size_id, 
+      f.quantity,
+      p.name, 
+      p.price,
+      pi.img AS product_img
     FROM favorites f
     JOIN products p ON f.product_id = p.id
-    WHERE f.user_id = ?`;
+    LEFT JOIN (
+        SELECT product_id, MIN(id) AS min_img_id
+        FROM product_img
+        GROUP BY product_id
+    ) first_img ON first_img.product_id = p.id
+    LEFT JOIN product_img pi ON pi.id = first_img.min_img_id
+    WHERE f.user_id = ?
+    GROUP BY f.product_id, f.color_id, f.size_id
+  `;
     const [rows] = await pool.execute(sql, [userId]);
     res.json({ status: "success", data: rows });
   } catch (err) {
@@ -63,30 +80,14 @@ router.post("/favorites", checkToken, async (req, res) => {
     );
     console.log('查詢結果:', existing);
 
-
-
     res.json({ status: "success", message: "已加入收藏" });
   } catch (err) {
     console.error("加入收藏錯誤:", err);
     res.status(500).json({ status: "error", message: "加入收藏失敗" });
   }
 });
-// 臨時調試用路由（記得之後要移除）
-// router.get("/favorites/debug/:userId", async (req, res) => {
-//   try {
-//     const userId = req.params.userId;
-//     const sql = `
-//     SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
-//            p.name, p.price
-//     FROM favorites f
-//     JOIN products p ON f.product_id = p.id
-//     WHERE f.user_id = ?`;
-//     const [rows] = await pool.execute(sql, [userId]);
-//     res.json({ status: "success", data: rows });
-//   } catch (err) {
-//     res.status(500).json({ status: "error", message: err.message });
-//   }
-// });
+
+
 // 檢查收藏狀態
 router.get("/favorites/:productId/:colorId/:sizeId/check", checkToken, async (req, res) => {
   try {
