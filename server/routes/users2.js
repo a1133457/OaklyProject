@@ -13,7 +13,8 @@ const upload = multer();
 
 import dotenv from 'dotenv';
 dotenv.config();
-const secretKey = process.env.JWT_SECRET_KEY;
+// const secretKey ="myTestSecretKey123"
+const secretKey = process.env.JWT_SECRET_KEY || "myTestSecretKey123";
 // console.log("JWT_SECRET_KEY:", process.env.JWT_SECRET_KEY);
 
 // 預設頭像
@@ -22,6 +23,8 @@ const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 // 把route(s)(路由規則) 整理在 routers(路由物件器) 裡
 // 取得收藏清單-------------------------------------------
 router.get("/favorites", checkToken, async (req, res) => {
+      console.log('req.decoded:', req.decoded); // 先看看有什麼
+
   try {
     const userId = req.decoded.id;
 
@@ -65,7 +68,7 @@ router.get("/favorites", checkToken, async (req, res) => {
     res.json({ status: "success", data: rows });
   } catch (err) {
     console.error("GET /favorites error:", err);
-    res.status(500).json({ status: "error", message: "無法取得收藏清單" });
+    res.json({ status: "error", message: "無法取得收藏清單" });
   }
 });
 
@@ -595,8 +598,8 @@ router.post("/login", upload.none(), async (req, res) => {
 
     // 2) 比對密碼
     // 測試完要改回來
-    // const isMatch = await bcrypt.compare(password, user.password);
-    const isMatch = password === user.password;
+    const isMatch = await bcrypt.compare(password, user.password);
+    // const isMatch = password === user.password;
     if (!isMatch) {
       const err = new Error("帳號或密碼錯誤2");
       err.code = 400;

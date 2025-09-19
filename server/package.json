@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --env-file=chunny.env index.js"
+    "dev": "nodemon --env-file=chunny.env index.js",
+    "debug":"set DEBUG=* & node index.js"
+
   },
   "keywords": [],
   "author": "",

@@ -108,7 +108,6 @@ app.use("/api/order", orderRouter);
 app.use("/api/ship/711", shipRouter);
 app.use('/uploads', express.static('public/uploads'));    // 評論圖片
 app.use('/api/notify', notifyRoutes);
-
 app.use("/api/auth", authResetRouter);
 app.use("/api/auth", authGoogleRouter); // => POST /api/auth/google
 app.use("/api/chat", chatRouter); //聊天室
@@ -153,7 +152,7 @@ startServer();
 
 
 
-app.listen(3005, () => {
-  console.log("主機啟動 http://localhost:3005");
-});
+// app.listen(3005, () => {
+//   console.log("主機啟動 http://localhost:3005");
+// });
 
