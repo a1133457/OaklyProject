@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import "@/styles/products/pid.css";
 import "@/styles/products/notify.css";
-
 import SimilarProducts from "@/app/_components/SimilarProducts.js";
 import Bestseller from "@/app/_components/bestseller.js";
 import RecentViewedProducts from "@/app/_components/RecentViewedProducts.js";
@@ -13,6 +12,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import Swal from 'sweetalert2';
 import BuyNowButton from '@/app/products/_components/BuyNowButton.js';
+import Link from "next/link";
 
 
 const checkStock = async (productId, colorId, sizeId, quantity) => {
@@ -2139,7 +2139,8 @@ export default function PidPage({ params }) {
             </div>
           </div>
           <div className="end-content-btn">
-            <button>立即預約</button>
+            <Link href="/organizer"><button>立即預約</button></Link>
+            
           </div>
         </div>
       </div>

@@ -68,7 +68,7 @@ export default function FavoritesPage() {
             if (result.success) setList(result.data || []);
             setLoading(false);
         })();
-    }, [getFavorites]);
+    }, [user?.id]);
 
     const onRemove = async (productId, colorId, sizeId) => {
         const result = await removeFavorite(productId, colorId, sizeId);

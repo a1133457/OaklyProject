@@ -122,7 +122,13 @@ const bestseller = ({ currentProductId,
 
   if (products.length === 0) {
     return null;
-  }
+  }console.log('itemsToShow:', itemsToShow);
+  console.log('currentIndex:', currentIndex); 
+  console.log('maxIndex:', maxIndex);
+  console.log('window width:', window.innerWidth);
+  // 在 products.map 前面添加
+console.log('Product card width should be:', `${100 / itemsToShow}%`);
+console.log('But you might still be using:', `${100 / products.length}%`);
 
   return (
     <div className="similar-products">
@@ -157,14 +163,19 @@ const bestseller = ({ currentProductId,
             transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
             width: `${(products.length / itemsToShow) * 100}%`
           }}
+          
         >
+          
           {products.map((product) => (
+            
             <div
+            
               key={product.id}
               className="product-card"
               onClick={() => handleProductClick(product.id)}
-              style={{ width: `${100 / products.length}%` }}
-            >
+              style={{ width: `${100 / itemsToShow}%` }}
+              >
+                
               <button
                 className={`wishlist-heart-btn ${hasAnyWishlist(product.id) ? 'active' : ''}`}
                 onClick={async (e) => {

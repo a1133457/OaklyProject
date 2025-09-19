@@ -21,6 +21,10 @@ import shipRouter from './routes/seCallback.js';
 
 import notifyRoutes from './routes/notify.js';
 import chatRouter, { initializeChatWebSocket } from "./routes/agent.js";
+import agentAuthRoutes from './routes/agentAuth.js';
+import favRouter from './routes/favorites.js';
+
+
 
 
 
@@ -107,7 +111,11 @@ app.use('/api/notify', notifyRoutes);
 
 app.use("/api/auth", authResetRouter);
 app.use("/api/auth", authGoogleRouter); // => POST /api/auth/google
-app.use("/api/chat", chatRouter);
+app.use("/api/chat", chatRouter); //聊天室
+app.use('/api/agents', agentAuthRoutes); //客服登入登出
+app.use("/api/favorites", favRouter); 
+
+
 
 
 
@@ -120,14 +128,10 @@ const startServer = async () => {
   try {
     // 初始化 WebSocket 聊天功能
     const io = initializeChatWebSocket(server);
-    console.log('WebSocket 聊天功能已初始化');
-    
-    // 使用 server.listen 而不是 app.listen
     server.listen(PORT, () => {
-      console.log("主機啟動 http://localhost:3005");
-      console.log("WebSocket 聊天服務已啟動");
+    console.log("主機啟動 http://localhost:3005"); 
+
     });
-    
   } catch (error) {
     console.error('伺服器啟動失敗:', error);
     process.exit(1);
@@ -136,9 +140,7 @@ const startServer = async () => {
 
 // 優雅關閉處理
 const gracefulShutdown = () => {
-  console.log('正在關閉伺服器...');
   server.close(() => {
-    console.log('伺服器已關閉');
     process.exit(0);
   });
 };
