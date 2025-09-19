@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useFetch } from "@/hooks/use-fetch";
 import Link from "next/link";
 import CartCard from "../_components/cartCard";
 import Gradation from "../_components/gradation";
@@ -9,13 +10,55 @@ import GreenButton from "../_components/greenButton";
 import Total from "../_components/total";
 import WhiteButton from "../_components/whiteButton";
 import "/styles/cart/cartFin.css";
+import CartCoupon from "@/app/user/coupon/_components/CartCoupon";
 
 function CartFinContent() {
     const [pageStatus, setPageStatus] = useState('loading'); // loading, success, error, default
     const [orderData, setOrderData] = useState(null);
     const [message, setMessage] = useState('處理中...');
+    const [couponData, setCouponData] = useState([]);
     const searchParams = useSearchParams();
     const router = useRouter();
+
+    // // 在組件卸載時清除 localStorage 中的 selectedCoupon
+    // useEffect(() => {
+    //     return () => {
+    //         localStorage.removeItem('selectedCoupon');
+    //     };
+    // }, []);
+
+    useEffect(() => {
+        const userCoupons = localStorage.getItem("selectedCoupon");
+        console.log("selectedCoupon 原始值:", userCoupons);
+        console.log("selectedCoupon 類型:", typeof userCoupons);
+        console.log("selectedCoupon 是否為 null:", userCoupons === null);
+
+        if (userCoupons) {
+            try {
+                // 轉換成物件
+                const couponData = JSON.parse(userCoupons)
+                console.log("couponData", couponData);
+
+
+                // 檢查是否為陣列，如果不是就轉成陣列
+                if (Array.isArray(couponData)) {
+                    setCouponData(couponData);
+                } else {
+                    // 單一優惠券物件，包裝成陣列
+                    setCouponData([couponData]);
+                }
+                // 使用資料
+                console.log("取得優惠券資料:", couponData);
+            } catch (error) {
+                console.error("解析 localStorage 資料失敗:", error);
+                setCouponData([]);
+            }
+        } else {
+            console.log("沒有找到 selectedCoupon 資料");
+            setCouponData([]);
+
+        }
+    }, [])
 
     useEffect(() => {
         console.log("頁面載入，檢查 URL 參數");
@@ -37,8 +80,20 @@ function CartFinContent() {
 
     const handleOrderProcess = async (orderNo) => {
         try {
-            console.log('開始處理訂單:', orderNo);
-            setMessage('正在確認付款並建立訂單...');
+            // 在處理訂單前先保存優惠券數據
+            const savedCoupons = localStorage.getItem("selectedCoupon");
+            let parsedCoupons = [];
+
+            if (savedCoupons) {
+                try {
+                    const couponData = JSON.parse(savedCoupons);
+                    parsedCoupons = Array.isArray(couponData) ? couponData : [couponData];
+                } catch (error) {
+                    console.error("解析優惠券數據失敗:", error);
+                }
+            }
+
+            // ... 原有的訂單處理邏輯 ...
 
             // 1. 確認付款並創建訂單（一步完成）
             const confirmResponse = await fetch('http://localhost:3005/api/cart/ecpay/confirm', {
@@ -75,24 +130,28 @@ function CartFinContent() {
                 setMessage('讀取訂單資料失敗: ' + orderResult.message);
                 return;
             }
-
-            // 3. 設置成功狀態和資料
+             // 3. 設置成功狀態和資料（包含優惠券）
             setPageStatus('success');
             setOrderData({
                 ...confirmResult,
-                ...orderResult.data
+                ...orderResult.data,
+                usedCoupons: parsedCoupons // 保存使用的優惠券
             });
-            setMessage('付款成功！訂單已建立');
+            setCouponData(parsedCoupons); // 確保 couponData 有數據
 
-            // 4. 清理 localStorage 購物車資料
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('cart');
-                localStorage.removeItem('orderData');
-                localStorage.removeItem('finalAmount');
-                localStorage.removeItem('buyer');
-                localStorage.removeItem('recipient');
-                console.log('✅ localStorage 已清理');
-            }
+            console.log('開始處理訂單:', orderNo);
+            setMessage('正在確認付款並建立訂單...');
+
+        
+            // // 4. 清理 localStorage 購物車資料
+            // if (typeof window !== 'undefined') {
+            //     localStorage.removeItem('cart');
+            //     localStorage.removeItem('orderData');
+            //     localStorage.removeItem('finalAmount');
+            //     localStorage.removeItem('buyer');
+            //     localStorage.removeItem('recipient');
+            //     console.log('✅ localStorage 已清理');
+            // }
 
         } catch (error) {
             console.error('處理訂單時發生錯誤:', error);
@@ -174,12 +233,12 @@ function CartFinContent() {
                         </h4>
 
                         {/* 顯示從資料庫取得的商品資料 */}
-                        {orderData?.items && orderData.items.length > 0 ? (
+                        {/* {orderData?.items && orderData.items.length > 0 ? (
                             <div className="order-items">
                                 {orderData.items.map((item, index) => (
-                                    <div key={index} className="order-item" style={{ 
-                                        marginBottom: '10px', 
-                                        padding: '10px', 
+                                    <div key={index} className="order-item" style={{
+                                        marginBottom: '10px',
+                                        padding: '10px',
                                         border: '1px solid #eee',
                                         borderRadius: '5px'
                                     }}>
@@ -192,28 +251,49 @@ function CartFinContent() {
                                     </div>
                                 ))}
                             </div>
-                        ) : (
+                        ) : ( */}
                             <CartCard />
-                        )}
+                        {/* )} */}
 
-                        <div className="orange-side pc">
-                            <div className="used-coupons pc">
-                                <h6>此訂單使用的優惠券</h6>
-                            </div>
+                        <div className="orange-side fin pc">
+                            {/* {couponData.map((coupon) => (
+                                <div key={coupon.id} className="used-coupons pc">
+                                    <h6>此訂單使用的優惠券</h6>
+                                    <CartCoupon
+                                        key={coupon.id}
+                                        tag={
+                                            coupon.category_names &&
+                                                coupon.category_names.split(",").length >= 6
+                                                ? "全館適用"
+                                                : `${coupon.category_names}適用`
+                                        }
+                                        name={coupon.name}
+                                        smallCost={`滿 $${coupon.min_discount} 使用`}
+                                        // date={` ${coupon.expire_at.split("T")[0]}到期`}
+                                        costCate1={coupon.discount_type === 1 ? "$ " : ""}
+                                        cost={
+                                            coupon.discount_type === 1
+                                                ? parseInt(coupon.discount)
+                                                : parseInt(coupon.discount * 100)
+                                        }
+                                        costCate2={coupon.discount_type === 1 ? "" : " 折"}
+                                    />
+                                </div>
+                            ))} */}
 
                             {/* 顯示從資料庫取得的總金額 */}
-                            {orderData?.total_amount ? (
-                                <div className="total-section" style={{ 
-                                    textAlign: 'right', 
-                                    fontSize: '18px', 
+                            {/* {orderData?.total_amount ? (
+                                <div className="total-section" style={{
+                                    textAlign: 'right',
+                                    fontSize: '18px',
                                     fontWeight: 'bold',
                                     marginTop: '10px'
                                 }}>
                                     <h5>訂單總金額: NT$ {orderData.total_amount.toLocaleString()}</h5>
                                 </div>
-                            ) : (
+                            ) : ( */}
                                 <Total />
-                            )}
+                            {/*  )} */}
                         </div>
                     </div>
 
@@ -231,7 +311,7 @@ function CartFinContent() {
                                         <p>{formatDateTime(orderData?.create_at)}</p>
                                         <p>
                                             {orderData?.status === 'paid' ? '已付款' :
-                                             pageStatus === 'success' ? '已付款' : '已付款'}
+                                                pageStatus === 'success' ? '已付款' : '已付款'}
                                         </p>
                                         <p>信用卡</p>
                                     </div>
@@ -333,7 +413,7 @@ function CartFinContent() {
                                                     <td>付款狀態</td>
                                                     <td>
                                                         {orderData?.status === 'paid' ? '已付款' :
-                                                         pageStatus === 'success' ? '已付款' : '已付款'}
+                                                            pageStatus === 'success' ? '已付款' : '已付款'}
                                                     </td>
                                                 </tr>
                                                 <tr>

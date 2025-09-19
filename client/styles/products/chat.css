@@ -62,7 +62,7 @@
   .logo-circle {
     width: 32px;
     height: 32px;
-    background: rgba(255, 255, 255, 0.2);
+    background:linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -102,14 +102,14 @@
   .close-chat {
     background: none;
     border: none;
-    color: white;
+    color: #2d3748;
     cursor: pointer;
     padding: 8px;
     border-radius: var(--border-radius);
     opacity: 0.8;
     transition: opacity 0.2s, background 0.2s;
   }
-  
+
   .close-chat:hover {
     opacity: 1;
     background: rgba(255, 255, 255, 0.1);
@@ -348,7 +348,7 @@
     box-shadow: 0 4px 16px rgba(219, 167, 131, 0.4);
     transition: all 0.3s ease;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
   
   .chat-toggle-btn:hover {

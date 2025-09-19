@@ -197,6 +197,17 @@ export default function Total({ type }) {
       if (!items || items.length === 0) {
         throw new Error("購物車為空");
       }
+      // 從 localStorage 取得收件人資訊
+      const recipientData = JSON.parse(localStorage.getItem("recipient"));
+      const buyerData = JSON.parse(localStorage.getItem("buyer"));
+
+      const recipientName = recipientData.name || buyerData.name;
+      const recipientPhone = recipientData.phone || buyerData.phone;
+      const address = recipientData.address || buyerData.address;
+      const buyerName = buyerData.name;
+      const buyerEmail = buyerData.email;
+      const buyerPhone = buyerData.phone;
+
       const currentPaymentMethod = localStorage.getItem("payment");
       setPaymentMethod(currentPaymentMethod);
 
@@ -212,21 +223,53 @@ export default function Total({ type }) {
         delivery: delivery,
         orderNo: `ORD${Date.now()}`, // 生成訂單編號
         timestamp: new Date().toISOString(),
+
+        recipientName: recipientName,
+        recipientPhone: recipientPhone,
+        address: address,
+
+        buyerName: buyerName,
+        buyerEmail: buyerEmail,
+        buyerPhone: buyerPhone
       };
 
       // 儲存 localStorage 供下一頁使用
       localStorage.setItem("orderData", JSON.stringify(orderDataForPayment));
       localStorage.setItem("finalAmount", finalAmount.toString());
 
-      console.log("準備的訂單資料:", orderDataForPayment);
+      console.log("準備傳送的資料:", orderDataForPayment);
+      console.log("userId:", userId);
+      console.log("finalAmount:", finalAmount);
+      console.log("recipientName:", recipientName);
+      console.log("recipientPhone:", recipientPhone);
+      console.log("address:", address);
 
-      // 導向付款確認頁面
       if (currentPaymentMethod === "信用卡") {
         router.push("/cart/ecpay/check");
       } else if (currentPaymentMethod === "超商付款") {
-        // 其他支付方式的處理
-        console.log("使用其他支付方式:", paymentMethod);
-        router.push("/cart/fin");
+        // ✅ 超商付款：先建立訂單到資料庫
+        const response = await fetch('http://localhost:3005/api/order/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...orderDataForPayment,
+            payment_status: 'pending', // 超商付款狀態為待付款
+            payment_method: '超商付款'
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // 清理購物車
+          localStorage.removeItem('cart');
+          // 導向完成頁面（不需要 orderNo 參數）
+          router.push("/cart/fin");
+        } else {
+          throw new Error(result.message || "訂單建立失敗");
+        }
       }
     } catch (error) {
       console.error("準備支付失敗:", error);

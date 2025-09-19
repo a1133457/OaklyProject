@@ -9,6 +9,7 @@ import "@/styles/header.css";
 import UserSidebarPage from "../user/_components/sidebar";
 import styles from "../user/_components/sidebar.module.css";
 
+
 export default function Header() {
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
@@ -29,6 +30,11 @@ export default function Header() {
   //     alert(result?.message || "登出失敗");
   //   }
   // };
+  const hideHeaderPaths = ['/admin/customer-service'];
+
+  if (hideHeaderPaths.includes(pathname)) {
+    return null; // 客服不渲染 Header
+  }
 
   const searchInputRef = useRef(null);
 
@@ -97,9 +103,9 @@ export default function Header() {
           <Link className="nav-items" href="/organizer">
             <h6>預約整理師</h6>
           </Link>
-          {/* <Link className="nav-items" href="/article">
-            <h6>精選文章</h6>
-          </Link> */}
+          <Link className="nav-items" href="/coupon">
+            <h6>優惠專區</h6>
+          </Link>
           {/* <Link className="nav-items" href="/faq">
             <h6>常見問題</h6>
           </Link> */}
