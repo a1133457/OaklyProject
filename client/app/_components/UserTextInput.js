@@ -10,7 +10,7 @@ export default function UserTextInput({
 }) {
     const isPassword = type === 'password'
     const [visible, setVisible] = useState(false)
-    const actualType = isPassword && !visible ? 'password' : 'text'
+    const actualType = isPassword ? (visible ? 'text' : 'password') : type
 
     return (
         <div className="mb-3 position-relative">
