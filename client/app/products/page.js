@@ -11,12 +11,6 @@ import Swal from 'sweetalert2';
 import WebSocketCustomerService from "@/app/_components/agent/WebSocketCustomerService";
 
 
-
-
-
-
-
-
 const MainProduct = () => {
   const { user } = useAuth();
   const [selectedFilters, setSelectedFilters] = useState({
@@ -472,7 +466,6 @@ const MainProduct = () => {
       series: []
     };
     const defaultPriceRange = { min: 0, max: 30000 };
-
     setTempFilters(defaultFilters);        // 清除臨時篩選
     setTempPriceRange(defaultPriceRange);  // 清除臨時價格
     setSelectedFilters(defaultFilters);    // 清除實際篩選
@@ -564,7 +557,7 @@ const MainProduct = () => {
 
         if (productMaterials.length > 0) {
           materialMatch = productMaterials.some(material =>
-            selectedFilters.materials.some(filterMaterial => 
+            selectedFilters.materials.some(filterMaterial =>
               material.includes(filterMaterial) || filterMaterial.includes(material)
             )
           );
@@ -813,7 +806,6 @@ const MainProduct = () => {
         });
 
         const result = await response.json();
-
         if (result.status === 'success') {
           const wishlistState = {};
           result.data.forEach(favorite => {
@@ -828,9 +820,6 @@ const MainProduct = () => {
     };
     loadWishlistStatus();
   }, []);
-
-
-
 
   const currentProducts = getCurrentPageProducts();
 
@@ -963,10 +952,8 @@ const MainProduct = () => {
           selectedSize: selectedSize
         });
       } else {
-        // 先關閉收藏彈窗
         setShowWishlistModal(false);
         document.body.classList.remove('no-scroll');
-        // 您的錯誤處理代碼放在這裡
         if (result.message && result.message.includes("已在收藏清單中")) {
           Swal.fire({
             title: "已在收藏清單中",
@@ -975,8 +962,6 @@ const MainProduct = () => {
             confirmButtonText: "確定",
             position: 'center',
             confirmButtonColor: "#DBA783",
-
-
 
           });
         } else {
@@ -1020,7 +1005,7 @@ const MainProduct = () => {
       return false;
     }
   };
-  // 添加收藏相關函數
+
   const handleWishlistToggle = async (product, e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -1604,8 +1589,8 @@ const MainProduct = () => {
                       }}>
                       <div className="badges">
 
-                      {product.isNew && <span className="badge-new">新品</span>}
-                      {product.isHot && <span className="badge-hot">熱賣</span>}
+                        {product.isNew && <span className="badge-new">新品</span>}
+                        {product.isHot && <span className="badge-hot">熱賣</span>}
                       </div>
 
                       <div className="image">
@@ -2208,7 +2193,7 @@ const MainProduct = () => {
         onClose={closeWishlistSuccessModal}
       />
 
-<WebSocketCustomerService />
+      <WebSocketCustomerService />
 
 
     </div>
