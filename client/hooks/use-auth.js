@@ -33,18 +33,25 @@ export function AuthProvider({ children }) {
   }, []);
 
   // register------------------------------------
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, password2) => {
     // 前端基本驗證（和登入一樣走 FormData，維持一致）
-    // const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    // if (!name || !email || !password) {
-    //   return { success: false, message: "請填寫完整資料" };
-    // }
-    // if (!emailOK) {
-    //   return { success: false, message: "Email 格式不正確" };
-    // }
-    // if (password.length < 6) {
-    //   return { success: false, message: "密碼至少需 6 碼" };
-    // }
+    const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    // 1. 檢查必填欄位
+    if (!name || !email || !password || !password2) {
+      return { success: false, message: "請填寫完整資料" };
+    }
+    // 2. 檢查 Email 格式
+    if (!emailOK) {
+      return { success: false, message: "Email 格式不正確" };
+    }
+    // 3. 檢查密碼長度
+    if (password.length < 6) {
+      return { success: false, message: "密碼至少需 6 碼" };
+    }
+    // 4. 檢查兩次密碼是否相同
+    if (password !== password2) {
+      return { success: false, message: "兩次輸入的密碼不一致" };
+    }
 
     const API = "http://localhost:3005/api/users";
     const formData = new FormData();
@@ -79,6 +86,21 @@ export function AuthProvider({ children }) {
 
   // login------------------------------------
   const login = async (email, password) => {
+    // ✅ 基本驗證
+    const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || "").trim());
+    if (!email || !password) {
+      toast.error("請填寫完整資料");
+      return { success: false, message: "請填寫完整資料" };
+    }
+    if (!emailOK) {
+      toast.error("Email 格式不正確");
+      return { success: false, message: "Email 格式不正確" };
+    }
+    if (password.length < 6) {
+      toast.error("密碼至少需 6 碼");
+      return { success: false, message: "密碼至少需 6 碼" };
+    }
+
     console.log(`在 use-auth 中, ${email}, ${password}`);
     const API = "http://localhost:3005/api/users/login";
     const formData = new FormData();
@@ -433,7 +455,7 @@ export function AuthProvider({ children }) {
       return { success: true, message: "Google 登入成功" };
     } catch (error) {
       console.error(error);
-      toast.error("Google 登入失敗"); // ✅ 新增
+
       return { success: false, message: "Google 登入失敗" };
     }
   };

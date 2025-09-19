@@ -16,6 +16,8 @@ SELECT * FROM users WHERE email = 'li.meihao@example.com';
 
 DESCRIBE favorites;
 
+SHOW CREATE TABLE users;
+
 ALTER TABLE favorites
   ADD COLUMN color_id INT NULL,
   ADD COLUMN size_id INT NULL,
