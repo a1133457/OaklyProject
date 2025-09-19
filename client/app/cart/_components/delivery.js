@@ -13,9 +13,9 @@ export default function Delivery() {
   // 在客戶端獲取完整的回調 URL
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 使用你
+      // 使用 cloudflare 臨時 tunnel，每次重啟都會變
       const CLOUDFLARE_URL =
-        "https://tired-fees-comics-witch.trycloudflare.com";
+        "https://vault-tube-protection-investigated.trycloudflare.com";
 
       // 組成完整的 URL，包含 protocol + host + path
       const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;

@@ -32,6 +32,10 @@ router.post("/ecpay/create", async (req, res) => {
 
     const {
       totalAmount,
+      originalAmount,        // 新增：原始金額
+      discountAmount,        // 新增：折扣金額
+      coupon,               // 新增：優惠券資訊
+      couponId,             // 新增：優惠券ID
       userId,
       buyerName,
       buyerEmail,
@@ -130,30 +134,229 @@ router.post("/ecpay/create", async (req, res) => {
       });
     }
 
-    console.log("計算總金額:", calculatedAmount);
-    console.log("傳入總金額:", totalAmount);
+    console.log("=== 金額驗證 ===");
+    console.log("計算的商品總金額:", calculatedAmount);
+    console.log("前端傳入的原始金額:", originalAmount);
+    console.log("前端傳入的折扣金額:", discountAmount || 0);
+    console.log("前端傳入的最終金額:", totalAmount);
 
-    // 處理優惠券邏輯
-    let discountAmount = 0;
-    let appiedCoupon = null;
+    // === 2. 處理優惠券邏輯（根據實際的 coupons 資料表結構）===
+    let validatedDiscountAmount = 0;
+    let appliedCoupon = null;
 
-    // // 檢查是否有優惠券
-    // if(couponCode){
-    //   try{
-    //     // 查詢優惠券
-    //     const coupon = await connection.execute(
-    //       `SELECT * FROM cou`
-    //     )
-    //   }
-    // }
+    // 修正：從多個來源獲取 coupon_id
+    let actualCouponId = null;
 
-    // 驗證總金額
-    if (Math.abs(calculatedAmount - parseInt(totalAmount)) > 1) {
+    if (coupon) {
+      // 方法1：從 coupon 物件中獲取
+      actualCouponId = coupon.coupon_id || coupon.id;
+      console.log("從 coupon 物件獲取 coupon_id:", actualCouponId);
+    } else if (couponId) {
+      // 方法2：直接從 couponId 參數獲取
+      actualCouponId = couponId;
+      console.log("從 couponId 參數獲取:", actualCouponId);
+    }
+
+    console.log("=== 優惠券ID確認 ===");
+    console.log("coupon 物件:", coupon);
+    console.log("couponId 參數:", couponId);
+    console.log("最終使用的 coupon_id:", actualCouponId);
+
+    if (coupon && actualCouponId) {
+      console.log("=== 開始驗證優惠券 ===");
+      console.log("優惠券ID:", actualCouponId);
+      console.log("用戶ID:", userId);
+      console.log("優惠券資訊:", coupon);
+
+      try {
+        // 檢查用戶是否擁有此優惠券且未使用
+        console.log("檢查用戶優惠券...");
+
+        const [userCoupons] = await connection.execute(`
+      SELECT 
+        uc.*,
+        c.name as coupon_name,
+        c.code,
+        c.discount_type,
+        c.discount,
+        c.min_discount,
+        c.max_amount,
+        c.start_at,
+        c.end_at,
+        c.valid_days,
+        c.is_valid
+      FROM user_coupons uc
+      JOIN coupons c ON uc.coupon_id = c.id
+      WHERE uc.user_id = ? 
+        AND uc.coupon_id = ? 
+        AND uc.status = 0
+        AND c.is_valid = 1
+        AND (uc.expire_at IS NULL OR uc.expire_at > NOW())
+        AND (c.end_at IS NULL OR c.end_at >= CURDATE())
+    `, [userId, actualCouponId]);
+
+        console.log("用戶優惠券查詢結果:", userCoupons);
+        console.log("找到的優惠券數量:", userCoupons.length);
+
+        if (userCoupons && userCoupons.length > 0) {
+          const userCoupon = userCoupons[0];
+          console.log("找到有效的用戶優惠券:", userCoupon);
+
+          // 檢查最低消費金額
+          if (userCoupon.min_discount && calculatedAmount < userCoupon.min_discount) {
+            throw new Error(`此優惠券需滿 ${userCoupon.min_discount} 元才能使用，目前金額 ${calculatedAmount} 元`);
+          }
+
+          // 重新計算折扣金額進行驗證
+          console.log("開始重新計算折扣金額...");
+          console.log("折扣類型 (discount_type):", userCoupon.discount_type);
+          console.log("折扣值 (discount):", userCoupon.discount);
+          console.log("商品總金額:", calculatedAmount);
+          console.log("最大金額限制 (max_amount):", userCoupon.max_amount);
+
+          // 根據 discount_type 計算折扣
+          // 假設: 0 = 固定金額折扣, 1 = 百分比折扣
+          if (userCoupon.discount_type === 0) {
+            // 固定金額折扣
+            validatedDiscountAmount = Math.min(userCoupon.discount, calculatedAmount);
+            console.log(`固定折扣計算: min(${userCoupon.discount}, ${calculatedAmount}) = ${validatedDiscountAmount}`);
+
+          } else if (userCoupon.discount_type === 1) {
+            // 百分比折扣
+            const discountRate = userCoupon.discount;
+            console.log("百分比折扣率:", discountRate);
+
+            if (discountRate >= 10 && discountRate <= 100) {
+              // 如果是 95，表示 95 折 (5% 折扣)
+              validatedDiscountAmount = Math.floor(calculatedAmount * (100 - discountRate) / 100);
+              console.log(`${discountRate}折計算: ${calculatedAmount} * (100-${discountRate})/100 = ${validatedDiscountAmount}`);
+            } else if (discountRate > 0 && discountRate < 1) {
+              // 如果是 0.05，表示 5% 折扣
+              validatedDiscountAmount = Math.floor(calculatedAmount * discountRate);
+              console.log(`小數折扣計算: ${calculatedAmount} * ${discountRate} = ${validatedDiscountAmount}`);
+            } else if (discountRate >= 1 && discountRate < 10) {
+              // 如果是 5，表示 5% 折扣
+              validatedDiscountAmount = Math.floor(calculatedAmount * (discountRate / 100));
+              console.log(`百分比折扣計算: ${calculatedAmount} * ${discountRate}/100 = ${validatedDiscountAmount}`);
+            } else {
+              console.error("無法識別的折扣率:", discountRate);
+              throw new Error(`無法識別的折扣率: ${discountRate}`);
+            }
+
+            // 檢查最大金額限制
+            if (userCoupon.max_amount && validatedDiscountAmount > userCoupon.max_amount) {
+              console.log(`折扣金額 ${validatedDiscountAmount} 超過最大限制 ${userCoupon.max_amount}，調整為最大限制`);
+              validatedDiscountAmount = userCoupon.max_amount;
+            }
+
+          } else {
+            console.error("未知的折扣類型:", userCoupon.discount_type);
+            throw new Error(`未知的折扣類型: ${userCoupon.discount_type}`);
+          }
+
+          appliedCoupon = userCoupon;
+          console.log("後端重新計算的折扣金額:", validatedDiscountAmount);
+          console.log("前端傳入的折扣金額:", discountAmount);
+
+          // 驗證折扣金額是否一致（允許1元誤差）
+          const discountDiff = Math.abs(validatedDiscountAmount - (discountAmount || 0));
+          console.log("折扣金額差異:", discountDiff);
+
+          if (discountDiff > 1) {
+            console.error("折扣金額驗證失敗");
+            return res.status(400).json({
+              status: "fail",
+              message: `折扣金額驗證失敗，後端計算: ${validatedDiscountAmount}, 前端傳入: ${discountAmount}, 差異: ${discountDiff}`
+            });
+          }
+
+          console.log("折扣金額驗證通過");
+
+        } else {
+          console.error("找不到有效的用戶優惠券");
+
+          // 進一步檢查原因
+          const [debugCheck] = await connection.execute(`
+        SELECT 
+          uc.*,
+          c.name as coupon_name,
+          c.is_valid,
+          c.end_at,
+          CASE 
+            WHEN c.is_valid = 0 THEN '優惠券已停用'
+            WHEN uc.status = 1 THEN '優惠券已使用'
+            WHEN uc.expire_at < NOW() THEN '用戶優惠券已過期'
+            WHEN c.end_at < CURDATE() THEN '優惠券活動已結束'
+            WHEN uc.user_id != ? THEN '非本人優惠券'
+            ELSE '未知原因'
+          END as reason
+        FROM user_coupons uc
+        LEFT JOIN coupons c ON uc.coupon_id = c.id
+        WHERE uc.coupon_id = ?
+      `, [userId, actualCouponId]);
+
+          console.log("優惠券狀態檢查:", debugCheck);
+
+          if (debugCheck.length === 0) {
+            throw new Error(`優惠券不存在 (ID: ${actualCouponId})`);
+          } else {
+            const userCouponRecord = debugCheck.find(d => d.user_id == userId);
+            if (userCouponRecord) {
+              throw new Error(`優惠券不可用: ${userCouponRecord.reason}`);
+            } else {
+              throw new Error(`用戶未擁有此優惠券 (ID: ${actualCouponId})`);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("優惠券處理過程發生錯誤:", error);
+        console.error("錯誤訊息:", error.message);
+
+        // 如果有折扣但驗證失敗，回傳具體錯誤
+        if (discountAmount && discountAmount > 0) {
+          return res.status(400).json({
+            status: "fail",
+            message: `優惠券驗證失敗: ${error.message}`
+          });
+        }
+
+        // 如果沒有折扣，則忽略優惠券錯誤
+        console.log("忽略優惠券錯誤，繼續處理付款");
+        validatedDiscountAmount = 0;
+        appliedCoupon = null;
+      }
+    } else {
+      console.log("=== 沒有優惠券資訊 ===");
+
+      // 沒有優惠券，但前端傳了折扣金額
+      if (discountAmount && discountAmount > 0) {
+        console.warn("沒有優惠券資訊但有折扣金額，直接使用前端傳入的折扣");
+        validatedDiscountAmount = discountAmount;
+      }
+    }
+
+    console.log("=== 優惠券處理完成 ===");
+    console.log("最終折扣金額:", validatedDiscountAmount);
+    console.log("應用的優惠券:", appliedCoupon);
+
+    // === 3. 最終金額驗證 ===
+    const expectedFinalAmount = calculatedAmount - validatedDiscountAmount;
+
+    console.log("=== 最終金額驗證 ===");
+    console.log("商品原始總金額:", calculatedAmount);
+    console.log("優惠券折扣:", validatedDiscountAmount);
+    console.log("計算的最終金額:", expectedFinalAmount);
+    console.log("前端傳入的最終金額:", totalAmount);
+
+    // 驗證最終金額（允許1元的誤差）
+    if (Math.abs(expectedFinalAmount - parseInt(totalAmount)) > 1) {
       return res.status(400).json({
         status: "fail",
-        message: `金額驗證失敗，計算金額: ${calculatedAmount}, 傳入金額: ${totalAmount}`
+        message: `最終金額驗證失敗，計算金額: ${calculatedAmount}, 折扣: ${validatedDiscountAmount}, 預期最終金額: ${expectedFinalAmount}, 傳入金額: ${totalAmount}`
       });
     }
+
+    console.log("金額驗證通過！");
 
     // === 2. 生成訂單編號 ===
     const TradeNo = "ORD" + Date.now() + userId;
@@ -179,8 +382,10 @@ router.post("/ecpay/create", async (req, res) => {
       PaymentType: "aio",
       MerchantTradeNo: TradeNo,
       MerchantTradeDate,
-      TotalAmount: calculatedAmount.toString(),
-      TradeDesc: "線上購物付款",
+      TotalAmount: expectedFinalAmount.toString(), // 使用折扣後的金額
+      TradeDesc: validatedDiscountAmount > 0 ?
+        `線上購物付款 (原價${calculatedAmount}元，優惠${validatedDiscountAmount}元)` :
+        "線上購物付款",
       ItemName: itemName,
       ReturnURL: `${HOST}/cart`,
       ClientBackURL: `${HOST}/cart/fin?orderNo=${TradeNo}`,
@@ -197,10 +402,15 @@ router.post("/ecpay/create", async (req, res) => {
       buyer_phone: buyerPhone || null,
       recipient_name: recipientName,
       recipient_phone: recipientPhone,
-      postal_code: postcode || '', // 修正：使用 postcode 而不是 postalCode
+      postal_code: postcode || '',
       address: address,
-      total_amount: calculatedAmount,
+      original_amount: calculatedAmount,      // 原始金額
+      discount_amount: validatedDiscountAmount, // 折扣金額
+      total_amount: expectedFinalAmount,      // 最終金額
+      applied_coupon: appliedCoupon,         // 使用的優惠券
       cart_items: validatedItems,
+      payment_status: 'pending',        // 添加這行
+      payment_method: 'credit_card',
       created_at: new Date(),
       expires_at: new Date(Date.now() + 60 * 60 * 1000) // 1小時後過期
     });
@@ -283,7 +493,7 @@ router.post("/ecpay/confirm", async (req, res) => {
           address,
           payment_status,
           payment_method
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         orderNo,
         orderData.user_id,
@@ -375,7 +585,7 @@ router.get("/orders/:orderId", async (req, res) => {
     const [orderRows] = await connection.execute(`
       SELECT 
         id, order_number, user_id, total_amount, buyer_name, buyer_email, 
-        buyer_phone, recipient_name, recipient_phone, postal_code, address,
+        buyer_phone, recipient_name, recipient_phone, address,
         create_at
       FROM orders 
       WHERE id = ?

@@ -38,7 +38,7 @@ export default function ShipCallbackPage() {
                         style={{
                             padding: '10px 20px',
                             fontSize: '16px',
-                            backgroundColor: '#007bff',
+                            backgroundColor: 'var(--primary-01)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
