@@ -21,7 +21,7 @@ export default function LoginPage() {
     const onSubmit = async (e) => {
         e.preventDefault();
 
-        const result = await login(email, password)
+        const result = await login(email.trim(), password)
 
         if (result.success) {
             router.push('/');   // ✅ 只在成功時才跳首頁
