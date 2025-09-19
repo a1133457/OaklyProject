@@ -23,11 +23,12 @@ const getColorCode = (colorName) => {
 
 export default function FavoritesPage() {
     // 管理清單
-    const { getFavorites, removeFavorite, updateFavoriteQty } = useAuth();
+    const { user, getFavorites, removeFavorite, updateFavoriteQty } = useAuth();
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pending, setPending] = useState({}); // key => 是否更新中
     const { addToCart, openSuccessModal } = useCart();
+
     // 相對路徑 → 完整 URL（保險用）
     const toSrc = (p) => {
         if (!p) return "/img/placeholder.jpg";
@@ -63,12 +64,20 @@ export default function FavoritesPage() {
     });
 
     useEffect(() => {
-        (async () => {
-            const result = await getFavorites();
-            if (result.success) setList(result.data || []);
+        // ✅ 尚未登入就別打收藏 API，並結束 loading
+        if (!user) {
             setLoading(false);
+            return;
+        }
+        (async () => {
+            try {
+                const result = await getFavorites();
+                if (result?.success) setList(result.data || []);
+            } finally {
+                setLoading(false);
+            }
         })();
-    }, [user?.id]);
+    }, [user?.id, getFavorites]);
 
     const onRemove = async (productId, colorId, sizeId) => {
         const result = await removeFavorite(productId, colorId, sizeId);
