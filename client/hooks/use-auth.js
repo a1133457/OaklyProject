@@ -115,37 +115,24 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     console.log("logout");
     const API = "http://localhost:3005/api/users/logout";
-    const appKey = "reactLoginToken";
-    const userKey = "user";
-    const cart = "cart";
-    const token = localStorage.getItem(appKey);
+    
     try {
-      if (!token) throw new Error("Token 不存在");
-      const res = await fetch(API, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const result = await res.json();
-      if (result.status == "success") {
-        const token = result.data;
-        setUser(null);
-        //localStorage.setItem(appKey, token);
-        localStorage.clear();  //清空整個 localStorage
-        router.push("/");
-        // return { success: true };
-      } else {
-        //alert(result.message)
-        // 接 吐司？
-        throw new Error(result.message); //老師版
-        //return { success: false, message: result.message };
-      }
+      await fetch(API, {
+      method: "POST",
+      credentials: "include",   // 🔑 讓 cookie 帶過去，後端才能清掉
+    });
+
+    // 清掉前端狀態
+    setUser(null);
+    localStorage.clear();
+
+    router.push("/"); // 導回首頁
     } catch (error) {
-      console.log(`解析token失敗: ${error.message}`);
+      console.log(`logout 失敗: ${error.message}`);
       setUser(null);
       localStorage.removeItem(appKey);
-      alert(error.message);
+      localStorage.removeItem(userKey);
+      // alert(error.message);
     }
   };
 
@@ -343,7 +330,7 @@ export function AuthProvider({ children }) {
   };
 
   // 加入收藏
-  const addFavorite = async (productId) => {
+  const addFavorite = async (productId, colorId, sizeId, colorName, quantity = 1) => {
     const token = localStorage.getItem(appKey);
 
     try {
@@ -353,10 +340,9 @@ export function AuthProvider({ children }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, colorId, sizeId, colorName, quantity  }),
       });
-      const result = await res.json();
-      return result;
+      return await res.json();
     } catch (err) {
       console.error(err);
       return { success: false, message: "伺服器錯誤" };
@@ -364,11 +350,11 @@ export function AuthProvider({ children }) {
   };
 
   // 取消收藏
-  const removeFavorite = async (productId) => {
+  const removeFavorite = async (productId, colorId, sizeId) => {
     const token = localStorage.getItem(appKey);
 
     try {
-      const res = await fetch(`${API_FAVORITES}/${productId}`, {
+      const res = await fetch(`${API_FAVORITES}/${productId}/${colorId}/${sizeId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -379,6 +365,25 @@ export function AuthProvider({ children }) {
       return { success: false, message: "伺服器錯誤" };
     }
   };
+  // 收藏數量調整
+  const updateFavoriteQty = async (productId, colorId, sizeId, quantity) => {
+  const token = localStorage.getItem(appKey);
+  try {
+    const res = await fetch(`${API_FAVORITES}/${productId}/${colorId}/${sizeId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ quantity }),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("updateFavoriteQty error:", err);
+    return { status: "error", message: "伺服器錯誤" };
+  }
+};
+
 
   // login with Google------------------------------------
   const loginWithGoogle = async (token, user) => {
@@ -412,6 +417,7 @@ export function AuthProvider({ children }) {
         addFavorite,
         removeFavorite,
         loginWithGoogle,
+        updateFavoriteQty
       }}
     >
       {children}

@@ -22,9 +22,26 @@ export default function CouponSelect({ coupons, onSelect }) {
       setSelectedCoupon(null);
       if (onSelect) onSelect(null);
     } else {
+      // 轉換優惠券數據格式以匹配 Total 組件的期待
+      const normalizedCoupon = {
+        id: coupon.id,
+        coupon_id: coupon.coupon_id,
+        name: coupon.name,
+        code: coupon.code || `COUPON${coupon.id}`,
+        discountType: coupon.discount_type === 1 ? "fixed" : "percentage",
+        discountValue: coupon.discount_type === 1
+          ? parseInt(coupon.discount)
+          : parseFloat(coupon.discount * 100), // 注意：這裡假設資料庫儲存的是小數格式（如 0.1 代表 10%）
+        minDiscount: coupon.min_discount,
+        expireAt: coupon.expire_at,
+        categoryNames: coupon.category_names
+      };
+
+      console.log("轉換後的優惠券格式:", normalizedCoupon);
+
       // 否則選擇新的優惠券
-      setSelectedCoupon(coupon);
-      if (onSelect) onSelect(coupon); // 回傳給父元件
+      setSelectedCoupon(normalizedCoupon);
+      if (onSelect) onSelect(normalizedCoupon);
     }
   };
   const handleConfirm = () => {
@@ -38,6 +55,11 @@ export default function CouponSelect({ coupons, onSelect }) {
       };
       localStorage.setItem("selectedCoupon", JSON.stringify(couponData));
       console.log("儲存的優惠券資料:", couponData);
+
+      // 立即通知父組件
+      if (onSelect) {
+        onSelect(couponData);
+      }
     } else {
       // 如果沒有選擇優惠券，清除 localStorage
       localStorage.removeItem("selectedCoupon");
@@ -72,7 +94,7 @@ export default function CouponSelect({ coupons, onSelect }) {
       const saveCoupon = localStorage.getItem("selectedCoupon");
       if (saveCoupon) {
         try {
-          const couponData = JSON.parse("selectedCoupon");
+          const couponData = JSON.parse(saveCoupon);
           setSelectedCoupon(couponData);
           if (onSelect) onSelect(couponData);
         } catch (error) {
@@ -125,11 +147,10 @@ export default function CouponSelect({ coupons, onSelect }) {
       <div className="coupon-select-container">
         <button className="choose-coupon" onClick={() => setIsOpen(true)}>
           {selectedCoupon
-            ? `已選擇: ${
-                selectedCoupon.discount > 1
-                  ? `${parseInt(selectedCoupon.discount)}元`
-                  : `${selectedCoupon.discount * 100}折`
-              } 優惠券`
+            ? `已選擇: ${selectedCoupon.discountType === "fixed"
+              ? `${selectedCoupon.discountValue}元`
+              : `${selectedCoupon.discountValue}折`
+            } 優惠券`
             : "選擇優惠券"}
         </button>
 
@@ -171,11 +192,10 @@ export default function CouponSelect({ coupons, onSelect }) {
               {userCoupons.map((coupon) => (
                 <div
                   key={coupon.id}
-                  className={`cart-coupon ${
-                    selectedCoupon && selectedCoupon.id === coupon.id
-                      ? "selected"
-                      : ""
-                  }`}
+                  className={`cart-coupon ${selectedCoupon && selectedCoupon.id === coupon.id
+                    ? "selected"
+                    : ""
+                    }`}
                   onClick={() => handleSelect(coupon)}
                 >
                   {/* 選中標記 */}
@@ -189,7 +209,7 @@ export default function CouponSelect({ coupons, onSelect }) {
                     key={coupon.id}
                     tag={
                       coupon.category_names &&
-                      coupon.category_names.split(",").length >= 6
+                        coupon.category_names.split(",").length >= 6
                         ? "全館適用"
                         : `${coupon.category_names}適用`
                     }

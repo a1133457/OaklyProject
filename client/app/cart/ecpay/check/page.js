@@ -46,7 +46,7 @@ export default function CartEcpayCheck() {
       // 安全的地址拼接函數
       const buildSafeAddress = (data) => {
         if (data.address) return data.address; // 如果已有完整地址直接使用
-        
+
         const parts = [
           data.postcode,
           data.city,
@@ -160,84 +160,157 @@ export default function CartEcpayCheck() {
   };
 
   // 提交付款表單到後端 - 修正所有資料解析問題
+
+  // 在 CartEcpayCheck 組件的 submitPaymentForm 函數開頭加入詳細的調試
   const submitPaymentForm = (orderInfo, amount) => {
     try {
-      // 修正：直接取得字串，不要重複解析
+      console.log("=== 開始調試付款流程 ===");
+
+      // 1. 檢查傳入的參數
+      console.log("傳入的 orderInfo:", orderInfo);
+      console.log("傳入的 amount (最終金額):", amount);
+
+      // 2. 檢查 localStorage 中的所有相關數據
+      console.log("=== localStorage 數據檢查 ===");
+      const orderDataRaw = localStorage.getItem("orderData");
+      const finalAmountRaw = localStorage.getItem("finalAmount");
+      const selectedCouponRaw = localStorage.getItem("selectedCoupon");
       const cartItemsRaw = localStorage.getItem("cart");
-      const buyerDataRaw = localStorage.getItem("buyer");
-      const recipientDataRaw = localStorage.getItem("recipient"); // 修正拼字錯誤
 
-      console.log("Raw data from localStorage:");
-      console.log("cartItemsRaw:", cartItemsRaw?.substring(0, 100) + "...");
-      console.log("buyerDataRaw:", buyerDataRaw);
-      console.log("recipientDataRaw:", recipientDataRaw);
+      console.log("orderData (raw):", orderDataRaw);
+      console.log("finalAmount (raw):", finalAmountRaw);
+      console.log("selectedCoupon (raw):", selectedCouponRaw);
+      console.log("cart (raw):", cartItemsRaw?.substring(0, 200) + "...");
 
-      // 安全解析資料
+      // 3. 解析並檢查 orderData 中的金額信息
+      let parsedOrderData = null;
+      if (orderDataRaw) {
+        try {
+          parsedOrderData = JSON.parse(orderDataRaw);
+          console.log("=== orderData 解析結果 ===");
+          console.log("totalAmount:", parsedOrderData.totalAmount);
+          console.log("originalAmount:", parsedOrderData.originalAmount);
+          console.log("discountAmount:", parsedOrderData.discountAmount);
+          console.log("coupon:", parsedOrderData.coupon);
+        } catch (error) {
+          console.error("orderData 解析失敗:", error);
+        }
+      }
+
+      // 4. 解析並檢查優惠券信息
+      let selectedCoupon = null;
+      let discountAmount = 0;
+
+      if (selectedCouponRaw && selectedCouponRaw !== "null") {
+        try {
+          selectedCoupon = JSON.parse(selectedCouponRaw);
+          console.log("=== 優惠券信息 ===");
+          console.log("selectedCoupon:", selectedCoupon);
+        } catch (error) {
+          console.warn("優惠券資料解析失敗:", error);
+        }
+      }
+
+      // 5. 從不同來源獲取折扣金額
+      discountAmount = parsedOrderData?.discountAmount || orderInfo?.discountAmount || 0;
+      console.log("最終確定的 discountAmount:", discountAmount);
+
+      // 6. 解析購物車商品
       let cartItems = [];
+      if (cartItemsRaw) {
+        try {
+          cartItems = JSON.parse(cartItemsRaw);
+          console.log("=== 購物車商品 ===");
+          console.log("商品數量:", cartItems.length);
+
+          // 計算購物車原始總金額
+          const calculatedOriginalAmount = cartItems.reduce((sum, item) => {
+            const itemTotal = (item.price || 0) * (item.quantity || 0);
+            console.log(`商品 ${item.name}: 單價 ${item.price} × 數量 ${item.quantity} = ${itemTotal}`);
+            return sum + itemTotal;
+          }, 0);
+
+          console.log("前端計算的原始總金額:", calculatedOriginalAmount);
+          console.log("前端計算的最終金額:", calculatedOriginalAmount - discountAmount);
+          console.log("實際傳入的最終金額:", amount);
+
+          // 檢查金額是否匹配
+          const expectedFinalAmount = calculatedOriginalAmount - discountAmount;
+          console.log("=== 金額比較 ===");
+          console.log("原始金額:", calculatedOriginalAmount);
+          console.log("折扣金額:", discountAmount);
+          console.log("預期最終金額:", expectedFinalAmount);
+          console.log("實際傳入金額:", amount);
+          console.log("金額差異:", Math.abs(expectedFinalAmount - amount));
+
+        } catch (error) {
+          console.error("購物車資料解析失敗:", error);
+        }
+      }
+
+      // 7. 解析購買人和收件人資料
+      const buyerDataRaw = localStorage.getItem("buyer");
+      const recipientDataRaw = localStorage.getItem("recipient");
+
       let buyerData = {};
       let recipientData = {};
 
       try {
-        if (cartItemsRaw) cartItems = JSON.parse(cartItemsRaw);
         if (buyerDataRaw) buyerData = JSON.parse(buyerDataRaw);
         if (recipientDataRaw) recipientData = JSON.parse(recipientDataRaw);
       } catch (parseError) {
-        console.error("解析資料失敗:", parseError);
-        setError("資料格式錯誤，請重新整理");
-        setIsSubmitting(false);
-        return;
+        console.error("解析購買人/收件人資料失敗:", parseError);
       }
 
-      console.log("成功解析的資料:");
-      console.log("cartItems:", cartItems);
-      console.log("cartItems length:", cartItems?.length);
-      console.log("cartItems is array:", Array.isArray(cartItems));
+      console.log("=== 購買人/收件人資料 ===");
       console.log("buyerData:", buyerData);
       console.log("recipientData:", recipientData);
 
-      // 檢查購物車資料
-      if (!Array.isArray(cartItems) || cartItems.length === 0) {
-        setError("購物車資料無效或為空");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 準備發送給後端的資料 - 修正欄位名稱
+      // 8. 準備付款請求（使用從 orderData 中獲取的完整信息）
       const paymentRequest = {
-        totalAmount: amount,
+        // 金額相關
+        totalAmount: amount,                                    // 最終付款金額
+        originalAmount: parsedOrderData?.originalAmount || 0,   // 原始商品總金額
+        discountAmount: discountAmount,                         // 優惠券折扣金額
+
+        // 優惠券資訊
+        coupon: selectedCoupon || parsedOrderData?.coupon,      // 完整優惠券資訊
+        couponId: selectedCoupon?.id || parsedOrderData?.coupon?.id || null,
+
         userId: orderInfo.userId,
 
         // 購買人資訊
-        buyerName: buyerData.name || shippingInfo.buyerName || '購買者',
-        buyerEmail: buyerData.email || shippingInfo.buyerEmail || '',
-        buyerPhone: buyerData.phone || shippingInfo.buyerPhone || '',
+        buyerName: buyerData?.name || shippingInfo?.buyerName || '購買者',
+        buyerEmail: buyerData?.email || shippingInfo?.buyerEmail || '',
+        buyerPhone: buyerData?.phone || shippingInfo?.buyerPhone || '',
 
         // 收件人資訊
-        recipientName: recipientData.name || shippingInfo.recipientName || buyerData.name || '收件人',
-        recipientPhone: recipientData.phone || shippingInfo.recipientPhone || buyerData.phone || '',
-        
-        // 修正：使用 'postcode' 而不是 'postCode'
-        postcode: recipientData.postcode || shippingInfo.postcode || '',
-        address: recipientData.address || shippingInfo.recipientAddress || shippingInfo.address || '',
+        recipientName: recipientData?.name || shippingInfo?.recipientName || buyerData?.name || '收件人',
+        recipientPhone: recipientData?.phone || shippingInfo?.recipientPhone || buyerData?.phone || '',
+        postcode: recipientData?.postcode || shippingInfo?.postcode || '',
+        address: recipientData?.address || shippingInfo?.recipientAddress || shippingInfo?.address || '',
 
-        // 購物車商品資料
-        cartItems: cartItems.map(item => {
-          if (!item || typeof item !== 'object') {
-            console.warn("Invalid item:", item);
-            return null;
-          }
-
-          return {
-            product_id: item.id || item.product_id,
-            quantity: item.quantity || 1,
-            price: item.price || 0,
-            size: item.size || null,
-            color: item.color || null,
-            material: item.material || null,
-            name: item.name || '商品'
-          };
-        }).filter(item => item !== null)
+        // 購物車商品
+        cartItems: cartItems.map(item => ({
+          product_id: item.id || item.product_id,
+          quantity: item.quantity || 1,
+          price: item.price || 0,
+          size: item.size || null,
+          color: item.color || null,
+          material: item.material || null,
+          name: item.name || '商品'
+        })).filter(item => item !== null)
       };
+
+      console.log("=== 最終付款請求 ===");
+      console.log("完整付款請求:", paymentRequest);
+      console.log("=== 調試結束 ===");
+
+      // 檢查關鍵問題：折扣金額是否正確
+      if (discountAmount === 0 && selectedCoupon) {
+        console.error("⚠️ 警告：有優惠券但折扣金額為 0！");
+        console.log("請檢查 Total 組件的 calculatedDiscount 函數是否正確執行");
+      }
 
       console.log("準備提交付款表單:", paymentRequest);
 
@@ -263,19 +336,20 @@ export default function CartEcpayCheck() {
       form.action = 'http://localhost:3005/api/cart/ecpay/create';
       form.style.display = 'none';
 
-      // 添加所有付款參數
+      // 添加所有付款參數（包含優惠券資訊）
       Object.keys(paymentRequest).forEach(key => {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = key;
 
-        if (key === "cartItems") {
+        if (key === "cartItems" || key === "coupon") {
           input.value = JSON.stringify(paymentRequest[key]);
         } else {
           input.value = paymentRequest[key] || '';
         }
         form.appendChild(input);
       });
+
 
       console.log("Form created successfully, submitting...");
 
