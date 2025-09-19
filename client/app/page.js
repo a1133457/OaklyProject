@@ -128,42 +128,42 @@ export default function IndexPage() {
             <div className="row justify-content-center">
               <div className={`${styles.cateIcons}`}>
                 <Link
-                  href="/products"
+                  href="/products?category=客廳"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.livingroom}`} />
                   <h6>客 廳</h6>
                 </Link>
                 <a
-                  href="/products"
+                  href="/products?category=廚房"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.kitchen}`} />
                   <h6>餐廚空間</h6>
                 </a>
                 <a
-                  href="/products"
+                  href="/products?category=臥室"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.bedroom}`} />
                   <h6>臥 室</h6>
                 </a>
                 <a
-                  href="/products"
+                  href="/products?category=兒童房"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.kidroom}`} />
                   <h6>兒童房</h6>
                 </a>
                 <a
-                  href="/products"
+                  href="products?category=辦公空間"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.office}`} />
                   <h6>辦公空間</h6>
                 </a>
                 <a
-                  href="/products"
+                  href="/products?category=收納用品"
                   className={`${styles.cate} d-flex justify-content-center align-items-center flex-column`}
                 >
                   <div className={`${styles.cateIcon} ${styles.storage}`} />
