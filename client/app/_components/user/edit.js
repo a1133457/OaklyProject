@@ -137,7 +137,7 @@ export default function UserEditForm() {
         if (Object.keys(next).length) return
 
         if (!user?.id) {
-            alert('找不到使用者 ID，請重新登入後再試')
+            toast.error('找不到使用者 ID，請重新登入後再試')
             return
         }
 
@@ -155,24 +155,24 @@ export default function UserEditForm() {
         try {
             // 2-1 一般資料
             const base = await updateUserEdit(user.id, payload);
-            messages.push(`一般資料：${base.success ? '✔ 成功' : `✘ 失敗（${base.message || '未知原因'}）`}`);
+            // messages.push(`一般資料：${base.success ? '✔ 成功' : `✘ 失敗（${base.message || '未知原因'}）`}`);
 
             // 2-2 密碼（有填才送）
             if (password) {
                 const pw = await updateUserPassword(user.id, password);
-                messages.push(`密碼：${pw.success ? '✔ 成功' : `✘ 失敗（${pw.message || '未知原因'}）`}`);
+                // messages.push(`密碼：${pw.success ? '✔ 成功' : `✘ 失敗（${pw.message || '未知原因'}）`}`);
                 if (pw.success) { setPassword(''); setPassword2(''); }
             }
 
             // 2-3 頭像（有選檔才送）
             if (avatar) {
                 const av = await updateUserAvatar(user.id, avatar);
-                messages.push(`頭像：${av.success ? '✔ 成功' : `✘ 失敗（${av.message || '未知原因'}）`}`);
+                // messages.push(`頭像：${av.success ? '✔ 成功' : `✘ 失敗（${av.message || '未知原因'}）`}`);
                 if (av.success) { setAvatar(null); } // 清掉暫存檔
             }
-            alert(messages.join('\n'));
+            
         } catch (err) {
-            alert('伺服器錯誤，請稍後再試');
+            toast.error('伺服器錯誤，請稍後再試');
         } finally {
             setSaving(false);
         }

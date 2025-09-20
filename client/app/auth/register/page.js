@@ -13,7 +13,7 @@ import GoogleLoginButton from '@/app/_components/user/GoogleLoginButton'
 
 export default function RegisterPage() {
     const router = useRouter()
-    const { register } = useAuth()  // ✅ 從 useAuth hook 取得 register 函數
+    const { register, loginWithGoogle } = useAuth()  // ✅ 從 useAuth hook 取得 register 函數
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -21,9 +21,10 @@ export default function RegisterPage() {
     const [password2, setpassword2] = useState('')
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
-    
 
-    const onSubmit =  async (e) => {
+    // ✅ debug 用
+    console.log("目前表單狀態：", { name, email, password, password2 });
+    const onSubmit = async (e) => {
         e.preventDefault()
         // 簡單前端驗證（和 use-auth 裡保持一致）
         if (!name || !email || !password || !password2) {
@@ -35,15 +36,16 @@ export default function RegisterPage() {
             return
         }
         setError(null)
-        console.log({ name, email, password })
         setLoading(true)
-        const result = await register(name, email, password)
-        setLoading(false)
+        // ✅ 把 password2 一起傳進去
+        const result = await register(name, email.trim(), password, password2)
 
+        setLoading(false)
         if (result.success) {
-            alert(result.message || '註冊成功，請登入')
+            // ✅ 不用 alert，成功提示交給 use-auth.js 的 toast.success
             router.push('/auth/login')
         } else {
+            // ✅ 失敗提示也交給 use-auth.js 的 toast.error，這裡保留字串供表單顯示
             setError(result.message || '註冊失敗，請稍後再試')
         }
     }
@@ -57,24 +59,28 @@ export default function RegisterPage() {
 
                     {error && <div className="text-danger mb-3">{error}</div>}
 
-                    <UserTextInput id="name" label="使用者名稱"
-                        value={name} onChange={(e) => setName(e.target.value)} required />
+                    <UserTextInput
+                        id="name" label="使用者名稱"
+                        value={name}
+                        onChange={(e) => { setName(e.target.value); setError(null) }}
+                        required 
+                    />
 
                     <UserTextInput id="email" label="電子郵件" type="email"
-                        value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email"/>
+                        value={email} onChange={(e) => { setEmail(e.target.value); setError(null) }} required autoComplete="email" />
 
                     <UserTextInput id="password" label="密碼" type="password"
-                        value={password} onChange={(e) => setpassword(e.target.value)} required autoComplete="new-password" />
+                        value={password}  onChange={(e) => { setpassword(e.target.value); setError(null) }} required autoComplete="new-password" />
 
                     <UserTextInput id="password2" label="確認密碼" type="password"
-                        value={password2} onChange={(e) => setpassword2(e.target.value)}
-                        error={error} required autoComplete="new-password"/>
+                        value={password2} onChange={(e) => { setpassword2(e.target.value); setError(null) }}
+                        error={error} required autoComplete="new-password" />
 
                     {/* <button className={styles.btnPrimary} type="submit">註冊</button> */}
                     <Button type="submit" variant="primary01" size="userlg" disabled={loading} >{loading ? '送出中…' : '註冊'}</Button>
 
                     <div className={styles.divider}><span>or</span></div>
-                    
+
                     <GoogleLoginButton
                         onSuccess={({ token, user }) => {
                             loginWithGoogle(token, user)   // ✅ 呼叫 use-auth.js 新增的函式

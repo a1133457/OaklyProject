@@ -19,19 +19,13 @@ export default function LoginPage() {
     const { loginWithGoogle } = useAuth()
 
     const onSubmit = async (e) => {
-        e.preventDefault()
-        const result = await login(email, password)
+        e.preventDefault();
+
+        const result = await login(email.trim(), password)
 
         if (result.success) {
-            alert("登入成功")
             router.push('/');   // ✅ 只在成功時才跳首頁
-            // router.refresh();
-            // window.location.reload();
-
-        } else {
-            alert(result.message || "登入失敗，請再試一次")
-            // ❌ 不跳轉
-        }
+        } 
     }
 
     return (

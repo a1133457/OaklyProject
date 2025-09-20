@@ -118,13 +118,77 @@
     color: #6a6a6a;
 } */
 
-.iconActions {
+/* .iconActions {
     flex: 0.2;
     display: flex;
     gap: 16px;
     font-size: 22px;
     padding: 80px 0px 70px 30px;
 
+} */
+
+
+
+
+/* .favoritesCard {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid #9db8af;
+} */
+
+/* 卡片：圖片 | 內容 | 數量 | icon */
+.favoritesCard {
+  display: grid;
+  grid-template-columns: 200px 1fr auto auto; /* 圖片 | 文字 | 右側一欄(數量+icon) */
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid #9db8af;
+}
+
+.favoritesCard img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* 右側這一欄：與文字同高置中、靠右排列 */
+.actionsRow {
+  grid-column: 3 / -1;  
+  justify-self: end;           /* 讓整列靠卡片最右側 */
+  display: inline-flex;
+  align-items: center;
+  gap: 80px;                   /* ← 數量鍵與 icon 的間距 */
+ padding: 0px 40px;
+}
+
+/* icon 自身樣式（保留即可）*/
+.iconActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 23px;
+  font-size: 22px;
+  padding: 0;                  /* 避免上下多餘 padding 影響對齊 */
+}
+.favoritesBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.productName {
+    font-size: 16px;
+    font-weight: 600;
+    color: #8b8b8b;
+    margin-bottom: 8px;
+}
+
+.productPrice {
+    font-weight: 600;
+    color: #6a6a6a;
+    margin-bottom: 16px;
 }
 
 .heartWrapper {
@@ -155,44 +219,6 @@
 .heartWrapper:hover .heartEmpty {
     opacity: 1;
     /* hover 時顯示空心 */
-}
-
-.cart {
-    cursor: pointer;
-}
-
-
-.favoritesCard {
-    display: flex;
-    gap: 20px;
-    padding: 20px 0;
-    border-bottom: 1px solid #9db8af;
-}
-
-.favoritesCard img {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-}
-
-.favoritesBody {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.productName {
-    font-size: 16px;
-    font-weight: 600;
-    color: #8b8b8b;
-    margin-bottom: 8px;
-}
-
-.productPrice {
-    font-weight: 600;
-    color: #6a6a6a;
-    margin-bottom: 16px;
 }
 
 .addCartBtn {
@@ -243,15 +269,15 @@
 .qtyControl {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     /* ← 控制數字和按鈕之間的距離，原本是 6，可以加大 */
-    margin-top: 4px;
+    margin-top: 0px;
 }
 
 /* 左右按鈕 */
 .qtyBtn {
-    width: 28px;
-    height: 28px;
+    width: 25px;
+    height: 25px;
     border: 1px solid #ddd;
     border-radius: 6px;
     background: #fff;
@@ -270,8 +296,8 @@
 
 /* 中間數字框 */
 .qtyBox {
-    width: 28px;
-    height: 28px;
+    width: 25px;
+    height: 25px;
     border: 1px solid #ddd;
     border-radius: 6px;
     display: inline-flex;
@@ -320,10 +346,58 @@
         /* 兩顆按鈕之間縮小一點 */
     }
 
-    .favoritesRow {
-        grid-template-columns: 100px 1fr;
-        /* 收藏清單：縮圖 + 內容 */
-        gap: 12px;
-    }
+    /* 收藏卡片：改成兩欄，左邊圖片佔一半，右邊文字佔一半 */
+   .favoritesCard {
+    grid-template-columns: 0.8fr 1.2fr; /* 左右對半 */
+    grid-auto-rows: auto;
+    gap: 12px;
+    padding: 15px 0;
+  }
 
+  .favoritesCard img {
+    grid-column: 1;
+    grid-row: 1 / span 2;             /* ← 橫跨兩列 */
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .favoritesBody {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .productPrice {
+    margin-bottom: 8px;
+  }
+
+  
+
+  /* 👉 這裡調整數量鍵 + icon 跟上面資訊的間距 */
+  .actionsRow {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 55px;
+    margin-top: 16px;  /* ← 你要的「跟上面多一點間距」 */
+    padding: 0px;
+     justify-self: start;
+  }
+
+  .iconActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  padding: 0;                  /* 避免上下多餘 padding 影響對齊 */
 }
+
+  .qtyControl {
+    gap: 6px;
+  }
+}
+
