@@ -21,6 +21,8 @@ const secretKey = process.env.JWT_SECRET_KEY || "myTestSecretKey123";
 const DEFAULT_AVATAR = "http://localhost:3000/img/default-avatar.png";
 
 // 把route(s)(路由規則) 整理在 routers(路由物件器) 裡
+
+
 // 取得收藏清單-------------------------------------------
 router.get("/favorites", checkToken, async (req, res) => {
       console.log('req.decoded:', req.decoded); // 先看看有什麼

@@ -11,12 +11,6 @@ import Swal from 'sweetalert2';
 import WebSocketCustomerService from "@/app/_components/agent/WebSocketCustomerService";
 
 
-
-
-
-
-
-
 const MainProduct = () => {
   const { user } = useAuth();
   const [selectedFilters, setSelectedFilters] = useState({
@@ -620,7 +614,7 @@ const MainProduct = () => {
 
         if (productMaterials.length > 0) {
           materialMatch = productMaterials.some(material =>
-            selectedFilters.materials.some(filterMaterial => 
+            selectedFilters.materials.some(filterMaterial =>
               material.includes(filterMaterial) || filterMaterial.includes(material)
             )
           );
@@ -1041,7 +1035,6 @@ const MainProduct = () => {
           selectedSize: selectedSize,
         });
       } else {
-        // 先關閉收藏彈窗
         setShowWishlistModal(false);
         document.body.classList.remove("no-scroll");
         // 您的錯誤處理代碼放在這裡
@@ -1093,7 +1086,7 @@ const MainProduct = () => {
       return false;
     }
   };
-  // 添加收藏相關函數
+
   const handleWishlistToggle = async (product, e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -1883,8 +1876,8 @@ const MainProduct = () => {
                       }}>
                       <div className="badges">
 
-                      {product.isNew && <span className="badge-new">新品</span>}
-                      {product.isHot && <span className="badge-hot">熱賣</span>}
+                        {product.isNew && <span className="badge-new">新品</span>}
+                        {product.isHot && <span className="badge-hot">熱賣</span>}
                       </div>
 
                       <div className="image">
@@ -2586,7 +2579,7 @@ const MainProduct = () => {
         onClose={closeWishlistSuccessModal}
       />
 
-<WebSocketCustomerService />
+      <WebSocketCustomerService />
 
 
     </div>

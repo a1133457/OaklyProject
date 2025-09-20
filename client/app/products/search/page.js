@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import "@/styles/products/search.css";
 import { useCart } from '@/hooks/use-cart';
+import Swal from 'sweetalert2';
+
 
 
 export default function SearchResultsPage() {
@@ -46,6 +48,40 @@ export default function SearchResultsPage() {
   // 手機版相關狀態
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showMobileSortDropdown, setShowMobileSortDropdown] = useState(false);
+    const [wishlistSuccessModal, setWishlistSuccessModal] = useState({
+      isVisible: false,
+      product: null,
+      quantity: 0,
+      selectedColor: null,
+      selectedSize: null
+    });
+      // 關閉收藏成功通知
+  const closeWishlistSuccessModal = () => {
+    setWishlistSuccessModal({
+      isVisible: false,
+      product: null,
+      quantity: 0,
+      selectedColor: null,
+      selectedSize: null
+    });
+  };
+  const checkAuthStatus = async () => {
+    const token = localStorage.getItem('reactLoginToken');
+    if (!token) return false;
+
+    try {
+      const response = await fetch('http://localhost:3005/api/users/status', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.status !== 401;
+    } catch {
+      return false;
+    }
+  };
 
   // 手機版功能函數
   useEffect(() => {
@@ -179,67 +215,106 @@ export default function SearchResultsPage() {
     document.body.classList.remove('no-scroll');
   };
 
-  const addToWishlist = async () => {
-    if (!selectedColor || !selectedSize) {
-      alert('請選擇顏色和尺寸');
-      return;
-    }
-
-    try {
-      const userId = localStorage.getItem('userId') || 1;
-      const wishlistData = {
-        userId: userId,
-        productId: currentWishlistProduct.id,
-        colorId: selectedColor.id,
-        sizeId: selectedSize.id,
-        quantity: wishlistQuantity
-      };
-
-      const response = await fetch('http://localhost:3005/api/wishlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(wishlistData)
-      });
-
-      const result = await response.json();
-      if (result.status === 'success') {
-        setIsWishlisted(prev => ({
-          ...prev,
-          [currentWishlistProduct.id]: true
-        }));
-        setShowWishlistModal(false);
-        document.body.classList.remove('no-scroll');
-
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #9FA79A;
-        color: white;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        font-size: 14px;
-      `;
-        notification.textContent = '已加入收藏';
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 3000);
-      }
-    } catch (err) {
-      console.error('加入收藏失敗:', err);
-      alert('加入收藏時發生錯誤');
-    }
-  };
+   const addToWishlist = async () => {
+     const isLoggedIn = await checkAuthStatus();
+     if (!isLoggedIn) {
+       Swal.fire({
+         title: "請先登入",
+         text: "您需要登入才能使用收藏功能",
+         icon: "info",
+         confirmButtonText: "確定",
+         confirmButtonColor: "#DBA783"
+       }).then((result) => {
+         if (result.isConfirmed) {
+           window.location.href = '/auth/login';
+         }
+       });
+       return;
+     }
+ 
+     if (!selectedColor || !selectedSize) {
+       Swal.fire({
+         title: "請選擇商品規格",
+         text: "請選擇顏色和尺寸後再加入收藏",
+         icon: "warning",
+         confirmButtonText: "我知道了",
+         confirmButtonColor: "#DBA783"
+ 
+       }); return;
+     }
+ 
+     try {
+       const wishlistData = {
+         productId: currentWishlistProduct.id,
+         colorId: selectedColor.id,
+         sizeId: selectedSize.id,
+         quantity: wishlistQuantity
+       };
+ 
+       const response = await fetch('http://localhost:3005/api/users/favorites', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+           'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
+         },
+         body: JSON.stringify(wishlistData)
+       });
+ 
+       const result = await response.json();
+ 
+       if (result.status === 'success') {
+         const key = `${currentWishlistProduct.id}_${selectedColor.id}_${selectedSize.id}`;
+         setIsWishlisted(prev => ({
+           ...prev,
+           [key]: true
+         }));
+         setShowWishlistModal(false);
+         document.body.classList.remove('no-scroll');
+ 
+         setWishlistSuccessModal({
+           isVisible: true,
+           product: currentWishlistProduct,
+           quantity: wishlistQuantity,
+           selectedColor: selectedColor,
+           selectedSize: selectedSize
+         });
+       } else {
+         setShowWishlistModal(false);
+         document.body.classList.remove('no-scroll');
+         if (result.message && result.message.includes("已在收藏清單中")) {
+           Swal.fire({
+             title: "已在收藏清單中",
+             text: "此商品的這個顏色和尺寸組合已經在您的收藏清單中了",
+             icon: "info",
+             confirmButtonText: "確定",
+             position: 'center',
+             confirmButtonColor: "#DBA783",
+ 
+           });
+         } else {
+           Swal.fire({
+             title: "加入收藏失敗",
+             text: "請稍後再試或聯絡客服",
+             icon: "error",
+             position: 'center',
+             confirmButtonText: "確定",
+             confirmButtonColor: "#DBA783"
+ 
+           });
+         }
+       }
+     } catch (err) {
+       console.error('加入收藏失敗:', err);
+       Swal.fire({
+         title: "發生錯誤",
+         text: "加入收藏時發生錯誤，請稍後再試",
+         icon: "error",
+         confirmButtonText: "確定",
+         confirmButtonColor: "#DBA783"
+ 
+       });
+     }
+   };
 
   const getImageUrl = (product) => {
     if (!product || !product.images || product.images.length === 0) {
@@ -340,18 +415,22 @@ export default function SearchResultsPage() {
   };
 
   const applyFilters = () => {
-    setSelectedFilters(tempFilters);
-    setFilterPriceRange(tempPriceRange);
+    setSelectedFilters(tempFilters);        // 將臨時篩選設定為實際篩選
+    setFilterPriceRange(tempPriceRange);    // 將臨時價格設定為實際價格
     setCurrentPage(1);
   };
-
+  // 清除篩選
   const clearFilters = () => {
-    const defaultFilters = { colors: [], materials: [], series: [] };
-    const defaultPriceRange = { min: 0, max: 50000 };
-    setTempFilters(defaultFilters);
-    setTempPriceRange(defaultPriceRange);
-    setSelectedFilters(defaultFilters);
-    setFilterPriceRange(defaultPriceRange);
+    const defaultFilters = {
+      colors: [],
+      materials: [],
+      series: []
+    };
+    const defaultPriceRange = { min: 0, max: 30000 };
+    setTempFilters(defaultFilters);        // 清除臨時篩選
+    setTempPriceRange(defaultPriceRange);  // 清除臨時價格
+    setSelectedFilters(defaultFilters);    // 清除實際篩選
+    setFilterPriceRange(defaultPriceRange); // 清除實際價格
     setSortBy("default");
     setCurrentPage(1);
   };
@@ -370,34 +449,179 @@ export default function SearchResultsPage() {
     setCurrentPage(1);
   };
 
+ 
+   // 收藏成功通知組件
+   const AddToWishlistSuccessModal = ({ product, quantity, selectedColor, selectedSize, isVisible, onClose }) => {
+     useEffect(() => {
+       if (isVisible) {
+         const timer = setTimeout(() => {
+           onClose();
+         }, 4000);
+ 
+         return () => clearTimeout(timer);
+       }
+     }, [isVisible, onClose]);
+ 
+     if (!isVisible || !product) return null;
+ 
+     const getProductImage = (product) => {
+       if (product.images && product.images.length > 0) {
+         const image = product.images[0];
+         if (typeof image === 'object' && image.url) {
+           return image.url.startsWith('http') ? image.url : `http://localhost:3005${image.url}`;
+         }
+         if (typeof image === 'string') {
+           return image.startsWith('http') ? image : `http://localhost:3005${image}`;
+         }
+       }
+       return "/img/lan/nana.webp";
+     };
+ 
+     return (
+       <div className="wishlist-success-overlay" onClick={onClose}>
+         <div className="wishlist-success-modal" onClick={(e) => e.stopPropagation()}>
+           <div className="wishlist-success-header">
+             <div className="success-icon">
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                 <circle cx="12" cy="12" r="12" fill="#DBA783" />
+                 <path d="M16.5 8.5l-8 8-4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+               </svg>
+             </div>
+             <h3>成功加入收藏清單！</h3>
+             <button className="close-btn" onClick={onClose}>
+               <svg width="24" height="24" viewBox="0 0 24 24">
+                 <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+               </svg>
+             </button>
+           </div>
+ 
+           <div className="wishlist-success-content">
+             <div className="product-image2">
+               <img
+                 src={getProductImage(product)}
+                 alt={product.name}
+                 onError={(e) => {
+                   e.target.src = "/img/lan/nana.webp";
+                 }}
+               />
+             </div>
+             <div className="product-details">
+               <h4 className="product-name-m">{product.name}</h4>
+               <p className="product-price-p">NT$ {product.price?.toLocaleString()}</p>
+               <div className="product-info-o">
+                 {selectedColor && (
+                   <span className="color-label">顏色: {selectedColor.color_name}</span>
+                 )}
+                 {selectedSize && (
+                   <span className="size-label">尺寸: {selectedSize.size_label}</span>
+                 )}
+                 <span className="quantity-info">數量: {quantity}</span>
+               </div>
+             </div>
+           </div>
+ 
+           <div className="wishlist-success-actions">
+             <button className="continue-shopping" onClick={onClose}>
+               繼續瀏覽
+             </button>
+             <button className="view-wishlist" onClick={() => {
+               window.location.href = '/user/favorites';
+             }}>
+               查看收藏清單
+             </button>
+           </div>
+         </div>
+       </div>
+     );
+   };
+ 
   const getFilteredProducts = () => {
+    // console.log("篩選條件:", selectedFilters);
+
     const filtered = products.filter(product => {
+      // 價格篩選
       const price = product.price || 0;
       const priceMatch = price >= filterPriceRange.min && price <= filterPriceRange.max;
 
-      const productColor = colorMapping[product.colors];
-      const colorMatch = !selectedFilters.colors?.length ||
-        selectedFilters.colors.includes(productColor);
+      // 顏色篩選 - 加強調試
+      let colorMatch = true;
+      if (selectedFilters.colors?.length > 0) {
+        // 特別檢查 EKTORP 商品
+        if (product.name.includes('EKTORP')) {
+          // console.log('=== EKTORP 商品詳細檢查 ===');
+          // console.log('product.colors 原始值:', product.colors);
+          // console.log('product.colors 類型:', typeof product.colors);
+          // console.log('完整商品資料:', product);
+        }
 
-      const productMaterial = materialMapping[product.materials_id];
-      const materialMatch = !selectedFilters.materials?.length ||
-        selectedFilters.materials.includes(productMaterial);
+        let productColors = [];
+        if (Array.isArray(product.colors)) {
+          productColors = product.colors.map(color => color.color_name);
+        } else if (typeof product.colors === 'number') {
+          productColors = [colorMapping[product.colors]];
+        }
+        colorMatch = productColors.some(color =>
+          selectedFilters.colors.includes(color)
+        );
+        // 特別檢查 EKTORP
+        if (product.name.includes('EKTORP')) {
+          // console.log('EKTORP 解析後的顏色:', productColors);
+          // console.log('篩選條件包含的顏色:', selectedFilters.colors);
+          // console.log('顏色匹配結果:', colorMatch);
+          // console.log('=== 檢查結束 ===');
+        }
+      }
 
-      const seriesMatch = !selectedFilters.series?.length ||
-        selectedFilters.series.includes(product.style);
+      // 材質篩選
+      let materialMatch = true;
+      if (selectedFilters.materials?.length > 0) {
+        let productMaterials = [];
 
-      return priceMatch && colorMatch && materialMatch && seriesMatch;
+        if (Array.isArray(product.materials) && product.materials.length > 0) {
+          productMaterials = product.materials.map(material => material.material_name);
+        }
+
+        // console.log('=== 材質篩選調試 ===');
+        // console.log('商品:', product.name);
+        // console.log('商品材質陣列:', product.materials);
+        // console.log('解析後材質名稱:', productMaterials);
+        // console.log('篩選條件:', selectedFilters.materials);
+
+        if (productMaterials.length > 0) {
+          materialMatch = productMaterials.some(material =>
+            selectedFilters.materials.some(filterMaterial =>
+              material.includes(filterMaterial) || filterMaterial.includes(material)
+            )
+          );
+        } else {
+          materialMatch = false;
+        }
+
+        // console.log('匹配結果:', materialMatch);
+      }
+
+      let seriesMatch = true;
+      if (selectedFilters.series?.length > 0) {
+        seriesMatch = product.style ? selectedFilters.series.includes(product.style) : false;
+      }
+
+      const finalMatch = priceMatch && colorMatch && materialMatch && seriesMatch;
+
+      return finalMatch;
     });
+
+    // console.log(`篩選結果: 從 ${products.length} 個商品中篩選出 ${filtered.length} 個`);
     return filtered;
   };
 
-  const getCurrentPageProducts = () => {
-    const filteredProducts = getFilteredProducts();
-    const sortedProducts = sortProducts(filteredProducts, sortBy);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return sortedProducts.slice(startIndex, endIndex);
-  };
+    // 計算當前頁面要顯示的商品
+    const getCurrentPageProducts = () => {
+      const filteredProducts = getFilteredProducts();
+      const sortedProducts = sortProducts(filteredProducts, sortBy);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return sortedProducts.slice(startIndex, endIndex);
+    };
 
   const filteredProducts = getFilteredProducts();
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -508,6 +732,36 @@ export default function SearchResultsPage() {
   }, [query]);
 
   const currentProducts = getCurrentPageProducts();
+  const handleCategoryClick = (e, categoryName) => {
+    e.preventDefault();
+
+    // 檢查是否為子分類
+    if (categoryMapping[categoryName]) {
+      // 這是子分類
+      const mainCategory = categoryMapping[categoryName];
+      setSelectedSubCategory(categoryName);
+      setSelectedCategory(categoryMapping[categoryName]);
+      setSelectedCategory(mainCategory);
+
+      // 更新標題和背景圖片為主分類
+      const categoryInfo = categoryData[mainCategory] || categoryData[''];
+      setCurrentTitle(categoryInfo.title);
+      setCurrentHeroImage(categoryInfo.image);
+
+    } else {
+      // 這是大分類
+      setSelectedCategory(categoryName);
+      setSelectedSubCategory('');
+
+      // 更新標題和背景圖片
+      const categoryInfo = categoryData[categoryName] || categoryData[''];
+      setCurrentTitle(categoryInfo.title);
+      setCurrentHeroImage(categoryInfo.image);
+    }
+
+    // 清除其他篩選條件
+    clearFilters();
+  };
 
   if (loading) {
     return (
@@ -1222,6 +1476,16 @@ export default function SearchResultsPage() {
 
       {/* Modal 背景遮罩 */}
       {isMobileFilterOpen && <div className="modal-backdrop fade show"></div>}
+          {/* 收藏成功通知 */}
+          <AddToWishlistSuccessModal
+        product={wishlistSuccessModal.product}
+        quantity={wishlistSuccessModal.quantity}
+        selectedColor={wishlistSuccessModal.selectedColor}
+        selectedSize={wishlistSuccessModal.selectedSize}
+        isVisible={wishlistSuccessModal.isVisible}
+        onClose={closeWishlistSuccessModal}
+      />
+
     </div>
   );
 };

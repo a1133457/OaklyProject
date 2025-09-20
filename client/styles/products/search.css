@@ -906,15 +906,16 @@ span {
   color: #DBA783;
   transform: scale(1.1);
 }
-
+  
+.swal2-popup {
+  z-index: 99999 !important;
+}
 /* 已收藏狀態 */
 .wishlist-heart-btn.active {
-  background: #DBA783;
   color: white;
 }
 
 .wishlist-heart-btn.active:hover {
-  background: #CD8A5B;
   transform: scale(1.1);
 }
 
