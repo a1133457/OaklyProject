@@ -2587,7 +2587,7 @@ const MainProduct = () => {
         onClose={closeWishlistSuccessModal}
       />
 
-{/* <WebSocketCustomerService /> */}
+<WebSocketCustomerService />
 
 
     </div>

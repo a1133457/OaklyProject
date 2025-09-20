@@ -352,9 +352,9 @@ CREATE TABLE orders (
     recipient_phone VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
     -- 付款資訊
-    payment_created VARCHAR(20),
     payment_status VARCHAR(20),
     payment_method VARCHAR(20),
+    coupon_id INT,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 

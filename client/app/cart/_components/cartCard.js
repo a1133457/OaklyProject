@@ -65,7 +65,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                       <h6>{item.name}</h6>
                       <p>顏色: {item.color || "無顏色"}</p>
                       <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
-                      <p>材質: {item.materials.id===item.materials_id ? item.materials.material_name: '無材質'}</p>
+                      <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
                     </div>
                   </div>
                   <div className="card-right">
@@ -103,6 +103,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
               </div>
             ))}
           </div>
+
           {/* 手機-------------------------- */}
           <div className="cart-line phone"></div>
           <div className="cart-card phone">
@@ -119,9 +120,9 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                     />
                     <div className="card-title">
                       <h6>{item.name}</h6>
-                      <p>顏色: {item.colors.color_name || "無顏色"}</p>
-                      <p>size: {item.sizes.size_label || "無尺寸"}</p>
-                      {/* <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p> */}
+                      <p>顏色: {item.color || "無顏色"}</p>
+                      <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                      <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
                       <div className="price-one">
                         <h6>${item.price}</h6>
                         <div className="quantity">
@@ -171,25 +172,26 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
               <div key={index} className="cart-main">
                 <div className="card-left">
                   <img
-                    src={`/img/${item.img}`}
+                    src={`http://localhost:3005/uploads/${item.img}`}
                     alt={item.name}
                     width={150}
                     height={150}
                   />
                   <div className="card-title">
                     <h5>{item.name}</h5>
-                    <p>顏色: {item.colors.color_name || "無顏色"}</p>
-                    <p>size: {item.sizes.size_label || "無尺寸"}</p>
-                    {/* <p>材質: {item.</p> */}
+                    <p>顏色: {item.color || "無顏色"}</p>
+                    <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                    <p>材質: {item.materials.find(m => m.id === item.materials_id)?.material_name || '無材質'}</p>
                   </div>
                 </div>
                 <div className="card-right">
-                  <h3>${item.price * item.quantity}</h3>
-                  <div className="quantity">數量: {item.quantity}</div>
+                  <h6>${item.price * item.quantity}</h6>
+                  <p>數量: {item.quantity}</p>
                 </div>
               </div>
             ))}
           </div>
+
           {/* 手機-------------------------- */}
           <div className="cart-line phone"></div>
           <div className="cart-card phone">

@@ -25,6 +25,7 @@ export default function CouponSelect({ coupons, onSelect }) {
       // 轉換優惠券數據格式以匹配 Total 組件的期待
       const normalizedCoupon = {
         id: coupon.id,
+        coupon_id: coupon.coupon_id,
         name: coupon.name,
         code: coupon.code || `COUPON${coupon.id}`,
         discountType: coupon.discount_type === 1 ? "fixed" : "percentage",
@@ -93,7 +94,7 @@ export default function CouponSelect({ coupons, onSelect }) {
       const saveCoupon = localStorage.getItem("selectedCoupon");
       if (saveCoupon) {
         try {
-          const couponData = JSON.parse("saveCoupon");
+          const couponData = JSON.parse(saveCoupon);
           setSelectedCoupon(couponData);
           if (onSelect) onSelect(couponData);
         } catch (error) {
@@ -146,9 +147,9 @@ export default function CouponSelect({ coupons, onSelect }) {
       <div className="coupon-select-container">
         <button className="choose-coupon" onClick={() => setIsOpen(true)}>
           {selectedCoupon
-            ? `已選擇: ${selectedCoupon.discount > 1
-              ? `${parseInt(selectedCoupon.discount)}元`
-              : `${selectedCoupon.discount * 100}折`
+            ? `已選擇: ${selectedCoupon.discountType === "fixed"
+              ? `${selectedCoupon.discountValue}元`
+              : `${selectedCoupon.discountValue}折`
             } 優惠券`
             : "選擇優惠券"}
         </button>

@@ -124,8 +124,7 @@ export function AuthProvider({ children }) {
 
     // 清掉前端狀態
     setUser(null);
-    localStorage.removeItem(appKey);
-    localStorage.removeItem(userKey);
+    localStorage.clear();
 
     router.push("/"); // 導回首頁
     } catch (error) {

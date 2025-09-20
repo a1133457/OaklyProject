@@ -143,15 +143,15 @@ export default function ContactPerson() {
             <div className="details pc">
               <div className="detail-one pc">
                 <p>訂購人</p>
-                <h6>{buyer.name || "未設定"}</h6>
+                <h6>{buyer.name || ""}</h6>
               </div>
               <div className="detail-one pc">
                 <p>手機號碼</p>
-                <h6>{buyer.phone || "未設定"}</h6>
+                <h6>{buyer.phone || ""}</h6>
               </div>
               <div className="detail-one pc">
                 <p>Email (訂單通知、電子發票寄送)</p>
-                <h6>{buyer.email || "未設定"}</h6>
+                <h6>{buyer.email || ""}</h6>
               </div>
             </div>
             <button

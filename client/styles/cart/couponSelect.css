@@ -23,7 +23,7 @@
   text-align: center;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  
+
 }
 
 .my-coupon-line {
@@ -34,6 +34,7 @@
 }
 
 .cart-coupon {
+  height: fit-content;
   border: none;
   outline: none;
   /* 去除焦點外框 */
@@ -292,7 +293,8 @@
   }
 
   .coupon-select-container {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
   }
 }
