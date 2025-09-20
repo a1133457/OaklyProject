@@ -39,7 +39,7 @@ export default function Payment() {
   }, [selectP, selectI, mobileCarrier]);
 
   const options = ["電子發票", "紙本發票"];
-  const payments = ["信用卡", "LinePay", "超商付款"];
+  const payments = ["信用卡", "超商付款"];
 
 
 

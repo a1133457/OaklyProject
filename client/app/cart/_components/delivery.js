@@ -15,7 +15,7 @@ export default function Delivery() {
     if (typeof window !== "undefined") {
       // 使用 cloudflare 臨時 tunnel，每次重啟都會變
       const CLOUDFLARE_URL =
-        "https://vault-tube-protection-investigated.trycloudflare.com";
+        "https://struct-serve-metallica-mil.trycloudflare.com";
 
       // 組成完整的 URL，包含 protocol + host + path
       const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;
@@ -88,7 +88,6 @@ export default function Delivery() {
               <h6>宅配</h6>
             </label>
           </div>
-          <p>運費 120 元，商品金額滿 1000 元免運費。</p>
         </div>
         <div className="d-list pc">
           <div className="form-check pc">
@@ -194,7 +193,6 @@ export default function Delivery() {
                     <h6>宅配</h6>
                   </label>
                 </div>
-                <p>運費 120 元，商品金額滿 1000 元免運費。</p>
               </div>
               <div className="d-list phone">
                 <div className="form-check phone">
@@ -213,11 +211,6 @@ export default function Delivery() {
                     <h6>超商自取</h6>
                   </label>
                 </div>
-                <p>
-                  超商取貨之包裹規格限制為重量不超過 5
-                  公斤（含包裝），三邊長度合計不得超過 105
-                  公分，且最長邊長度不得超過 45 公分。
-                </p>
                 {selectedDelivery === "超商自取" && (
                   <div
                     className="store-selection phone"

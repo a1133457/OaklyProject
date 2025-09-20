@@ -185,8 +185,8 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                   </div>
                 </div>
                 <div className="card-right">
-                  <h3>${item.price * item.quantity}</h3>
-                  <div className="quantity">數量: {item.quantity}</div>
+                  <h6>${item.price * item.quantity}</h6>
+                  <p>數量: {item.quantity}</p>
                 </div>
               </div>
             ))}

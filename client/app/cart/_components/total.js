@@ -376,7 +376,7 @@ export default function Total({ type }) {
           <div className="t-line"></div>
           <div className="total">
             <h6>總金額</h6>
-            <h6>${finalAmount}</h6>
+            <h5>${finalAmount}</h5>
           </div>
         </div>
       </>
