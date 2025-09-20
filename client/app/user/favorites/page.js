@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useCart } from "@/hooks/use-cart";
 import styles from '../user.module.css';
-import { FaShoppingCart } from "react-icons/fa";
+import { FaCartShopping } from "react-icons/fa6";
+import { FaHeart, FaRegHeart } from "react-icons/fa6";
 
 const getColorCode = (colorName) => {
     const map = {
@@ -25,11 +27,40 @@ export default function FavoritesPage() {
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pending, setPending] = useState({}); // key => 是否更新中
+    const { addToCart, openSuccessModal } = useCart();
     // 相對路徑 → 完整 URL（保險用）
     const toSrc = (p) => {
-        if (!p) return "/img/placeholder.png";
-        return p.startsWith("http") ? p : `http://localhost:3005/${p.replace(/^\/+/, "")}`;
+        if (!p) return "/img/placeholder.jpg";
+        if (p.startsWith("http")) return p;
+        const clean = p.replace(/^\/+/, "");
+        // 後端上傳檔：已含 uploads/
+        if (clean.startsWith("uploads/")) return `http://localhost:3005/${clean}`;
+        // 只有檔名（DB 只存 *.jpg）：補上 uploads/
+        if (!clean.includes("/")) return `http://localhost:3005/uploads/${clean}`;
+        // 其他相對路徑：先走前端 public
+        if (clean.startsWith("img/")) return `http://localhost:3000/${clean}`;
+        return `http://localhost:3000/${clean}`;
     };
+
+    const toCartProduct = (item) => ({
+        // 用複合 id 區分不同規格（避免被當成同一品項疊加）
+        id: `${item.product_id}-${item.color_id || 0}-${item.size_id || 0}`,
+        // 也保留原始 product_id，之後若要打 API 方便
+        product_id: item.product_id,
+        name: item.name,
+        price: Number(item.price) || 0,
+        image: item.product_img,       // 你的 use-cart 會存整包物件到 localStorage
+
+        color_id: item.color_id || null,
+        color_name: item.color_name || "無顏色",
+        size_id: item.size_id || null,
+        size_label: item.size_label || "無尺寸",
+        // ⬇ 為了相容 cartCard.js 的讀法
+        colors: { id: item.color_id ?? 0, color_name: item.color_name || "無顏色" },
+        sizes: item.size_label ? [{ id: item.size_id ?? 0, size_label: item.size_label }] : [],
+        materials_id: item.materials_id ?? 0,
+        materials: { id: item.materials_id ?? 0, material_name: item.material_name || "無類別" },
+    });
 
     useEffect(() => {
         (async () => {
@@ -37,7 +68,7 @@ export default function FavoritesPage() {
             if (result.success) setList(result.data || []);
             setLoading(false);
         })();
-    }, [getFavorites]);
+    }, [user?.id]);
 
     const onRemove = async (productId, colorId, sizeId) => {
         const result = await removeFavorite(productId, colorId, sizeId);
@@ -121,8 +152,7 @@ export default function FavoritesPage() {
             ))} */}
             {list.map(item => (
                 <div key={`${item.product_id}-${item.color_id}-${item.size_id}`} className={styles.favoritesCard}>
-                    <img src={item.product_img} alt={item.name} />
-
+                    <img src={toSrc(item.product_img)} alt={item.name} />
 
                     <div className={styles.favoritesBody}>
                         <div className={styles.productName}>{item.name}</div>
@@ -150,7 +180,7 @@ export default function FavoritesPage() {
                             )}
                         </div>
                     </div>
-
+                    {/* 數量 */}
                     <div className={styles.qtyControl}>
                         <button
                             type="button"
@@ -173,17 +203,26 @@ export default function FavoritesPage() {
 
 
 
-                    {/* 右側：收藏/購物車（原本就有） */}
+                    {/* 右側：收藏/購物車 */}
                     <div className={styles.iconActions} >
-                        <i
-                            className={`bi bi-heart-fill ${styles.heart}`}
+                        <div
+                            className={styles.heartWrapper}
                             onClick={() => onRemove(item.product_id, item.color_id, item.size_id)}
                             role="button"
                             title="取消收藏"
-                        />
-                        <i
-                            className={`bi bi-cart ${styles.cart}`}
-                            onClick={() => console.log("加入購物車")}
+                        >
+                            <FaHeart className={styles.heart} />
+                            <FaRegHeart className={styles.heartEmpty} />
+                        </div>
+                        <FaCartShopping
+                            className={styles.cart}
+                            onClick={() => {
+                                const product = toCartProduct(item);
+                                const qty = Number(item.quantity) || 1; // 用你收藏裡的數量
+                                addToCart(product, qty);
+                                // 有共用的成功 Modal，可一起叫出（會由 CartProvider 渲染）：
+                                openSuccessModal(product, qty, item.color_name, item.size_label);
+                            }}
                             role="button"
                             title="加入購物車"
                         />
@@ -194,27 +233,3 @@ export default function FavoritesPage() {
         </div>
     )
 }
-
-/** 小小的內聯樣式：你也可以搬到 user.module.css */
-// const btnStyle = {
-//     width: 28,
-//     height: 28,
-//     border: "1px solid #ddd",
-//     borderRadius: 6,
-//     background: "#fff",
-//     cursor: "pointer",
-//     lineHeight: 1,
-//     fontSize: 16,
-// };
-
-
-// const qtyBoxStyle = {
-//     width: 28,             // 固定寬度，不要太長
-//     height: 28,
-//     border: "1px solid #ddd",
-//     borderRadius: 6,
-//     display: "inline-flex",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     fontSize: 14,
-// };

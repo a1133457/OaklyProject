@@ -399,7 +399,7 @@ html {
 }
 
 /* 左側邊欄 */
-.sidebar {
+.sidebar2 {
   padding-right: 80px;
   height: fit-content;
   /* 讓高度適應內容 */
@@ -561,7 +561,7 @@ span {
 }
 
 .color-option.selected {
-  border: 2px solid #8b8b8b;
+  border: 2px solid #5a5a5a;
 }
 
 
@@ -1733,7 +1733,7 @@ span {
     gap: 20px;
   }
 
-  .sidebar {
+  .sidebar2 {
     order: 2;
   }
 
@@ -1981,7 +1981,7 @@ span {
     background-image: url(/img/lan/sofa.jpg);
   }
 
-  .sidebar {
+  .sidebar2 {
     display: none;
   }
 
@@ -2001,6 +2001,7 @@ span {
 
   .productcard {
     height: auto;
+    overflow: visible;
   }
 
   .image {
@@ -2012,6 +2013,7 @@ span {
   .image img {
     object-fit: cover;
     overflow: visible;
+    width: 100%;
 
   }
 
@@ -2651,7 +2653,12 @@ span {
 .swal2-confirm:focus {
   outline: none !important;
 }
-
+.swal2-success-ring,
+.swal2-success-line-tip,
+.swal2-success-line-long {
+  color: #ba5252 !important;
+  border: 3px solid #ba5252 !important;
+}
 /* 3. 取消按鈕樣式和 hover 效果 */
 .swal2-cancel {
   background-color: #6c757d !important;

@@ -109,29 +109,58 @@
     border-bottom: 1px solid #9db8af;
 } */
 
-.productName,
-.productPrice {
-    color: #494949;
+/* .productName {
+    color: #8b8b8b;
     font-weight: 600;
 }
+
+.productPrice {
+    color: #6a6a6a;
+} */
 
 .iconActions {
     flex: 0.2;
     display: flex;
     gap: 16px;
     font-size: 22px;
-    padding: 80px 0px 80px 20px;
+    padding: 80px 0px 70px 30px;
 
 }
 
-.heart {
-    color: #d4a373;
+.heartWrapper {
+    position: relative;
+    display: inline-flex;
     cursor: pointer;
+    font-size: 22px;
+    color: #d4a373;
+}
+
+.heart {
+    transition: opacity 0.2s ease-in-out;
+}
+
+.heartEmpty {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.heartWrapper:hover .heart {
+    opacity: 0;
+    /* hover 時隱藏實心 */
+}
+
+.heartWrapper:hover .heartEmpty {
+    opacity: 1;
+    /* hover 時顯示空心 */
 }
 
 .cart {
     cursor: pointer;
 }
+
 
 .favoritesCard {
     display: flex;
@@ -141,8 +170,8 @@
 }
 
 .favoritesCard img {
-    width: 180px;
-    height: 140px;
+    width: 200px;
+    height: 200px;
     object-fit: cover;
 }
 
@@ -154,14 +183,15 @@
 }
 
 .productName {
+    font-size: 16px;
     font-weight: 600;
-    color: #494949;
+    color: #8b8b8b;
     margin-bottom: 8px;
 }
 
 .productPrice {
     font-weight: 600;
-    color: #494949;
+    color: #6a6a6a;
     margin-bottom: 16px;
 }
 
@@ -190,14 +220,16 @@
 .optionPill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 6px;
+    padding: 4px 6px;
     border: 1px solid #dcdcdc;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #f7f8f8;
     /* 淺灰底，接近你截圖 */
     color: #6b6b6b;
     line-height: 1;
+    font-size: 12px;
+    /* 文字變小 */
 }
 
 .colorDotSm {

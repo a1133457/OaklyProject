@@ -25,12 +25,12 @@ export default function Delivery() {
       // 測試你的 Cloudflare Tunnel 是否正常
       const testUrl = `${CLOUDFLARE_URL}/api/ship/711/test`;
       fetch(testUrl)
-        .then(response => response.json())
-        .then(data => {
-          console.log('✅ Cloudflare Tunnel 連線成功:', data);
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("✅ Cloudflare Tunnel 連線成功:", data);
         })
-        .catch(error => {
-          console.error('❌ Cloudflare Tunnel 連線失敗:', error);
+        .catch((error) => {
+          console.error("❌ Cloudflare Tunnel 連線失敗:", error);
         });
     }
   }, []);
@@ -95,11 +95,11 @@ export default function Delivery() {
               className="form-check-input pc"
               type="radio"
               name="delivery"
-              id="radioDefault2"
+              id="radioDefault1"
               checked={selectedDelivery === "超商自取"}
               onChange={() => setSelectedDelivery("超商自取")}
             />
-            <label className="form-check-label pc" htmlFor="radioDefault2">
+            <label className="form-check-label pc" htmlFor="radioDefault1">
               <h6>超商自取</h6>
             </label>
           </div>

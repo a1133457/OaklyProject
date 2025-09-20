@@ -10,6 +10,13 @@ const Footer = () => {
   if (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) {
     return null;
   }
+  
+  const hideFooterPaths = ['/admin/customer-service'];
+
+  if (hideFooterPaths.includes(pathname)) {
+    return null; // 不渲染 Footer
+  }
+
 
   return (
     <footer className="footer">

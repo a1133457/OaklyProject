@@ -276,7 +276,7 @@ body {
 
 /* 評論中的圖片顯示 */
 .review-images {
-    margin: 15px 0;
+    margin-bottom: 16px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -403,12 +403,12 @@ body {
     line-height: 24px;
     letter-spacing: 1px;
     word-wrap: break-word;
+    gap:8px
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
 }
 
 .user-avatar {
@@ -425,7 +425,10 @@ body {
 
 .user-name {
     font-weight: 600;
-    margin-bottom: 4px;
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .review-time {
@@ -433,9 +436,6 @@ body {
     color: #719A8B;
 }
 
-.review-rating {
-    margin-bottom: 8px;
-}
 
 .fas.fa-star {
     color: #ffffff;
@@ -450,7 +450,6 @@ body {
 .review-text {
     font-size: 14px;
     line-height: 1.6;
-    margin-bottom: 8px;
 }
 
 .review-engagement {
@@ -568,7 +567,28 @@ body {
     border-color: #719A8B;
 
 }
+.review-actions {
+    display: flex;
+    gap: 10px;
+    justify-content:flex-end;
+  }
+  
+  .edit-btn {
+    background: #ededed;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #6a6a6a;
+    font-size: 12px;
+  }
+  
+  .edit-btn:hover {
+    background: #d8d8d8;
+  }
 
+
+  
 textarea {
     border-radius: 2px;
     margin-bottom: 14px;
@@ -632,7 +652,58 @@ textarea:focus {
 .footer {
     display: none;
 }
-
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+  
+  .delete-btn:hover {
+    background: #c82333;
+    border-color: #bd2130;
+  }
+  
+  .review-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .swal2-cancel.swal2-styled{
+    background-color: #6A6A6A;
+  }
+  .swal2-cancel:hover {
+    background-color: #5a6268 !important;
+    border-color: #5a6268 !important;
+  }
+  .swal2-warning{
+    color: #719A8B !important;
+    border: 3px solid #719A8B !important;
+  }
+  .swal2-confirm {
+    background-color: #DBA783 !important;
+    border: 1px solid #DBA783 !important;
+    border-radius: 8px !important;
+    padding: 12px 24px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  .swal2-confirm:hover {
+    background-color: #c9956e !important;
+    border-color: #c9956e !important;
+  }
+  .swal2-success-ring,
+  .swal2-success-line-tip,
+.swal2-success-line-long {
+    color: #ba5252 !important;
+    border: 3px solid #ba5252 !important;
+  }
 
 /* 手機版樣式 */
 @media (max-width: 430px) {

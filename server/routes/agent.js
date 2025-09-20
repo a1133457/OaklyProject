@@ -2,8 +2,47 @@
 import express from "express";
 import { Server } from "socket.io";
 import connection from "../connect.js";
+import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+// const secretKey = process.env.JWT_SECRET_KEY;
+//要切換
+// const secretKey = "myTestSecretKey123";
+const secretKey = process.env.JWT_SECRET_KEY || "myTestSecretKey123";
 
 const router = express.Router();
+
+
+const uploadDir = 'public/uploads/chat';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// 配置 multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB 限制
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('只允许上传图片文件'), false);
+    }
+  }
+});
 
 // 在線用戶管理 (全域變數，在整個應用中共享)
 let onlineUsers = new Map();
@@ -27,11 +66,12 @@ export const initializeChatWebSocket = (server) => {
       await connection.execute(`
         CREATE TABLE IF NOT EXISTS chat_rooms (
           id INT AUTO_INCREMENT PRIMARY KEY,
-          customer_id INT NOT NULL,
+          customer_id VARCHAR(100) NOT NULL,  
           customer_name VARCHAR(100),
           agent_id INT,
           agent_name VARCHAR(100),
           status ENUM('waiting', 'active', 'closed') DEFAULT 'waiting',
+          is_authenticated BOOLEAN DEFAULT FALSE,  
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           INDEX idx_customer (customer_id),
@@ -44,7 +84,7 @@ export const initializeChatWebSocket = (server) => {
         CREATE TABLE IF NOT EXISTS chat_messages (
           id INT AUTO_INCREMENT PRIMARY KEY,
           room_id INT NOT NULL,
-          sender_id INT NOT NULL,
+          sender_id VARCHAR(100) NOT NULL,
           sender_name VARCHAR(100),
           sender_type ENUM('customer', 'agent') NOT NULL,
           message TEXT NOT NULL,
@@ -56,55 +96,115 @@ export const initializeChatWebSocket = (server) => {
         )
       `);
 
-      console.log('聊天資料庫表初始化完成');
     } catch (error) {
       console.error('聊天資料庫初始化失敗:', error);
     }
   };
 
+
+  // 改進 JWT 中間件
+  io.use((socket, next) => {
+    try {
+      const token = socket.handshake.auth.token || socket.handshake.query.token;
+
+
+      if (token) {
+        const decoded = jwt.verify(token, secretKey);
+
+        // 修正：確保用戶資料結構正確
+        socket.userData = {
+          id: decoded.id || decoded.userId || decoded.sub,
+          name: decoded.name || decoded.userName || decoded.username,
+          email: decoded.email || decoded.userEmail,
+          // 保留原始 decoded 資料以備用
+          originalPayload: decoded
+        };
+        socket.isAuthenticated = true;
+
+      } else {
+        socket.userData = null;
+        socket.isAuthenticated = false;
+      }
+
+      next();
+    } catch (err) {
+      socket.userData = null;
+      socket.isAuthenticated = false;
+      next(); // 仍然允許連接，但標記為未認證
+    }
+  });
+
+
   // WebSocket 事件處理
   io.on('connection', (socket) => {
-    console.log(`聊天用戶連接: ${socket.id}`);
+
+
 
     // 客戶加入聊天系統
     socket.on('join_as_customer', async (userData) => {
       try {
-        const { userId, userName } = userData;
+
+        let userId, userName, isAuthenticated;
+
+
+
+        if (socket.isAuthenticated && socket.userData) {
+          // 認證用戶
+          userId = socket.userData.id;
+          userName = socket.userData.name;
+          isAuthenticated = true;
+        } else {
+          // 訪客用戶 - 這裡是關鍵修改
+          userId = `guest_${socket.id}`;
+          userName = userData?.userName || '訪客';
+          isAuthenticated = false;
+        }
+
 
         onlineUsers.set(userId, {
           socketId: socket.id,
-          userName: userName || `客戶${userId}`
+          userName: userName,
+          isAuthenticated: isAuthenticated
         });
 
+
         socket.userId = userId;
-        socket.userName = userName || `客戶${userId}`;
+        socket.userName = userName
         socket.userType = 'customer';
 
-        console.log(`客戶加入: ${socket.userName} (ID: ${userId})`);
 
-        // 檢查是否有未完成的聊天室
-        const [existingRooms] = await connection.execute(
-          'SELECT * FROM chat_rooms WHERE customer_id = ? AND status IN ("waiting", "active") ORDER BY created_at DESC LIMIT 1',
-          [userId]
-        );
-
-        if (existingRooms.length > 0) {
-          const room = existingRooms[0];
-          socket.join(`room_${room.id}`);
-
-          // 載入歷史訊息
-          const [messages] = await connection.execute(
-            'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at ASC',
-            [room.id]
+        // 只有認證用戶才查詢歷史聊天
+        if (isAuthenticated) {
+          const [existingRooms] = await connection.execute(
+            'SELECT * FROM chat_rooms WHERE customer_id = ? AND status IN ("waiting", "active") ORDER BY created_at DESC LIMIT 1',
+            [userId]
           );
 
-          socket.emit('room_joined', {
-            roomId: room.id,
-            status: room.status,
-            agentName: room.agent_name,
-            messages: messages
-          });
+          if (existingRooms.length > 0) {
+            const room = existingRooms[0];
+            socket.join(`room_${room.id}`);
+
+            const [messages] = await connection.execute(
+              'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at ASC',
+              [room.id]
+            );
+
+            socket.emit('room_joined', {
+              roomId: room.id,
+              status: room.status,
+              agentName: room.agent_name,
+              messages: messages
+            });
+            return; // 重要：找到現有房間就返回，不要繼續執行
+          }
         }
+        // 如果沒有現有房間，發送連接成功訊息
+        socket.emit('connection_success', {
+          userId: userId,
+          userName: userName,
+          isAuthenticated: isAuthenticated
+        });
+
 
       } catch (error) {
         console.error('客戶加入失敗:', error);
@@ -136,11 +236,10 @@ export const initializeChatWebSocket = (server) => {
         socket.emit('agent_connected', {
           success: true,
           agentId: agentId,
-          agentName:agentName
+          agentName: agentName
         });
-        
 
-        console.log(`客服上線: ${socket.agentName} (ID: ${agentId})`);
+
 
         // 取得等待中的客戶列表
         const [waitingRooms] = await connection.execute(
@@ -158,13 +257,38 @@ export const initializeChatWebSocket = (server) => {
     // 客戶請求客服
     socket.on('request_customer_service', async (data) => {
       try {
-        const { userId, userName, message } = data;
-        const customerName = userName || `客戶${userId}`;
+        const { message } = data;
+
+        let userId, userName, isAuthenticated, userEmail;
+
+        // 修正：使用更靈活的方式取得用戶資料
+        if (socket.isAuthenticated && socket.userData) {
+          // 認證用戶 - 檢查不同可能的 JWT payload 結構
+          userId = socket.userData.id || socket.userData.userId || socket.userData.sub;
+          userName = socket.userData.name || socket.userData.userName || socket.userData.username;
+          userEmail = socket.userData.email || socket.userData.userEmail;
+          isAuthenticated = true;
+
+        } else if (data && data.isAuthenticated && data.userId) {
+          // 後備方案：使用前端傳來的資料（但要驗證合理性）
+          userId = data.userId;
+          userName = data.userName || '會員';
+          userEmail = data.userEmail;
+          isAuthenticated = true;
+
+        } else {
+          // 訪客用戶
+          userId = `guest_${socket.id}`;
+          userName = data?.userName || '訪客'; // 修正：使用前端傳來的名稱
+          userEmail = null;
+          isAuthenticated = false;
+
+        }
 
         // 建立新聊天室
         const [result] = await connection.execute(
-          'INSERT INTO chat_rooms (customer_id, customer_name, status) VALUES (?, ?, "waiting")',
-          [userId, customerName]
+          'INSERT INTO chat_rooms (customer_id, customer_name, status, is_authenticated) VALUES (?, ?, "waiting", ?)',
+          [userId, userName, isAuthenticated]
         );
 
         const roomId = result.insertId;
@@ -174,11 +298,10 @@ export const initializeChatWebSocket = (server) => {
         if (message && message.trim()) {
           await connection.execute(
             'INSERT INTO chat_messages (room_id, sender_id, sender_name, sender_type, message) VALUES (?, ?, ?, "customer", ?)',
-            [roomId, userId, customerName, message]
+            [roomId, userId, userName, message]
           );
         }
 
-        console.log(`新聊天室建立: ${roomId} - 客戶: ${customerName}`);
 
         // 通知客戶聊天室已建立
         socket.emit('room_created', {
@@ -187,15 +310,20 @@ export const initializeChatWebSocket = (server) => {
           message: '正在為您尋找客服...'
         });
 
-        // 通知所有在線客服
+        // 通知所有在線客服 - 修正：使用正確的用戶資料
         const roomData = {
           id: roomId,
           customer_id: userId,
-          customer_name: customerName,
+          customer_name: userName,
+          customer_email: userEmail,
           status: 'waiting',
+          is_authenticated: isAuthenticated, // 加上這個欄位
           created_at: new Date().toISOString(),
-          initial_message: message
+          initial_message: isAuthenticated ?
+            `會員 ${userName} 正在等待服務` :
+            (message || '客戶正在等待服務...')
         };
+
 
         customerServiceAgents.forEach((agent) => {
           io.to(agent.socketId).emit('new_customer_waiting', roomData);
@@ -208,210 +336,202 @@ export const initializeChatWebSocket = (server) => {
     });
 
     // 客服接受聊天
-socket.on('accept_chat', async (data) => {
-  try {
-    const { roomId, agentId } = data;
+    socket.on('accept_chat', async (data) => {
+      try {
+        const { roomId, agentId } = data;
 
-    const currentAgentId = socket.agentId;
-    if (!currentAgentId) {
-      socket.emit('error', { message: '客服資訊遺失，請重新整理頁面' });
-      return;
-    }
+        const currentAgentId = socket.agentId;
+        if (!currentAgentId) {
+          socket.emit('error', { message: '客服資訊遺失，請重新整理頁面' });
+          return;
+        }
 
-    let agentInfo = customerServiceAgents.get(currentAgentId);
-    if (!agentInfo) {
-      agentInfo = {
-        socketId: socket.id,
-        agentName: socket.agentName || `客服${currentAgentId}`,
-        status: 'available'
-      };
-      customerServiceAgents.set(currentAgentId, agentInfo);
-    }
+        let agentInfo = customerServiceAgents.get(currentAgentId);
+        if (!agentInfo) {
+          agentInfo = {
+            socketId: socket.id,
+            agentName: socket.agentName || `客服${currentAgentId}`,
+            status: 'available'
+          };
+          customerServiceAgents.set(currentAgentId, agentInfo);
+        }
 
-    // 獲取完整的聊天室資訊
-    const [roomCheck] = await connection.execute(
-      'SELECT * FROM chat_rooms WHERE id = ?', // 改為 SELECT *
-      [roomId]
-    );
+        // 獲取完整的聊天室資訊
+        const [roomCheck] = await connection.execute(
+          'SELECT * FROM chat_rooms WHERE id = ?', // 改為 SELECT *
+          [roomId]
+        );
 
-    if (roomCheck.length === 0) {
-      socket.emit('error', { message: '聊天室不存在' });
-      return;
-    }
+        if (roomCheck.length === 0) {
+          socket.emit('error', { message: '聊天室不存在' });
+          return;
+        }
 
-    if (roomCheck[0].status !== 'waiting') {
-      socket.emit('error', { message: '聊天室已被其他客服接受' });
-      return;
-    }
+        if (roomCheck[0].status !== 'waiting') {
+          socket.emit('error', { message: '聊天室已被其他客服接受' });
+          return;
+        }
 
-    // 更新聊天室狀態
-    await connection.execute(
-      'UPDATE chat_rooms SET agent_id = ?, agent_name = ?, status = "active" WHERE id = ?',
-      [currentAgentId, agentInfo.agentName, roomId] // 使用 currentAgentId
-    );
+        // 更新聊天室狀態
+        await connection.execute(
+          'UPDATE chat_rooms SET agent_id = ?, agent_name = ?, status = "active" WHERE id = ?',
+          [currentAgentId, agentInfo.agentName, roomId] // 使用 currentAgentId
+        );
 
-    // 更新客服狀態
-    agentInfo.status = 'busy';
-    customerServiceAgents.set(currentAgentId, agentInfo);
+        // 更新客服狀態
+        agentInfo.status = 'busy';
+        customerServiceAgents.set(currentAgentId, agentInfo);
 
-    socket.join(`room_${roomId}`);
-    console.log(`客服 ${socket.id} 加入聊天室 room_${roomId}`);
+        socket.join(`room_${roomId}`);
 
-    // 載入歷史訊息
-    const [messages] = await connection.execute(
-      'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at ASC',
-      [roomId]
-    );
+        // 載入歷史訊息
+        const [messages] = await connection.execute(
+          'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at ASC',
+          [roomId]
+        );
 
-    console.log(`客服 ${agentInfo.agentName} 接受聊天室 ${roomId}`);
 
-    // 通知聊天室內所有人（包含客戶名稱）
-    io.to(`room_${roomId}`).emit('chat_accepted', {
-      roomId,
-      agentId: currentAgentId,
-      agentName: agentInfo.agentName,
-      customerName: roomCheck[0].customer_name, // 加入客戶名稱
-      messages
+        // 通知聊天室內所有人（包含客戶名稱）
+        io.to(`room_${roomId}`).emit('chat_accepted', {
+          roomId,
+          agentId: currentAgentId,
+          agentName: agentInfo.agentName,
+          customerName: roomCheck[0].customer_name, // 加入客戶名稱
+          messages
+        });
+
+        // 通知其他客服此聊天已被接受
+        customerServiceAgents.forEach((agent, id) => {
+          if (id !== currentAgentId) {
+            io.to(agent.socketId).emit('chat_taken', { roomId });
+          }
+        });
+
+      } catch (error) {
+        console.error('接受聊天失敗:', error);
+        socket.emit('error', { message: '接受聊天失敗' });
+      }
     });
+    // 發送訊息
+    socket.on('send_message', async (data) => {
+      try {
+        const { roomId, message, messageType = 'text' } = data;
+        const senderId = socket.userId || socket.agentId;
+        const senderName = socket.userName || socket.agentName;
+        const senderType = socket.userType;
 
-    // 通知其他客服此聊天已被接受
-    customerServiceAgents.forEach((agent, id) => {
-      if (id !== currentAgentId) {
-        io.to(agent.socketId).emit('chat_taken', { roomId });
+        if (!message || !message.trim()) {
+          return;
+        }
+
+        // 確保客服也在聊天室中
+        if (senderType === 'agent') {
+          socket.join(`room_${roomId}`);
+        }
+
+        // 儲存訊息到資料庫
+        const [result] = await connection.execute(
+          'INSERT INTO chat_messages (room_id, sender_id, sender_name, sender_type, message, message_type) VALUES (?, ?, ?, ?, ?, ?)',
+          [roomId, senderId, senderName, senderType, message.trim(), messageType]
+        );
+
+        const messageData = {
+          id: result.insertId,
+          room_id: roomId,
+          sender_id: senderId,
+          sender_name: senderName,
+          sender_type: senderType,
+          message: message.trim(),
+          message_type: messageType,
+          created_at: new Date().toISOString()
+        };
+
+
+        // 廣播訊息給聊天室內所有用戶
+        io.to(`room_${roomId}`).emit('new_message', messageData);
+
+
+      } catch (error) {
+        console.error('發送訊息失敗:', error);
+        socket.emit('error', { message: '訊息發送失敗' });
       }
     });
 
-  } catch (error) {
-    console.error('接受聊天失敗:', error);
-    socket.emit('error', { message: '接受聊天失敗' });
-  }
-});
-    // 發送訊息
-socket.on('send_message', async (data) => {
-  try {
-    const { roomId, message, messageType = 'text' } = data;
-    const senderId = socket.userId || socket.agentId;
-    const senderName = socket.userName || socket.agentName;
-    const senderType = socket.userType;
 
-    if (!message || !message.trim()) {
-      return;
-    }
+    // 取得客服的進行中對話
+    socket.on('get_active_chats', async (data) => {
+      try {
+        const { agentId } = data;
 
-    // 確保客服也在聊天室中
-    if (senderType === 'agent') {
-      socket.join(`room_${roomId}`);
-    }
+        // 查詢該客服的進行中對話
+        const [activeRooms] = await connection.execute(
+          'SELECT * FROM chat_rooms WHERE agent_id = ? AND status = "active"',
+          [agentId]
+        );
 
-    // 儲存訊息到資料庫
-    const [result] = await connection.execute(
-      'INSERT INTO chat_messages (room_id, sender_id, sender_name, sender_type, message, message_type) VALUES (?, ?, ?, ?, ?, ?)',
-      [roomId, senderId, senderName, senderType, message.trim(), messageType]
-    );
+        const chats = activeRooms.map(room => ({
+          roomId: room.id,
+          agentId: room.agent_id,
+          customerName: room.customer_name,
+          status: room.status
+        }));
 
-    const messageData = {
-      id: result.insertId,
-      room_id: roomId,
-      sender_id: senderId,
-      sender_name: senderName,
-      sender_type: senderType,
-      message: message.trim(),
-      message_type: messageType,
-      created_at: new Date().toISOString()
-    };
+        socket.emit('active_chats_loaded', chats);
 
-    console.log('廣播訊息給聊天室:', `room_${roomId}`, messageData);
+        // 讓客服重新加入這些聊天室
+        activeRooms.forEach(room => {
+          socket.join(`room_${room.id}`);
+        });
 
-    // 廣播訊息給聊天室內所有用戶
-    io.to(`room_${roomId}`).emit('new_message', messageData);
+      } catch (error) {
+      }
+    });// 確保加入聊天室並發送訊息
+    socket.on('join_room_and_send', async (data) => {
+      try {
+        const { roomId, message, messageType = 'text' } = data;
 
-    console.log(`訊息發送: ${senderName} -> 聊天室 ${roomId}`);
+        // 確保客服在聊天室中
+        socket.join(`room_${roomId}`);
 
-  } catch (error) {
-    console.error('發送訊息失敗:', error);
-    socket.emit('error', { message: '訊息發送失敗' });
-  }
-});
+        // 驗證客服確實在聊天室中
+        const socketsInRoom = await io.in(`room_${roomId}`).fetchSockets();
+
+        // 發送訊息
+        const senderId = socket.agentId;
+        const senderName = socket.agentName;
+        const senderType = 'agent';
+
+        if (!message || !message.trim()) {
+          return;
+        }
+
+        // 儲存到資料庫
+        const [result] = await connection.execute(
+          'INSERT INTO chat_messages (room_id, sender_id, sender_name, sender_type, message, message_type) VALUES (?, ?, ?, ?, ?, ?)',
+          [roomId, senderId, senderName, senderType, message.trim(), messageType]
+        );
+
+        const messageData = {
+          id: result.insertId,
+          room_id: roomId,
+          sender_id: senderId,
+          sender_name: senderName,
+          sender_type: senderType,
+          message: message.trim(),
+          message_type: messageType,
+          created_at: new Date().toISOString()
+        };
 
 
-// 取得客服的進行中對話
-socket.on('get_active_chats', async (data) => {
-  try {
-    const { agentId } = data;
-    
-    // 查詢該客服的進行中對話
-    const [activeRooms] = await connection.execute(
-      'SELECT * FROM chat_rooms WHERE agent_id = ? AND status = "active"',
-      [agentId]
-    );
-    
-    const chats = activeRooms.map(room => ({
-      roomId: room.id,
-      agentId: room.agent_id,
-      customerName: room.customer_name,
-      status: room.status
-    }));
-    
-    socket.emit('active_chats_loaded', chats);
-    
-    // 讓客服重新加入這些聊天室
-    activeRooms.forEach(room => {
-      socket.join(`room_${room.id}`);
+        // 廣播給所有聊天室成員
+        io.to(`room_${roomId}`).emit('new_message', messageData);
+
+
+      } catch (error) {
+        console.error('加入聊天室並發送訊息失敗:', error);
+        socket.emit('error', { message: '訊息發送失敗' });
+      }
     });
-    
-  } catch (error) {
-    console.error('載入進行中對話失敗:', error);
-  }
-});// 確保加入聊天室並發送訊息
-socket.on('join_room_and_send', async (data) => {
-  try {
-    const { roomId, message, messageType = 'text' } = data;
-    
-    // 確保客服在聊天室中
-    socket.join(`room_${roomId}`);
-    
-    // 驗證客服確實在聊天室中
-    const socketsInRoom = await io.in(`room_${roomId}`).fetchSockets();
-    console.log(`客服加入聊天室 room_${roomId} 後，房間內用戶數: ${socketsInRoom.length}`);
-    
-    // 發送訊息
-    const senderId = socket.agentId;
-    const senderName = socket.agentName;
-    const senderType = 'agent';
-
-    if (!message || !message.trim()) {
-      return;
-    }
-
-    // 儲存到資料庫
-    const [result] = await connection.execute(
-      'INSERT INTO chat_messages (room_id, sender_id, sender_name, sender_type, message, message_type) VALUES (?, ?, ?, ?, ?, ?)',
-      [roomId, senderId, senderName, senderType, message.trim(), messageType]
-    );
-
-    const messageData = {
-      id: result.insertId,
-      room_id: roomId,
-      sender_id: senderId,
-      sender_name: senderName,
-      sender_type: senderType,
-      message: message.trim(),
-      message_type: messageType,
-      created_at: new Date().toISOString()
-    };
-
-    console.log('廣播訊息給聊天室:', `room_${roomId}`, messageData);
-
-    // 廣播給所有聊天室成員
-    io.to(`room_${roomId}`).emit('new_message', messageData);
-
-    console.log(`訊息發送完成: ${senderName} -> 聊天室 ${roomId}`);
-
-  } catch (error) {
-    console.error('加入聊天室並發送訊息失敗:', error);
-    socket.emit('error', { message: '訊息發送失敗' });
-  }
-});
     // 結束聊天
     socket.on('end_chat', async (data) => {
       try {
@@ -438,7 +558,6 @@ socket.on('join_room_and_send', async (data) => {
           }
         }
 
-        console.log(`聊天結束: 聊天室 ${roomId}`);
 
         // 通知聊天室內所有用戶
         io.to(`room_${roomId}`).emit('chat_ended', { roomId });
@@ -456,16 +575,13 @@ socket.on('join_room_and_send', async (data) => {
     // 斷線處理
     socket.on('disconnect', async () => {
       try {
-        console.log(`用戶斷線: ${socket.id}`);
 
         if (socket.userType === 'customer' && socket.userId) {
           onlineUsers.delete(socket.userId);
-          console.log(`客戶離線: ${socket.userName}`);
 
         } else if (socket.userType === 'agent' && socket.agentId) {
-       
+
           customerServiceAgents.delete(socket.agentId);
-          console.log(`客服離線: ${socket.agentName}`);
 
           // 通知其他客服此客服已離線
           customerServiceAgents.forEach((agent) => {
@@ -642,5 +758,32 @@ router.get("/stats", async (req, res) => {
     });
   }
 });
+
+router.post('/upload-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上傳文件'
+      });
+    }
+
+    const imageUrl = `/uploads/chat/${req.file.filename}`;
+    
+    res.json({
+      success: true,
+      imageUrl: `http://localhost:3005${imageUrl}`,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('圖片上傳失敗:', error);
+    res.status(500).json({
+      success: false,
+      message: '圖片上传失败'
+    });
+  }
+});
+
+
 
 export default router;

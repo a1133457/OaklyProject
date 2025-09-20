@@ -14,6 +14,11 @@ GROUP BY
     a.published_date,
     ac.name
 
+DESCRIBE chat_rooms;
+
+SET FOREIGN_KEY_CHECKS = 1;
+DROP TABLE IF EXISTS chat_messages;
+
 SELECT
     a.id,
     a.title,

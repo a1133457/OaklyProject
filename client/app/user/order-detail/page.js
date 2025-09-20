@@ -1,19 +1,18 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';  // ← 新增這行
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';  
 import Link from 'next/link';
 import '@/styles/order/order-detail.css';
-import { useAuth } from '@/hooks/use-auth';  // ← 新增這行
+import { useAuth } from '@/hooks/use-auth'; 
 
 export default function OrderDetailPage() {
-  const { user } = useAuth();  // ← 新增這行
-  const searchParams = useSearchParams();  // ← 新增這行
-  const orderId = searchParams.get('id');  // ← 新增這行，從 URL 獲取訂單 ID
+  const { user } = useAuth();  
+  const searchParams = useSearchParams(); 
+  const orderId = searchParams.get('id');  
 
   const [activeTab, setActiveTab] = useState('all');
 
-  // ← 刪除原本的假資料 orders 陣列，改成以下狀態
   const [orderDetail, setOrderDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,8 +27,7 @@ export default function OrderDetailPage() {
     { id: 'return-refund', label: '退貨/退款' }
   ];
 
-  // ← 新增：獲取訂單詳情的函數
-  const fetchOrderDetail = async () => {
+  const fetchOrderDetail =useCallback( async () => {
     if (!orderId || !user || !user.id) {
       setError('訂單ID不存在或請先登入');
       setLoading(false);
@@ -65,10 +63,17 @@ export default function OrderDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, orderId]);
+
+useEffect(() => {
+    fetchOrderDetail(); // 直接調用
+  }, [fetchOrderDetail]);
+  
+
+
+
 
   const processOrderDetail = (rawData) => {
-    console.log('processOrderDetail 收到的資料:', rawData);
 
     if (!rawData) {
       console.log('沒有資料');
@@ -108,14 +113,7 @@ export default function OrderDetailPage() {
     };
   };
 
-  // ← 新增：useEffect 來載入資料
-  useEffect(() => {
-    if (user && user.id && orderId) {
-      fetchOrderDetail();
-    }
-  }, [user, orderId]);
 
-  // ← 新增：載入狀態
   if (loading) {
     return (
       <div className="order-detail-page">
@@ -131,7 +129,6 @@ export default function OrderDetailPage() {
     );
   }
 
-  // ← 新增：錯誤狀態
   if (error) {
     return (
       <div className="order-detail-page">
@@ -150,7 +147,6 @@ export default function OrderDetailPage() {
     );
   }
 
-  // ← 新增：沒有資料時
   if (!orderDetail) {
     return (
       <div className="order-detail-page">

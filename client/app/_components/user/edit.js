@@ -221,7 +221,8 @@ export default function UserEditForm() {
                             value={name} onChange={e => setName(e.target.value)} />
 
                         <UserTextInput id="birth" label="生日" type="date" required
-                            value={birthday} onChange={e => setBirthday(e.target.value)} />
+                            value={birthday} onChange={e => setBirthday(e.target.value)} 
+                            max={new Date().toISOString().split("T")[0]} />
 
                         <UserTextInput id="phone" label="電話" type="tel" required
                             value={phone} onChange={e => setPhone(e.target.value)} />

@@ -10,7 +10,6 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const { category } = req.query;
-    console.log('收到的 category 參數:', category);
 
     let products;
 
@@ -36,10 +35,8 @@ LEFT JOIN materials m ON ml.materials_id = m.id
 
       try {
         const [rows] = await db.execute(query, [`%${category}%`]);
-        console.log('分類查詢結果數量:', rows.length);
         products = rows;
       } catch (dbError) {
-        console.error('資料庫查詢錯誤:', dbError);
         throw dbError;
       }
     } else {
@@ -106,10 +103,7 @@ LIMIT 50
           isNew: isNew,      // 加這行
           isHot: isHot       // 加這行
         });
-        console.log(`商品 ${item.id} (${item.name}) 的材質數據:`, {
-          materials_data: item.materials_data,
-          parsed_materials: materials
-        });
+       
       } else if (item.img) {
         productMap.get(item.id).images.push(`/uploads/${item.img}`);
       }
@@ -118,11 +112,9 @@ LIMIT 50
 
 
     const productsWithImages = Array.from(productMap.values());
-    console.log('最終回傳產品數量:', productsWithImages.length);
     res.json(productsWithImages);
 
   } catch (error) {
-    console.error('詳細錯誤訊息:', error);
     res.status(500).json({
       message: "取得商品失敗",
       error: error.message
@@ -134,7 +126,6 @@ LIMIT 50
 router.get("/search", async (req, res) => {
   let { q, page = 1, limit = 10 } = req.query;
 
-  console.log("搜尋API被呼叫:", { q, page, limit });
 
   q = q ? q.trim() : "";
   page = parseInt(page, 10);
@@ -224,8 +215,6 @@ router.get("/search", async (req, res) => {
     const testProduct = productsWithImages[0];
     if (testProduct && testProduct.name) {
       const expandedText = fuseOptions.getFn(testProduct, 'name');
-      console.log('原始名稱:', testProduct.name);
-      console.log('展開後的搜尋文字:', expandedText);
     }
 
     //搜尋篩選
@@ -235,10 +224,8 @@ router.get("/search", async (req, res) => {
     } else {
       const fuse = new Fuse(productsWithImages, fuseOptions);
       const results = fuse.search(q);
-      console.log('Fuse 原始搜尋結果:', results); // 加入這行
 
       filteredProducts = results.map(result => result.item);
-      console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
 
     }
 
@@ -256,11 +243,9 @@ router.get("/search", async (req, res) => {
     const offset = (page - 1) * limit;
     const paginatedResults = filteredProducts.slice(offset, offset + limit);
 
-    console.log(`搜尋 "${q}" 找到 ${filteredProducts.length} 個結果`);
 
 
     if (paginatedResults.length > 0) {
-      console.log("找到的產品:", paginatedResults.map(r => r.name));
     }
 
     const latestQuery = `
@@ -293,7 +278,6 @@ router.get("/search", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("搜尋錯誤:", err);
     res.status(500).json({ status: "error", message: "伺服器錯誤" });
   }
 });
@@ -591,15 +575,11 @@ router.get("/:id", async (req, res) => {
 
 // 庫存檢查
 router.post('/:id/stock', async (req, res) => {
-  console.log('headers:', req.headers);
-  console.log('req.body:', req.body);
-  console.log('req.body 是:', req.body);
 
   try {
     const { id: productId } = req.params;
     const { colorId, sizeId, quantity } = req.body;
 
-    console.log('庫存檢查請求:', { productId, colorId, sizeId, quantity });
 
 
     const [stockRows] = await db.execute(
@@ -609,8 +589,6 @@ router.post('/:id/stock', async (req, res) => {
 
     const availableStock = stockRows[0]?.amount || 0;
 
-    console.log('查詢結果:', stockRows);
-    console.log('可用庫存:', availableStock);
 
     res.json({
       status: 'success',

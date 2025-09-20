@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '@/styles/review/review.css';
 import Swal from 'sweetalert2';
-
-
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 const Review = ({ productId = 1 }) => {
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
   const [rating, setRating] = useState(0);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,19 +20,162 @@ const Review = ({ productId = 1 }) => {
   const fileInputRef = useRef(null);
   const [sortBy, setSortBy] = useState('newest');
   const [sortOptions, setSortOptions] = useState([]);
+  const [editingReview, setEditingReview] = useState(null);
+  const [reactionCounts, setReactionCounts] = useState({});
+  const editFileInputRef = useRef(null);
+
+  const [editForm, setEditForm] = useState({
+    rating: 0,
+    comment: '',
+    images: [],
+    imageFiles: []
+  });
   const [statistics, setStatistics] = useState({
     averageRating: '0.0',
     totalReviews: 0,
     ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
   });
 
-  // 處理圖片選擇
-  const handleImageSelect = (e) => {
+  const isAuthenticated = !!user && !isLoading;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isLoading) {
+      console.log('加载用户信息...');
+      return;
+    };
+
+    if (!user || !user.id) {
+      console.log('用户未登入:', { user, isLoading });
+
+      const result = await Swal.fire({
+        icon: 'warning',
+        title: '請先登入',
+        text: '登入會員才能提交評論',
+        showCancelButton: true,
+        confirmButtonText: '前往登入',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#DBA783',
+        allowOutsideClick: false
+      });
+
+      if (result.isConfirmed) {
+        window.top.location.href = '/auth/login';
+      }
+
+      return;
+    }
+
+    // 表單驗證
+    const isValid = await validateForm();
+    if (!isValid) return;
+
+    // ===== Token 驗證 (目前註解掉，之後啟用) =====
+    // const token = localStorage.getItem('authToken');
+    // const userId = localStorage.getItem('userId');
+    // if (!token || !userId) {
+    //   await Swal.fire({
+    //     icon: 'warning',
+    //     title: '請先登入',
+    //     text: '登入會員才能提交評論',
+    //     confirmButtonText: '前往登入',
+    //     confirmButtonColor: '#DBA783'
+    //   });
+    //   // 這裡可以導向登入頁面
+    //   // window.location.href = '/login';
+    //   return;
+    // }
+
+    // 顯示載入中
+    Swal.fire({
+      title: '提交中...',
+      text: '正在上傳圖片和評論',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      // 先上傳圖片
+      let imageUrls = [];
+      if (imageFiles.length > 0) {
+        imageUrls = await uploadImages();
+      }
+
+      // ===== 測試環境用的假資料 (之後改用真實 token 資料) =====
+      // const testUserId = 1; // 之後改為: const userId = localStorage.getItem('userId');
+
+      // 提交評論
+      const response = await fetch('http://localhost:3005/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          product_id: productId,
+          rating,
+          email: user.email,
+          comment,
+          user_name: user.name,
+          avatar: user.avatar || `https://i.pravatar.cc/150?u=${user.name}`,
+          reviews_img: imageUrls.join(',')
+        })
+      });
+
+      const result = await response.json();
+
+      // 關閉載入中
+      Swal.close();
+
+      if (result.status === 'success') {
+        await Swal.fire({
+          icon: 'success',
+          title: '評論提交成功！',
+          text: '感謝您的寶貴意見',
+          confirmButtonColor: '#DBA783',
+          timer: 3000,
+          timerProgressBar: true
+        });
+
+        // 清空表單
+        setRating(0);
+        setName('');
+        setEmail('');
+        setComment('');
+        setImages([]);
+        setImageFiles([]);
+        fetchReviews();
+      } else {
+        await Swal.fire({
+          icon: 'error',
+          title: '提交失敗',
+          text: result.message || '請稍後再試',
+          confirmButtonColor: '#DBA783'
+        });
+      }
+    } catch (error) {
+      Swal.close();
+      console.error('提交評論失敗:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: '提交失敗',
+        text: '請稍後再試',
+        confirmButtonColor: '#DBA783'
+      });
+    }
+  };
+
+  const handleImageSelect = (e, isEditMode = false) => {
     const files = Array.from(e.target.files);
     const maxImages = 5;
     const maxFileSize = 5 * 1024 * 1024; // 5MB
 
-    if (images.length + files.length > maxImages) {
+    const currentImages = isEditMode ? editForm.images : images;
+
+    if (currentImages.length + files.length > maxImages) {
       Swal.fire({
         icon: 'warning',
         title: '圖片數量限制',
@@ -44,7 +189,6 @@ const Review = ({ productId = 1 }) => {
     const validPreviews = [];
 
     files.forEach(file => {
-      // 檢查檔案大小
       if (file.size > maxFileSize) {
         Swal.fire({
           icon: 'error',
@@ -55,7 +199,6 @@ const Review = ({ productId = 1 }) => {
         return;
       }
 
-      // 檢查檔案類型
       if (!file.type.startsWith('image/')) {
         Swal.fire({
           icon: 'error',
@@ -68,23 +211,35 @@ const Review = ({ productId = 1 }) => {
 
       validFiles.push(file);
 
-      // 建立預覽
       const reader = new FileReader();
       reader.onload = (e) => {
         validPreviews.push({
           id: Date.now() + Math.random(),
           url: e.target.result,
-          file: file
+          file: file,
+          isNew: true
         });
 
         if (validPreviews.length === validFiles.length) {
-          setImages(prev => [...prev, ...validPreviews]);
-          setImageFiles(prev => [...prev, ...validFiles]);
+          if (isEditMode) {
+            setEditForm(prev => ({
+              ...prev,
+              images: [...prev.images, ...validPreviews],
+              imageFiles: [...prev.imageFiles, ...validFiles]
+            }));
+          } else {
+            setImages(prev => [...prev, ...validPreviews]);
+            setImageFiles(prev => [...prev, ...validFiles]);
+          }
         }
       };
       reader.readAsDataURL(file);
-    }); // 清空 input
-    if (fileInputRef.current) {
+    });
+
+    // 清空 input
+    if (isEditMode && editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    } else if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
@@ -205,116 +360,121 @@ const Review = ({ productId = 1 }) => {
   };
 
 
+  const startEdit = (review) => {
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    console.log('startEdit 开始执行，review.id:', review.id);
+    console.log('设置 editingReview 前:', editingReview);
+    setEditingReview(review.id);
 
-    // 表單驗證
-    const isValid = await validateForm();
-    if (!isValid) return;
+    console.log('设置 editingReview 后，应该变成:', review.id);
 
-    // ===== Token 驗證 (目前註解掉，之後啟用) =====
-    // const token = localStorage.getItem('authToken');
-    // const userId = localStorage.getItem('userId');
-    // if (!token || !userId) {
-    //   await Swal.fire({
-    //     icon: 'warning',
-    //     title: '請先登入',
-    //     text: '登入會員才能提交評論',
-    //     confirmButtonText: '前往登入',
-    //     confirmButtonColor: '#DBA783'
-    //   });
-    //   // 這裡可以導向登入頁面
-    //   // window.location.href = '/login';
-    //   return;
-    // }
 
-    // 顯示載入中
-    Swal.fire({
-      title: '提交中...',
-      text: '正在上傳圖片和評論',
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
+    setEditForm({
+      rating: review.rating,
+      comment: review.comment,
+      images: review.reviews_img ? review.reviews_img.split(',').map((url, index) => ({
+        id: `existing_${index}`,
+        url: `http://localhost:3005${url}`,
+        isExisting: true
+      })) : [],
+      imageFiles: []
     });
+  };
 
+  // 取消编辑
+  const cancelEdit = () => {
+    setEditingReview(null);
+    setEditForm({ rating: 0, comment: '', images: [], imageFiles: [] });
+  };
+
+  const submitEdit = async (reviewId) => {
     try {
-      // 先上傳圖片
-      let imageUrls = [];
-      if (imageFiles.length > 0) {
-        imageUrls = await uploadImages();
+      if (!editForm.comment.trim()) {
+        Swal.fire({
+          icon: 'warning',
+          title: '评论内容不能为空',
+          confirmButtonColor: '#DBA783'
+        });
+        return;
       }
 
-      // ===== 測試環境用的假資料 (之後改用真實 token 資料) =====
-      const testUserId = 1; // 之後改為: const userId = localStorage.getItem('userId');
+      if (editForm.rating === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請選擇評分',
+          confirmButtonColor: '#DBA783'
+        });
+        return;
+      }
 
-      // 提交評論
-      const response = await fetch('http://localhost:3005/api/reviews', {
-        method: 'POST',
+      // 上傳新圖片
+      let newImageUrls = [];
+      if (editForm.imageFiles.length > 0) {
+        const formData = new FormData();
+        editForm.imageFiles.forEach((file) => {
+          formData.append(`images`, file);
+        });
+
+        const uploadResponse = await fetch('http://localhost:3005/api/upload/review-images', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          newImageUrls = uploadResult.imageUrls || [];
+        }
+      }
+
+      // 合并现有图片和新图片
+      const existingImages = editForm.images
+        .filter(img => img.isExisting)
+        .map(img => img.url.replace('http://localhost:3005', ''));
+
+      const allImages = [...existingImages, ...newImageUrls];
+
+      const response = await fetch(`http://localhost:3005/api/reviews/${reviewId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          // ===== 之後啟用 token 驗證 =====
-          // 'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
         },
         body: JSON.stringify({
-          user_id: testUserId, // 之後改為: userId
-          product_id: productId,
-          rating,
-          email,
-          comment,
-          user_name: name,
-          avatar: `https://i.pravatar.cc/150?u=${name}`,
-          reviews_img: imageUrls.join(',')
+          rating: editForm.rating,
+          comment: editForm.comment,
+          reviews_img: allImages.join(',')
         })
       });
 
       const result = await response.json();
 
-      // 關閉載入中
-      Swal.close();
-
       if (result.status === 'success') {
         await Swal.fire({
           icon: 'success',
-          title: '評論提交成功！',
-          text: '感謝您的寶貴意見',
-          confirmButtonColor: '#DBA783',
-          timer: 3000,
-          timerProgressBar: true
-        });
-
-        // 清空表單
-        setRating(0);
-        setName('');
-        setEmail('');
-        setComment('');
-        setImages([]);
-        setImageFiles([]);
-        fetchReviews();
-      } else {
-        await Swal.fire({
-          icon: 'error',
-          title: '提交失敗',
-          text: result.message || '請稍後再試',
+          title: '評論修改成功！',
           confirmButtonColor: '#DBA783'
         });
+        cancelEdit();
+        fetchReviews(sortBy);
       }
     } catch (error) {
-      Swal.close();
-      console.error('提交評論失敗:', error);
-      await Swal.fire({
+      Swal.fire({
         icon: 'error',
-        title: '提交失敗',
-        text: '請稍後再試',
-        confirmButtonColor: '#DBA783'
+        title: '修改失败',
+        text: '請聯絡客服'
       });
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('reactLoginToken');
+    console.log('Token 存在:', !!token);
+  }, []);
+
+
   useEffect(() => {
     fetchReviews(sortBy);
-; fetchSortOptions();
+    ; fetchSortOptions();
   }, [productId]);
   const averageRating = statistics.averageRating || '0.0';
 
@@ -332,7 +492,79 @@ const Review = ({ productId = 1 }) => {
   };
 
   const distribution = getRatingDistribution();
+  // 删除评论
+  const deleteReview = async (reviewId) => {
+    const result = await Swal.fire({
+      title: '確認删除',
+      text: '删除後無法復原，確定要删除此評論嗎？',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '確定删除',
+      cancelButtonText: '取消'
+    });
 
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`http://localhost:3005/api/reviews/${reviewId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('reactLoginToken')}`
+          }
+        });
+
+        const deleteResult = await response.json();
+
+        if (deleteResult.status === 'success') {
+          await Swal.fire({
+            icon: 'success',
+            title: '删除成功',
+            text: '評論已成功删除',
+            confirmButtonColor: '#DBA783'
+          });
+
+          fetchReviews(sortBy);
+        } else {
+          await Swal.fire({
+            icon: 'error',
+            title: '删除失败',
+            text: deleteResult.message || '請稍後再試',
+            confirmButtonColor: '#DBA783'
+          });
+        }
+      } catch (error) {
+        console.error('删除評論失敗:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: '删除失败',
+          text: '請稍後再試',
+          confirmButtonColor: '#DBA783'
+        });
+      }
+    }
+  };
+  const handleReaction = (reviewId, type) => {
+    const storageKey = 'reviewReactions';
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+    const newCounts = {
+      ...saved,
+      [reviewId]: {
+        likes: saved[reviewId]?.likes || 0,
+        dislikes: saved[reviewId]?.dislikes || 0,
+        [type === 'like' ? 'likes' : 'dislikes']: (saved[reviewId]?.[type === 'like' ? 'likes' : 'dislikes'] || 0) + 1
+      }
+    };
+
+    localStorage.setItem(storageKey, JSON.stringify(newCounts));
+    setReactionCounts(newCounts);
+  };
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('reviewReactions') || '{}');
+    setReactionCounts(saved);
+  }, []);
 
   return (
     <div className="review-page">
@@ -347,7 +579,7 @@ const Review = ({ productId = 1 }) => {
               ))}
             </div>
             <div className="review-count">{statistics.totalReviews}則評論</div>
-            </div>
+          </div>
           <div className="rating-distribution">
             {[5, 4, 3, 2, 1].map((star, index) => (
               <div key={star} className="rating-bar">
@@ -380,62 +612,186 @@ const Review = ({ productId = 1 }) => {
             ))}
           </select>
         </div>
+
+
+
         {reviews.map((review) => (
           <div key={review.id} className="review-item">
-            <div className="user-info">
-              <img
-                src={review.avatar}
-                alt={review.user_name}
-                className="user-avatar"
-              />
-              <div className="user-details">
-                <div className="user-name">{review.user_name}</div>
-                <div className="review-time">{formatTime(review.created_at)}</div>
-              </div>
-            </div>
-            <div className="review-rating">
-              {[...Array(5)].map((_, i) => (
-                <i key={i} className={`fas fa-star ${i < review.rating ? 'filled' : ''}`}></i>
-              ))}
-            </div>
-            <div className="review-text">
-              {review.comment}
-            </div>
+            {editingReview === review.id ? (
+              // 编辑模式
+              <div className="edit-review-form" style={{ border: '2px solid #DBA783', padding: '15px', borderRadius: '8px' }}>
+                <h4>編輯評論</h4>
 
-            {/* 顯示評論圖片 */}
-            {review.reviews_img && (
-              <div className="review-images">
-                {review.reviews_img.split(',').map((imageUrl, index) => (
-                  <img
-                    key={index}
-                    src={`http://localhost:3005${imageUrl}`}
-                    alt={`評論圖片 ${index + 1}`}
-                    className="review-image"
-                    onClick={() => {
-                      // 點擊放大圖片
-                      Swal.fire({
-                        imageUrl: `http://localhost:3005${imageUrl}`,
-                        imageAlt: `評論圖片 ${index + 1}`,
-                        showConfirmButton: false,
-                        showCloseButton: true,
+                <div className="edit-rating" style={{ marginBottom: '15px' }}>
+                  <span>評分：</span>
+                  {[...Array(5)].map((_, i) => (
+                    <i
+                      key={i}
+                      className={`fas fa-star ${i < editForm.rating ? 'filled' : ''}`}
+                      style={{ cursor: 'pointer', color: i < editForm.rating ? '#FFD700' : '#ccc', marginRight: '5px' }}
+                      onClick={() => setEditForm(prev => ({ ...prev, rating: i + 1 }))}
+                    />
+                  ))}
+                </div>
+                <div className="edit-images" style={{ marginBottom: '15px' }}>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ marginRight: '10px' }}>圖片 (最多5張)：</label>
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleImageSelect(e, true)}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editFileInputRef.current?.click()}
+                      style={{
+                        backgroundColor: '#DBA783',
+                        color: 'white',
+                        padding: '5px 10px',
                         border: 'none',
-                      });
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <i className="fas fa-camera"></i> 新增圖片
+                    </button>
+                  </div>
 
-            <div className="review-engagement">
-              <div className="thumbs-up">
-                <i className="fas fa-thumbs-up"></i>
-                <span>0</span>
+                  {editForm.images.length > 0 && (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      {editForm.images.map((image) => (
+                        <div key={image.id} style={{ position: 'relative' }}>
+                          <img
+                            src={image.url}
+                            alt="评论图片"
+                            style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditForm(prev => ({
+                                ...prev,
+                                images: prev.images.filter(img => img.id !== image.id),
+                                imageFiles: image.isNew
+                                  ? prev.imageFiles.filter(file => file !== image.file)
+                                  : prev.imageFiles
+                              }));
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: '-5px',
+                              right: '-5px',
+                              background: 'red',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '20px',
+                              height: '20px',
+                              fontSize: '12px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <textarea
+                  value={editForm.comment}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, comment: e.target.value }))}
+                  style={{ width: '100%', minHeight: '100px', padding: '10px', marginBottom: '15px' }}
+                  placeholder="修改評論內容"
+                />
+
+                <div className="edit-buttons">
+                  <button
+                    onClick={() => submitEdit(review.id)}
+                    style={{ backgroundColor: '#DBA783', color: 'white', padding: '8px 16px', marginRight: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    保存
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    style={{ backgroundColor: '#ccc', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    取消
+                  </button>
+                </div>
               </div>
-              <div className="thumbs-down">
-                <i className="fas fa-thumbs-down"></i>
-                <span>0</span>
-              </div>
-            </div>
+            ) : (
+              <>
+
+                <div className="user-info">
+                  <img src={review.avatar} alt={review.user_name} className="user-avatar" />
+                  <div className="user-details">
+                    <div className="user-name">{review.user_name} {user && review.user_id && review.user_id === user.id && (
+                      <div className="review-actions">
+                        <button onClick={() => startEdit(review)} className="edit-btn">
+                          <i className="fas fa-edit"></i> 編輯
+                        </button>
+                        <button onClick={() => deleteReview(review.id)} className="delete-btn">
+                          <i className="fas fa-trash"></i> 刪除
+                        </button>
+                      </div>
+                    )}</div>
+                    <div className="review-time">{formatTime(review.created_at)}</div>
+
+                  </div>
+                </div>
+                <div className="review-rating">
+                  {[...Array(5)].map((_, i) => (
+                    <i key={i} className={`fas fa-star ${i < review.rating ? 'filled' : ''}`}></i>
+                  ))}
+                </div>
+                <div className="review-text">{review.comment}</div>
+
+                {review.reviews_img && (
+                  <div className="review-images">
+                    {review.reviews_img.split(',').map((imageUrl, index) => (
+                      <img
+                        key={index}
+                        src={`http://localhost:3005${imageUrl}`}
+                        alt={`評論圖片 ${index + 1}`}
+                        className="review-image"
+                        onClick={() => {
+                          Swal.fire({
+                            imageUrl: `http://localhost:3005${imageUrl}`,
+                            imageAlt: `評論圖片 ${index + 1}`,
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            border: 'none',
+                          });
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <div className="review-engagement">
+                  <div
+                    className="thumbs-up"
+                    onClick={() => handleReaction(review.id, 'like')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-thumbs-up"></i>
+                    <span>{reactionCounts[review.id]?.likes || 0}</span>
+                  </div>
+                  <div
+                    className="thumbs-down"
+                    onClick={() => handleReaction(review.id, 'dislike')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-thumbs-down"></i>
+                    <span>{reactionCounts[review.id]?.dislikes || 0}</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </section>
