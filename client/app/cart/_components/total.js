@@ -277,7 +277,22 @@ export default function Total({ type }) {
           // 清理購物車
           localStorage.removeItem("cart");
           // 導向完成頁面（不需要 orderNo 參數）
-          router.push("/cart/fin");
+          // 顯示處理中訊息
+          Swal.fire({
+            title: "訂單處理中...",
+            text: "正在為您準備訂單完成頁面",
+            icon: "success",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            timer: 3000, // 3 秒後自動關閉
+            timerProgressBar: true,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          }).then(() => {
+            router.push("/cart/fin");
+          });
         } else {
           throw new Error(result.message || "訂單建立失敗");
         }

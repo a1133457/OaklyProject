@@ -275,7 +275,8 @@ export default function CartEcpayCheck() {
 
         // 優惠券資訊
         coupon: selectedCoupon || parsedOrderData?.coupon,      // 完整優惠券資訊
-        couponId: selectedCoupon?.id || parsedOrderData?.coupon?.id || null,
+        couponId: selectedCoupon?.coupon_id || parsedOrderData?.coupon?.coupon_id || null,
+        coupon_id: selectedCoupon?.coupon_id || parsedOrderData?.coupon?.coupon_id || null, // 加這行確保相容性
 
         userId: orderInfo.userId,
 
@@ -391,16 +392,21 @@ export default function CartEcpayCheck() {
   // 載入中畫面
   if (!orderData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="card shadow-lg" style={{ maxWidth: '400px', width: '100%' }}>
+          <div className="card-body p-4">
+            <div className="text-center">
+              <div className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+                style={{ width: '64px', height: '64px',backgroundColor:'var(--primary-04)' }}>
+                <div className="spinner-border text-white" role="status" style={{ width: '24px', height: '24px' }}>
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <h2 className="h4 fw-semibold text-dark mb-2">
+                準備付款中...
+              </h2>
+              <p className="text-muted">正在初始化付款資訊</p>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              準備付款中...
-            </h2>
-            <p className="text-gray-600">正在初始化付款資訊</p>
           </div>
         </div>
       </div>
@@ -408,144 +414,138 @@ export default function CartEcpayCheck() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">安全付款</h1>
-          <p className="text-gray-600">
-            {isSubmitting
-              ? "正在跳轉至付款頁面..."
-              : showManualButton
-                ? "請確認資訊後點擊付款"
-                : `${countdown} 秒後自動跳轉`}
-          </p>
-        </div>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center p-3">
+      <div className="card shadow-lg" style={{ maxWidth: '500px', width: '100%' }}>
+        <div className="card-body p-4">
 
-        {/* 錯誤訊息 */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
+          {/* Header */}
+          <div className="text-center mb-4">
+            <div className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+              style={{ width: '80px', height: '80px', backgroundColor: 'var(--primary-04)' }}>
+              <i className="fas fa-credit-card text-white" style={{ fontSize: '40px' }}></i>
             </div>
-          </div>
-        )}
-
-        {/* Order Info */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-3">訂單資訊</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-600">訂單編號:</span>
-              <span className="font-medium">{orderData.orderNo}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">商品:</span>
-              <span className="font-medium">{getItemNames(orderData.items)}</span>
-            </div>
-            {orderData.discountAmount > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">優惠券折抵:</span>
-                <span className="text-red-500">-NT$ {orderData.discountAmount.toLocaleString()}</span>
-              </div>
-            )}
-            <div className="flex justify-between border-t pt-2">
-              <span className="text-gray-600">付款金額:</span>
-              <span className="font-bold text-green-600 text-lg">
-                NT$ {orderData.totalAmount.toLocaleString()}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Shipping Info */}
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-3">收件資訊</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">收件人:</span>
-              <span className="font-medium">{shippingInfo.recipientName || shippingInfo.name || '未設定'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">電話:</span>
-              <span className="font-medium">{shippingInfo.recipientPhone || shippingInfo.phone || '未設定'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">地址:</span>
-              <span className="font-medium">{shippingInfo.recipientAddress || shippingInfo.address || '未設定'}</span>
-            </div>
+            <h1 className="h3 fw-bold text-dark mb-2">安全付款</h1>
+            <p className="text-muted">
+              {isSubmitting
+                ? "正在跳轉至付款頁面..."
+                : showManualButton
+                  ? "請確認資訊後點擊付款"
+                  : `${countdown} 秒後自動跳轉`}
+            </p>
           </div>
 
-          {/* 購買人資訊 */}
-          <div className="mt-4 pt-4 border-t border-blue-200">
-            <h4 className="font-medium text-gray-700 mb-2">購買人資訊</h4>
-            <div className="space-y-1 text-xs text-gray-600">
-              <div>姓名: {shippingInfo.buyerName || '未設定'}</div>
-              <div>Email: {shippingInfo.buyerEmail || '未設定'}</div>
-              <div>電話: {shippingInfo.buyerPhone || '未設定'}</div>
+          {/* 錯誤訊息 */}
+          {error && (
+            <div className="alert alert-danger d-flex align-items-center mb-4" role="alert">
+              <i className="fas fa-exclamation-triangle me-2"></i>
+              <div>{error}</div>
             </div>
-          </div>
-        </div>
-
-        {/* Loading Spinner */}
-        {isSubmitting && (
-          <div className="flex justify-center mb-6">
-            <div className="w-8 h-8 border-4 border-green-200 border-t-green-500 rounded-full animate-spin"></div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          {(showManualButton || error) && (
-            <button
-              onClick={handleManualSubmit}
-              disabled={isSubmitting}
-              className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg ${isSubmitting
-                ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                : 'bg-green-500 hover:bg-green-600 text-white'
-                }`}
-            >
-              {isSubmitting ? '處理中...' : '前往付款'}
-            </button>
           )}
 
-          <button
-            onClick={handleGoBack}
-            disabled={isSubmitting}
-            className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 ${isSubmitting
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              }`}
-          >
-            返回購物車
-          </button>
-        </div>
+          {/* Order Info */}
+          <div className="card bg-light mb-4">
+            <div className="card-body">
+              <h5 className="card-title fw-semibold text-dark mb-3">訂單資訊</h5>
+              <div className="row mb-2">
+                <div className="col-6 text-muted">訂單編號:</div>
+                <div className="col-6 fw-medium text-end">{orderData.orderNo}</div>
+              </div>
+              <div className="row mb-2">
+                <div className="col-6 text-muted">商品:</div>
+                <div className="col-6 fw-medium text-end">{getItemNames(orderData.items)}</div>
+              </div>
+              {orderData.discountAmount > 0 && (
+                <div className="row mb-2">
+                  <div className="col-6 text-muted">優惠券折抵:</div>
+                  <div className="col-6 text-danger text-end">-NT$ {orderData.discountAmount.toLocaleString()}</div>
+                </div>
+              )}
+              <hr />
+              <div className="row">
+                <div className="col-6 text-muted">付款金額:</div>
+                <div className="col-6 text-success fw-bold text-end h5 mb-0">
+                  NT$ {orderData.totalAmount.toLocaleString()}
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Security Notice */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">🔒 您的交易資訊經過加密保護</p>
+          {/* Shipping Info */}
+          <div className="card bg-info bg-opacity-10 mb-4">
+            <div className="card-body">
+              <h5 className="card-title fw-semibold text-dark mb-3">收件資訊</h5>
+              <div className="row mb-2">
+                <div className="col-4 text-muted small">收件人:</div>
+                <div className="col-8 fw-medium small text-end">{shippingInfo.recipientName || shippingInfo.name || '未設定'}</div>
+              </div>
+              <div className="row mb-2">
+                <div className="col-4 text-muted small">電話:</div>
+                <div className="col-8 fw-medium small text-end">{shippingInfo.recipientPhone || shippingInfo.phone || '未設定'}</div>
+              </div>
+              <div className="row mb-3">
+                <div className="col-4 text-muted small">地址:</div>
+                <div className="col-8 fw-medium small text-end">{shippingInfo.recipientAddress || shippingInfo.address || '未設定'}</div>
+              </div>
+
+              {/* 購買人資訊 */}
+              <hr className="border-info" />
+              <h6 className="fw-medium text-dark mb-2">訂購人資訊</h6>
+              <div className="row mb-2">
+                <div className="col-4 text-muted small">訂購人:</div>
+                <div className="col-8 fw-medium small text-end">{shippingInfo.buyerName || '未設定'}</div>
+              </div>
+              <div className="row mb-2">
+                <div className="col-4 text-muted small">Email:</div>
+                <div className="col-8 fw-medium small text-end">{shippingInfo.buyerEmail || '未設定'}</div>
+              </div>
+              <div className="row mb-3">
+                <div className="col-4 text-muted small">電話:</div>
+                <div className="col-8 fw-medium small text-end">{shippingInfo.buyerPhone || '未設定'}</div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Loading Spinner */}
+          {isSubmitting && (
+            <div className="text-center mb-4">
+              <div className="spinner-border text-success" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="d-grid gap-2">
+            {(showManualButton || error) && (
+              <button
+                onClick={handleManualSubmit}
+                disabled={isSubmitting}
+                className={`btn fw-semibold py-2 ${isSubmitting
+                  ? 'btn-secondary disabled'
+                  : 'btn-success'
+                  }`}
+              >
+                {isSubmitting ? '處理中...' : '前往付款'}
+              </button>
+            )}
+
+            <button
+              onClick={handleGoBack}
+              disabled={isSubmitting}
+              className={`btn fw-semibold py-2 ${isSubmitting
+                ? 'btn-outline-secondary disabled'
+                : 'btn-outline-secondary'
+                }`}
+            >
+              返回購物車
+            </button>
+          </div>
+
+          {/* Security Notice */}
+          <div className="text-center mt-4">
+            <p className="text-muted small mb-0">🔒 您的交易資訊經過加密保護</p>
+          </div>
         </div>
       </div>
     </div>

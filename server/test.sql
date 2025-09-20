@@ -1,0 +1,1 @@
+SELECT payment_method, payment_status FROM orders WHERE id = 31;

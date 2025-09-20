@@ -15,182 +15,182 @@ const ClientBackURL = "http://localhost:3000/order/fin";  //完成付款後，�
 
 // 生成 CheckMacValue
 function genCheckMacValue(params) {
-    const query = Object.keys(params)
-        .sort()
-        .map((key) => `${key}=${params[key]}`)
-        .join("&");
+  const query = Object.keys(params)
+    .sort()
+    .map((key) => `${key}=${params[key]}`)
+    .join("&");
 
-    const raw = `HashKey=${HashKey}&${query}&$HashIv=${HashIV}`;
+  const raw = `HashKey=${HashKey}&${query}&HashIv=${HashIV}`;
 
-    const encode = encodeURIComponent(raw)
-        .toLowerCase()
-        .replace(/%20/g, "+")
-        .replace(/%2d/g, "-")
-        .replace(/%5f/g, "_")
-        .replace(/%2e/g, ".")
-        .replace(/%21/g, "!")
-        .replace(/%2a/g, "*")
-        .replace(/%28/g, "(")
-        .replace(/%29/g, ")");
+  const encode = encodeURIComponent(raw)
+    .toLowerCase()
+    .replace(/%20/g, "+")
+    .replace(/%2d/g, "-")
+    .replace(/%5f/g, "_")
+    .replace(/%2e/g, ".")
+    .replace(/%21/g, "!")
+    .replace(/%2a/g, "*")
+    .replace(/%28/g, "(")
+    .replace(/%29/g, ")");
 
-    return crypto.createHash("md5").update(encoded).digest("hex").toUpperCase();
+  return crypto.createHash("md5").update(encode).digest("hex").toUpperCase();
 }
 
 // 1. 新增 order
 router.post("/add", async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        // 開始 transaction
-        await connection.beginTransaction();
-        const {
-            user_id,
-            total_amount,
-            buyer_name,
-            buyer_email,
-            buyer_phone,
-            recipient_name,
-            recipient_phone,
-            recipient_postal_code,
-            recipient_city,
-            recipient_address,
-            items,
-        } = req.body;
-        if (
-            !user_id ||
-            !total_amount ||
-            !buyer_name ||
-            !buyer_email ||
-            !buyer_phone ||
-            !recipient_name ||
-            !recipient_phone ||
-            !recipient_postal_code ||
-            !recipient_city ||
-            !recipient_address
-        ) {
-            const err = new Error("缺少必要資料");
-            err.code = 400;
-            err.status = "fail";
-            throw err;
-        }
+  const connection = await pool.getConnection();
+  try {
+    // 開始 transaction
+    await connection.beginTransaction();
+    const {
+      user_id,
+      total_amount,
+      buyer_name,
+      buyer_email,
+      buyer_phone,
+      recipient_name,
+      recipient_phone,
+      recipient_postal_code,
+      recipient_city,
+      recipient_address,
+      items,
+    } = req.body;
+    if (
+      !user_id ||
+      !total_amount ||
+      !buyer_name ||
+      !buyer_email ||
+      !buyer_phone ||
+      !recipient_name ||
+      !recipient_phone ||
+      !recipient_postal_code ||
+      !recipient_city ||
+      !recipient_address
+    ) {
+      const err = new Error("缺少必要資料");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
 
-        // 訂單亂碼
-        function randomOrderNumber(length = 10) {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, "0"); // 月份從0開始
-            const day = String(now.getDate()).padStart(2, "0");
-            const dateStr = `${year}${month}${day}`;
-            const chars = "01234567890";
-            let result = "";
-            for (let i = 0; i < length; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return `${dateStr}${result}`;
-        }
+    // 訂單亂碼
+    function randomOrderNumber(length = 10) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0"); // 月份從0開始
+      const day = String(now.getDate()).padStart(2, "0");
+      const dateStr = `${year}${month}${day}`;
+      const chars = "01234567890";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `${dateStr}${result}`;
+    }
 
-        const orderNumber = randomOrderNumber();
-        // 新增訂單
-        const sqlCheck = `INSERT INTO orders
+    const orderNumber = randomOrderNumber();
+    // 新增訂單
+    const sqlCheck = `INSERT INTO orders
             (order_number, user_id, total_amount, buyer_name, buyer_email, buyer_phone, recipient_name, recipient_phone, postal_code, address)
             VALUES(?,?,?,?,?,?,?,?,?,?)`;
-        const [orderResult] = await connection.execute(sqlCheck, [
-            orderNumber,
-            user_id,
-            total_amount,
-            buyer_name,
-            buyer_email,
-            buyer_phone,
-            recipient_name,
-            recipient_phone,
-            postal_code,
-            address,
-        ]);
+    const [orderResult] = await connection.execute(sqlCheck, [
+      orderNumber,
+      user_id,
+      total_amount,
+      buyer_name,
+      buyer_email,
+      buyer_phone,
+      recipient_name,
+      recipient_phone,
+      postal_code,
+      address,
+    ]);
 
-        const orderId = orderResult.insertId;
-        // 新增訂單商品
-        for (const item of items) {
-            const sqlCheckItem = `
+    const orderId = orderResult.insertId;
+    // 新增訂單商品
+    for (const item of items) {
+      const sqlCheckItem = `
             INSERT INTO order_items
             (order_id, product_id, quantity, price, size, color, material)
             VALUES(?,?,?,?,?,?,?)
             `;
-            await connection.execute(sqlCheckItem, [
-                orderId,
-                item.product_id,
-                item.quantity,
-                item.price,
-                item.size || null,
-                item.color || null,
-                item.material || null,
-            ]);
-        }
-
-        // 提交 transaction
-        await connection.commit();
-        res.status(201).json({
-            status: "success",
-            order_id: orderId,
-            message: "訂單建立成功",
-        });
-        // 2. 準備 ECPay參數
-        const tradeDate = new Date()
-            .toISOString()
-            .replace("T", " ")
-            .substring(0, 19);
-
-        const params = {
-            MerchantID,
-            MerchantTradeNo: `TS${orderId}`, // 訂單編號 (唯一)
-            MerchantTradeDate: tradeDate,
-            PaymentType: "aio",
-            TotalAmount: total_amount,
-            TradeDesc: "購物車結帳",
-            ItemName: items.map((i) => `${i.name}x${i.quantity}`).join("#"),
-            ReturnURL,
-            ClientBackURL,
-            ChoosePayment: "ALL",
-        };
-        // 3. 生成檢查碼
-        params.CheckMacValue = genCheckMacValue(params);
-
-        res.json({
-            status: "success",
-            orderId,
-            ecpayAction: "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5",
-            ecpayParams: params,
-        });
-    } catch (error) {
-        await connection.rollback();
-        const statusCode = typeof error.code === "number" ? error.code : 500;
-        const statusText = error.status ?? "error";
-        const message = error.message ?? "建立訂單失敗";
-        res.status(statusCode).json({
-            status: statusText,
-            message,
-        });
-    } finally {
-        connection.release();
+      await connection.execute(sqlCheckItem, [
+        orderId,
+        item.product_id,
+        item.quantity,
+        item.price,
+        item.size || null,
+        item.color || null,
+        item.material || null,
+      ]);
     }
+
+    // 提交 transaction
+    await connection.commit();
+    res.status(201).json({
+      status: "success",
+      order_id: orderId,
+      message: "訂單建立成功",
+    });
+    // 2. 準備 ECPay參數
+    const tradeDate = new Date()
+      .toISOString()
+      .replace("T", " ")
+      .substring(0, 19);
+
+    const params = {
+      MerchantID,
+      MerchantTradeNo: `TS${orderId}`, // 訂單編號 (唯一)
+      MerchantTradeDate: tradeDate,
+      PaymentType: "aio",
+      TotalAmount: total_amount,
+      TradeDesc: "購物車結帳",
+      ItemName: items.map((i) => `${i.name}x${i.quantity}`).join("#"),
+      ReturnURL,
+      ClientBackURL,
+      ChoosePayment: "ALL",
+    };
+    // 3. 生成檢查碼
+    params.CheckMacValue = genCheckMacValue(params);
+
+    res.json({
+      status: "success",
+      orderId,
+      ecpayAction: "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5",
+      ecpayParams: params,
+    });
+  } catch (error) {
+    await connection.rollback();
+    const statusCode = typeof error.code === "number" ? error.code : 500;
+    const statusText = error.status ?? "error";
+    const message = error.message ?? "建立訂單失敗";
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  } finally {
+    connection.release();
+  }
 });
 
 // #endregion--------------------------------
 
 // 查詢使用者單一訂單 - 修改版本
 router.get("/detail", async (req, res) => {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-        const { userId, orderId } = req.query;
-        if (!userId || !orderId) {
-            const err = new Error("缺少 userId 或 orderId");
-            err.code = 400;
-            err.status = "fail";
-            throw err;
-        }
+    const { userId, orderId } = req.query;
+    if (!userId || !orderId) {
+      const err = new Error("缺少 userId 或 orderId");
+      err.code = 400;
+      err.status = "fail";
+      throw err;
+    }
 
- 
+
     const sql = `
       SELECT 
         o.id AS order_id,
@@ -202,7 +202,6 @@ router.get("/detail", async (req, res) => {
         o.buyer_phone,
         o.recipient_name,
         o.recipient_phone,
-        o.postal_code,
         o.address,
         oi.product_id,
         oi.quantity,
@@ -231,7 +230,7 @@ router.get("/detail", async (req, res) => {
       ORDER BY oi.id ASC;
     `;
 
-        const [orders] = await connection.execute(sql, [userId, orderId]);
+    const [orders] = await connection.execute(sql, [userId, orderId]);
 
     if (!orders.length) {
       return res.status(404).json({
@@ -260,10 +259,8 @@ router.get("/detail", async (req, res) => {
       buyer_phone: orders[0].buyer_phone,
       recipient_name: orders[0].recipient_name,
       recipient_phone: orders[0].recipient_phone,
-      postal_code: orders[0].postal_code,
       address: orders[0].address,
       coupon_discount: couponDiscount,
-      shipping_discount: 0, // 如果有運費折扣邏輯可以加入
       coupon_name: orders[0].coupon_name || null,
       items: orders.map(item => ({
         product_id: item.product_id,
@@ -277,42 +274,76 @@ router.get("/detail", async (req, res) => {
       }))
     };
 
-        await connection.commit();
-        res.status(200).json({
-            status: "success",
-            data: orderData,
-            message: "訂單查詢成功",
-        });
-    } catch (error) {
-        if (connection) await connection.rollback();
+    await connection.commit();
+    res.status(200).json({
+      status: "success",
+      data: orderData,
+      message: "訂單查詢成功",
+    });
+  } catch (error) {
+    if (connection) await connection.rollback();
 
-        const statusCode = error.code ?? 500;
-        const statusText = error.status ?? "error";
-        const message = error.message ?? "訂單查詢錯誤，請洽管理人員";
-        res.status(statusCode).json({
-            status: statusText,
-            message,
-        });
-    } finally {
-        if (connection) connection.release();
+    console.error('Order detail error:', error);
+
+    // 正確的錯誤處理
+    let statusCode = 500;
+    let statusText = "error";
+    let message = "訂單查詢錯誤，請洽管理人員";
+
+    // 根據錯誤類型設定適當的 HTTP 狀態碼
+    if (error.code === 400 || error.status === "fail") {
+      statusCode = 400;
+      statusText = "fail";
+      message = error.message || "請求參數錯誤";
+    } else if (error.code && typeof error.code === 'string') {
+      // 處理資料庫錯誤代碼
+      switch (error.code) {
+        case 'ER_BAD_FIELD_ERROR':
+          statusCode = 500;
+          message = "資料庫欄位錯誤，請聯繫管理員";
+          break;
+        case 'ER_NO_SUCH_TABLE':
+          statusCode = 500;
+          message = "資料表不存在";
+          break;
+        case 'ER_DUP_ENTRY':
+          statusCode = 409;
+          message = "資料重複";
+          break;
+        default:
+          statusCode = 500;
+          message = "資料庫錯誤";
+      }
+    } else if (typeof error.code === 'number') {
+      statusCode = error.code;
+      statusText = error.status ?? "error";
+      message = error.message ?? "訂單查詢錯誤，請洽管理人員";
     }
+
+    res.status(statusCode).json({
+      status: statusText,
+      message,
+    });
+  } finally {
+    if (connection) connection.release();
+  }
 });
 
 
 // 查詢使用者全部訂單
 router.get("/", async (req, res) => {
-    let connection;
-    try {
-        const connection = await pool.getConnection();
+  let connection;
+  try {
+    const connection = await pool.getConnection();
 
-        const userId = req.query.userId;
-        if (!userId) {
-            return res.status(400).json({
-                status: "fail",
-                message: "缺少 user_id"
-            });
-        }
-        const sql = `
+    const userId = req.query.userId;
+    if (!userId) {
+      return res.status(400).json({
+        status: "fail",
+        message: "缺少 user_id"
+      });
+    }
+    const sql = `
       SELECT 
     o.id AS order_id,
     o.order_number,
@@ -340,7 +371,7 @@ ORDER BY o.create_at DESC, oi.id ASC;
 
         `;
 
-        const [orders] = await connection.execute(sql, [userId]);
+    const [orders] = await connection.execute(sql, [userId]);
 
 
     res.status(200).json({
@@ -519,7 +550,7 @@ router.post("/create", async (req, res) => {
         address,
         'pending', // 超商付款狀態為待付款
         paymentMethod || '超商付款',
-        coupon_id|| null // 使用 coupon_id 而不是 coupon_code
+        coupon_id || null // 使用 coupon_id 而不是 coupon_code
       ]);
 
       const orderId = orderResult.insertId;
@@ -551,6 +582,17 @@ router.post("/create", async (req, res) => {
       }
 
       console.log(`✅ 訂單明細創建成功: ${itemCount} 項商品`);
+
+      // 在創建訂單明細後，提交事務前加入
+      if (coupon_id && discountAmount > 0) {
+        await connection.execute(`
+          UPDATE user_coupons 
+          SET status = 1, used_at = NOW() 
+          WHERE user_id = ? AND coupon_id = ? AND status = 0`
+        , [userId, coupon_id]);
+
+        console.log("✅ 優惠券狀態已更新為已使用");
+      }
 
       // 提交事務
       await connection.commit();

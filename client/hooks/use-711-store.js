@@ -14,7 +14,7 @@ function useLocalStorage(key, initialValue) {
 
     const setValue = (value) => {
         try {
-            setStoredValue(value)
+            setStoredValue(value);
             if (typeof window !== 'undefined') {
                 window.localStorage.setItem(key, JSON.stringify(value))
             }

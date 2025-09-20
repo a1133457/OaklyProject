@@ -19,7 +19,7 @@
 .green-button:hover {
     background-color: var(--primary-04, #9DB8AF);
 }
-.green-button h6:hover {
+.green-button:hover h6{
     color: var(--color-gray-900);
 
 }
@@ -44,7 +44,9 @@
 
 .white-button:hover {
     background-color: var(--primary-04, #9DB8AF);
-    
+}
+.white-button:hover h6{
+    color: var(--color-gray-900);
 }
 
 

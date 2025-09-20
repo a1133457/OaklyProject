@@ -288,67 +288,12 @@ function CartFinContent() {
             </h4>
 
             {/* 顯示從資料庫取得的商品資料 */}
-            {/* {orderData?.items && orderData.items.length > 0 ? (
-                            <div className="order-items">
-                                {orderData.items.map((item, index) => (
-                                    <div key={index} className="order-item" style={{
-                                        marginBottom: '10px',
-                                        padding: '10px',
-                                        border: '1px solid #eee',
-                                        borderRadius: '5px'
-                                    }}>
-                                        <h5>{item.product_name || item.name}</h5>
-                                        <p>數量: {item.quantity}</p>
-                                        <p>單價: NT$ {item.price?.toLocaleString()}</p>
-                                        {item.size && <p>尺寸: {item.size}</p>}
-                                        {item.color && <p>顏色: {item.color}</p>}
-                                        {item.material && <p>材質: {item.material}</p>}
-                                    </div>
-                                ))}
-                            </div>
-                        ) : ( */}
+
             <CartCard />
-            {/* )} */}
 
             <div className="orange-side fin pc">
-              {/* {couponData.map((coupon) => (
-                                <div key={coupon.id} className="used-coupons pc">
-                                    <h6>此訂單使用的優惠券</h6>
-                                    <CartCoupon
-                                        key={coupon.id}
-                                        tag={
-                                            coupon.category_names &&
-                                                coupon.category_names.split(",").length >= 6
-                                                ? "全館適用"
-                                                : `${coupon.category_names}適用`
-                                        }
-                                        name={coupon.name}
-                                        smallCost={`滿 $${coupon.min_discount} 使用`}
-                                        // date={` ${coupon.expire_at.split("T")[0]}到期`}
-                                        costCate1={coupon.discount_type === 1 ? "$ " : ""}
-                                        cost={
-                                            coupon.discount_type === 1
-                                                ? parseInt(coupon.discount)
-                                                : parseInt(coupon.discount * 100)
-                                        }
-                                        costCate2={coupon.discount_type === 1 ? "" : " 折"}
-                                    />
-                                </div>
-                            ))} */}
 
-              {/* 顯示從資料庫取得的總金額 */}
-              {/* {orderData?.total_amount ? (
-                                <div className="total-section" style={{
-                                    textAlign: 'right',
-                                    fontSize: '18px',
-                                    fontWeight: 'bold',
-                                    marginTop: '10px'
-                                }}>
-                                    <h5>訂單總金額: NT$ {orderData.total_amount.toLocaleString()}</h5>
-                                </div>
-                            ) : ( */}
               <Total />
-              {/*  )} */}
             </div>
           </div>
 
@@ -368,8 +313,8 @@ function CartFinContent() {
                       {orderData?.status === "paid"
                         ? "已付款"
                         : pageStatus === "success"
-                        ? "已付款"
-                        : "已付款"}
+                          ? "已付款"
+                          : "已付款"}
                     </p>
                     <p>{orderData?.payment_method}</p>
                   </div>
@@ -395,13 +340,7 @@ function CartFinContent() {
           <div className="info-button pc">
             <WhiteButton
               step="檢視訂單詳情"
-              onClick={() => {
-                if (orderData?.orderId) {
-                  router.push(`/orders/${orderData.orderId}`);
-                } else {
-                  console.warn("沒有 orderId，無法導航到訂單詳情");
-                }
-              }}
+              to={"/user/order"}
             />
             <GreenButton
               step="繼續購物"
@@ -480,8 +419,8 @@ function CartFinContent() {
                             {orderData?.status === "paid"
                               ? "已付款"
                               : pageStatus === "success"
-                              ? "已付款"
-                              : "已付款"}
+                                ? "已付款"
+                                : "已付款"}
                           </td>
                         </tr>
                         <tr>

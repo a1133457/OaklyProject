@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';  
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import '@/styles/order/order-detail.css';
-import { useAuth } from '@/hooks/use-auth'; 
+import { useAuth } from '@/hooks/use-auth';
 
 export default function OrderDetailPage() {
-  const { user } = useAuth();  
-  const searchParams = useSearchParams(); 
-  const orderId = searchParams.get('id');  
+  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('id');
 
   const [activeTab, setActiveTab] = useState('all');
 
@@ -27,7 +27,7 @@ export default function OrderDetailPage() {
     { id: 'return-refund', label: '退貨/退款' }
   ];
 
-  const fetchOrderDetail =useCallback( async () => {
+  const fetchOrderDetail = useCallback(async () => {
     if (!orderId || !user || !user.id) {
       setError('訂單ID不存在或請先登入');
       setLoading(false);
@@ -65,10 +65,10 @@ export default function OrderDetailPage() {
     }
   }, [user?.id, orderId]);
 
-useEffect(() => {
+  useEffect(() => {
     fetchOrderDetail(); // 直接調用
   }, [fetchOrderDetail]);
-  
+
 
 
 
@@ -99,7 +99,8 @@ useEffect(() => {
       couponDiscount: orderData.coupon_discount || 0,
       shippingDiscount: orderData.shipping_discount || 0,
       couponName: orderData.coupon_name || null,
-      total: orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || orderData.total_amount,
+      total: orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+      total_amount: orderData.total_amount,
       recipient: orderData.recipient_name || '收件人',
       phone: orderData.recipient_phone || '聯絡電話',
       address: `${orderData.postal_code || ''} ${(orderData.address || '').replace(/^240\s*/, '')}`.trim() || '配送地址', shippingMethod: '宅配',
@@ -137,7 +138,7 @@ useEffect(() => {
             <div className="error-state">
               <i className="fas fa-exclamation-triangle"></i>
               <p>載入失敗: {error}</p>
-              <Link href="/order">
+              <Link href="/user/order">
                 <button className="return-btn">返回訂單列表</button>
               </Link>
             </div>
@@ -239,15 +240,16 @@ useEffect(() => {
                     <div className="pricing-details">
                       <div className="details">
                         <span>{orderDetail.couponName ? `${orderDetail.couponName}折扣` : '優惠券折扣'}</span>
-                        <span>運費折扣</span>
+                        {/* <span>運費折扣</span> */}
                       </div>
                       <div className="discount-details">
                         {orderDetail.items.map((item, index) => (
                           <div key={index} className="quantity-price">
                             {item.quantity} x NT$ {item.price} = NT$ {item.quantity * item.price}
                           </div>
-                        ))}                        <div className="discount">- NT$ {orderDetail.couponDiscount}</div>
-                        <div className="discount">- NT$ {orderDetail.shippingDiscount}</div>
+                        ))}                        \
+                        <div className="discount">- NT$ {orderDetail.couponDiscount}</div>
+                        {/* <div className="discount">- NT$ {orderDetail.shippingDiscount}</div> */}
                       </div>
                     </div>
                   </div>
@@ -264,7 +266,7 @@ useEffect(() => {
               </div>
 
               <div className="order-total">
-                訂單金額 : NT$ {orderDetail.total} {/* ← 改用 orderDetail */}
+                訂單金額 : NT$ {orderDetail.total_amount} {/* ← 改用 orderDetail */}
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import CartCard from "./_components/cartCard";
 import Gradation from "./_components/gradation";
 import Total from "./_components/total";
@@ -13,10 +13,27 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function CartOrderPage() {
-  const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } =
-    useCart();
+  const { items, onDecrease, onIncrease, onRemove, totalQty, totalAmount } = useCart();
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
+  const router = useRouter();
+
+  const cartItems = JSON.parse(localStorage.getItem("cart"));
+  useEffect(() => {
+    // 檢查購物車是否為空
+    if (!cartItems || cartItems.length === 0) {
+      Swal.fire({
+        title: "目前購物車中沒有商品",
+        text: "請先到商品頁面選購商品",
+        icon: "info",
+        confirmButtonText: "去選購商品",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push("/products"); // 導向商品頁面，請根據你的路由調整
+        }
+      });
+    }
+  }, [cartItems, router]); // 依賴項包含 items 和 router
 
   // 處理全選/取消全選
   const handleSelectAll = (checked) => {
@@ -151,6 +168,18 @@ export default function CartOrderPage() {
     });
   };
 
+  const confirmItems = () => {
+    const selectedItemsArray = Array.from(selectedItems);
+    if (selectedItemsArray.length === 0) {
+      Swal.fire({
+        title: "購物車中沒有商品",
+        text: "請到商品列表選擇商品",
+        icon: "info",
+        confirmButtonText: "確定",
+      });
+    }
+  }
+
   // useEffect(() => {
   //   return () => {
   //     localStorage.removeItem("delivery");
@@ -158,7 +187,11 @@ export default function CartOrderPage() {
   //     localStorage.removeItem("invoice");
   //   };
   // }, []);
+  // if(!items){
+  //   return(
 
+  //   )
+  // }
   return (
     <div className="container-fluid">
       <Gradation step="order" />
@@ -196,6 +229,9 @@ export default function CartOrderPage() {
           </div>
           <div className="cart-main-first">
             <h4>訂單資訊</h4>
+            {/* if(!items){
+
+            } */}
             <CartCard
               type="order"
               selectedItems={selectedItems}

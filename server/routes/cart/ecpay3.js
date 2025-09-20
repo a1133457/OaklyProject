@@ -158,12 +158,21 @@ router.post("/ecpay/create", async (req, res) => {
     // 修正：從多個來源獲取 coupon_id
     let actualCouponId = null;
 
-    if (coupon_id) {
-      actualCouponId = coupon_id;
-      console.log("從 coupon_id 參數獲取:", actualCouponId);
-    } else if (coupon?.coupon_id) {
+    console.log("=== 開始解析優惠券 ID ===");
+    console.log("req.body.coupon_id:", req.body.coupon_id);
+    console.log("req.body.coupon:", req.body.coupon);
+    console.log("couponId 參數:", couponId);
+
+    // 優先使用 coupon 物件中的 coupon_id
+    if (coupon?.coupon_id) {
       actualCouponId = coupon.coupon_id;
       console.log("從 coupon.coupon_id 獲取:", actualCouponId);
+    } else if (coupon_id) {
+      actualCouponId = coupon_id;
+      console.log("從 coupon_id 參數獲取:", actualCouponId);
+    } else if (couponId) {
+      actualCouponId = couponId;
+      console.log("從 couponId 參數獲取 (備用):", actualCouponId);
     }
 
     console.log("=== 優惠券ID確認 ===");
@@ -232,8 +241,8 @@ router.post("/ecpay/create", async (req, res) => {
           console.log("最大金額限制 (max_amount):", userCoupon.max_amount);
 
           // 根據 discount_type 計算折扣
-          // 假設: 0 = 固定金額折扣, 1 = 百分比折扣
-          if (userCoupon.discount_type === 0) {
+          // 假設: 1 = 固定金額折扣, 2 = 百分比折扣
+          if (userCoupon.discount_type === 1) {
             // 固定金額折扣
             validatedDiscountAmount = Math.min(
               userCoupon.discount,
@@ -242,7 +251,7 @@ router.post("/ecpay/create", async (req, res) => {
             console.log(
               `固定折扣計算: min(${userCoupon.discount}, ${calculatedAmount}) = ${validatedDiscountAmount}`
             );
-          } else if (userCoupon.discount_type === 1) {
+          } else if (userCoupon.discount_type === 2) {
             // 百分比折扣
             const discountRate = userCoupon.discount;
             console.log("百分比折扣率:", discountRate);
@@ -258,7 +267,7 @@ router.post("/ecpay/create", async (req, res) => {
             } else if (discountRate > 0 && discountRate < 1) {
               // 如果是 0.05，表示 5% 折扣
               validatedDiscountAmount = Math.floor(
-                calculatedAmount * discountRate
+                calculatedAmount * (1 - discountRate)
               );
               console.log(
                 `小數折扣計算: ${calculatedAmount} * ${discountRate} = ${validatedDiscountAmount}`
@@ -442,6 +451,11 @@ router.post("/ecpay/create", async (req, res) => {
       EncryptType: 1,
     };
 
+    console.log("=== 準備暫存訂單資料 ===");
+    console.log("actualCouponId:", actualCouponId);
+    console.log("appliedCoupon:", appliedCoupon);
+    console.log("validatedDiscountAmount:", validatedDiscountAmount);
+
     // === 4. 將訂單資料暫存到 session 或記憶體中 ===
     global.pendingOrders = global.pendingOrders || new Map();
     global.pendingOrders.set(TradeNo, {
@@ -537,6 +551,20 @@ router.post("/ecpay/confirm", async (req, res) => {
     await connection.beginTransaction();
 
     try {
+
+      // 在這裡加入 debug 程式碼
+      console.log("=== 詳細的 Debug 資訊 ===");
+      console.log("orderData.coupon_id:", orderData.coupon_id);
+      console.log("orderData.coupon_id 的型別:", typeof orderData.coupon_id);
+      console.log("orderData.applied_coupon:", orderData.applied_coupon);
+
+      const finalCouponId = orderData.coupon_id || null;
+      console.log("最終 coupon_id:", finalCouponId);
+      console.log("最終 coupon_id 型別:", typeof finalCouponId);
+      console.log("是否為 null:", finalCouponId === null);
+      console.log("是否為 undefined:", finalCouponId === undefined);
+
+
       // 創建正式訂單記錄
       const [orderResult] = await connection.execute(
         `
@@ -567,7 +595,7 @@ router.post("/ecpay/confirm", async (req, res) => {
           orderData.address,
           "paid",
           "信用卡",
-          orderData.applied_coupon ? orderData.applied_coupon.coupon_id : null, // ← 修正這裡
+          finalCouponId,
         ]
       );
 
@@ -603,6 +631,17 @@ router.post("/ecpay/confirm", async (req, res) => {
       }
 
       console.log(`✅ 訂單明細創建成功: ${itemCount} 項商品`);
+
+      // 在創建訂單明細後，提交事務前加入
+      if (orderData.applied_coupon && orderData.coupon_id) {
+        await connection.execute(`
+          UPDATE user_coupons 
+          SET status = 1, used_at = NOW() 
+          WHERE user_id = ? AND coupon_id = ? AND status = 0`
+          , [orderData.user_id, orderData.coupon_id]);
+
+        console.log("✅ 優惠券狀態已更新為已使用");
+      }
 
       // 清理暫存資料
       global.pendingOrders.delete(orderNo);
@@ -649,8 +688,8 @@ router.get("/orders/:orderId", async (req, res) => {
       `
       SELECT 
         id, order_number, user_id, total_amount, buyer_name, buyer_email, 
-        buyer_phone, recipient_name, recipient_phone, address,
-        create_at
+        buyer_phone, recipient_name, recipient_phone, address, payment_status, 
+        payment_method, create_at
       FROM orders 
       WHERE id = ?
     `,

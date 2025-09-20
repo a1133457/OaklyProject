@@ -51,7 +51,7 @@ input[type="checkbox"] {
   align-items: center;
   gap: 10px;
   border: none;
-  border-radius: 25px;
+  border-radius: 5px;
   background-color: var(--primary-05, #588072);
 }
 

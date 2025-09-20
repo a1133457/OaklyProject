@@ -27,6 +27,10 @@
     box-shadow: 10px 10px 35px 0 rgba(0, 0, 0, 0.25);
 }
 
+.cart-main-first.pc h4{
+    border-bottom: 0;
+}
+
 .cart-main-first i {
     font-size: 100px;
     color: var(--primary-05);
