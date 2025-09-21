@@ -55,58 +55,72 @@ CREATE TABLE IF NOT EXISTS favorites (
     CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_fav_product FOREIGN KEY (product_id) REFERENCES products (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
-SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity,
-       p.name, p.price, p.product_img
+
+SELECT f.product_id, f.color_id, f.color_name, f.size_id, f.quantity, p.name, p.price, p.product_img
 FROM favorites f
-JOIN products p ON f.product_id = p.id
-WHERE f.user_id = 3;
+    JOIN products p ON f.product_id = p.id
+WHERE
+    f.user_id = 3;
 
 ALTER TABLE service_conversations ADD COLUMN guest_id VARCHAR(50);
+
 SELECT * FROM service_conversations WHERE id = 16;
-SELECT current_chats, max_chats FROM service_agents WHERE status = 'online';
-SELECT * FROM service_messages 
-WHERE conversation_id = 1 
+
+SELECT current_chats, max_chats
+FROM service_agents
+WHERE
+    status = 'online';
+
+SELECT *
+FROM service_messages
+WHERE
+    conversation_id = 1
 ORDER BY sent_at;
+
 UPDATE service_agents SET max_chats = 20 WHERE username = 'alice';
 ----加進去
-ALTER TABLE favorites 
+ALTER TABLE favorites
 ADD COLUMN color_id INT NULL,
 ADD COLUMN size_id INT NULL,
 ADD COLUMN quantity INT DEFAULT 1;
 -- UNSIGNED 不一致
 -- product_id → INT UNSIGNED
 -- id → INT
--- 必須一致，否則會錯。 
-ALTER TABLE favorites
-DROP COLUMN id;
-SELECT 
-  p.id,
-  p.name,
-  m.material_name,
-  ml.product_id,
-  ml.materials_id
-FROM products p
-LEFT JOIN materials_list ml ON p.id = ml.product_id
-LEFT JOIN materials m ON ml.materials_id = m.id
-WHERE p.id = 1
-LIMIT 5;ALTER TABLE favorites 
-ADD COLUMN color_name VARCHAR(50);
+-- 必須一致，否則會錯。
+ALTER TABLE favorites DROP COLUMN id;
+
+SELECT p.id, p.name, m.material_name, ml.product_id, ml.materials_id
+FROM
+    products p
+    LEFT JOIN materials_list ml ON p.id = ml.product_id
+    LEFT JOIN materials m ON ml.materials_id = m.id
+WHERE
+    p.id = 1
+LIMIT 5;
+
+ALTER TABLE favorites ADD COLUMN color_name VARCHAR(50);
 
 -- 複合唯一索引（防止重複收藏同商品同顏色）
 
 DROP INDEX IF EXISTS idx_favorites_unique;
-CREATE UNIQUE INDEX idx_favorites_unique 
-ON favorites(user_id, product_id, color_id);
-SELECT * FROM favorites WHERE user_id = 1 AND product_id = 52 AND color_id = 1;
+
+CREATE UNIQUE INDEX idx_favorites_unique ON favorites (user_id, product_id, color_id);
+
+SELECT *
+FROM favorites
+WHERE
+    user_id = 1
+    AND product_id = 52
+    AND color_id = 1;
 
 CREATE TABLE stock_notifications (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT,
-  product_id INT,
-  color_id INT,
-  size_id INT,
-  email VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    product_id INT,
+    color_id INT,
+    size_id INT,
+    email VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -------------------------------------
@@ -356,6 +370,7 @@ CREATE TABLE orders (
     recipient_name VARCHAR(100) NOT NULL,
     recipient_phone VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
+    delivery_method VARCHAR(20) NULL,
     -- 付款資訊
     payment_status VARCHAR(20),
     payment_method VARCHAR(20),
@@ -378,12 +393,12 @@ CREATE TABLE order_items (
 )
 
 UPDATE order_items oi
-JOIN product_sizes ps 
-  ON oi.product_id = ps.product_id
-JOIN sizes s 
-  ON ps.size_id = s.id
-  SET oi.size = s.size_label
-  WHERE oi.size = s.size_label;
+JOIN product_sizes ps ON oi.product_id = ps.product_id
+JOIN sizes s ON ps.size_id = s.id
+SET
+    oi.size = s.size_label
+WHERE
+    oi.size = s.size_label;
 
 ALTER TABLE order_items MODIFY COLUMN size VARCHAR(500);
 
