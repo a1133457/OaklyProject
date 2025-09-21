@@ -63,13 +63,16 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                     />
                     <div className="card-title">
                       <h6>{item.name}</h6>
-                      <p>顏色: {item.color || "無顏色"}</p>
-                      <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
-                      <p>
-                        材質:{" "}
-                        {item.materials.find((m) => m.id === item.materials_id)
-                          ?.material_name || "無材質"}
-                      </p>
+                      <div className="cart-content">
+
+                        <p>顏色: {item.color || "無顏色"}</p>
+                        <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                        <p>
+                          材質:{" "}
+                          {item.materials.find((m) => m.id === item.materials_id)
+                            ?.material_name || "無材質"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                   <div className="card-right">
@@ -109,7 +112,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
           </div>
 
           {/* 手機-------------------------- */}
-          <div className="cart-line phone"></div>
+          <div className="cart-line phone" ></div>
           <div className="cart-card phone">
             {items.map((item, index) => (
               <div key={index} className="cardAll">
@@ -187,13 +190,15 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                   />
                   <div className="card-title">
                     <h5>{item.name}</h5>
-                    <p>顏色: {item.color || "無顏色"}</p>
-                    <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
-                    <p>
-                      材質:
-                      {item.materials.find((m) => m.id === item.materials_id)
-                        ?.material_name || "無材質"}
-                    </p>
+                    <div className="cart-content">
+                      <p>顏色: {item.color || "無顏色"}</p>
+                      <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                      <p>
+                        材質:
+                        {item.materials.find((m) => m.id === item.materials_id)
+                          ?.material_name || "無材質"}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="card-right">
@@ -224,6 +229,7 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                           />
                           <div className="card-title detail">
                             <h6>{item.name}</h6>
+
                             <div>
                               <p>顏色: {item.color || "無顏色"}</p>
                               <p>

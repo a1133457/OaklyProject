@@ -77,9 +77,14 @@
 
 .cart-card {
     width: 100%;
-    background-color: var(--color-gray-100);
+}
+
+.cart-main{
     padding: 20px;
-    border-radius: 10px;
+    background-color: var(--color-gray-100);
+    margin-bottom: 10px;
+    border-radius: 20px;
+    
 }
 
 .orange-side {

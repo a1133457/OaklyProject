@@ -18,8 +18,8 @@ export default function CartOrderPage() {
   const [selectAll, setSelectAll] = useState(false);
   const router = useRouter();
 
-  const cartItems = JSON.parse(localStorage.getItem("cart"));
   useEffect(() => {
+    const cartItems = JSON.parse(localStorage.getItem("cart"));
     // 檢查購物車是否為空
     if (!cartItems || cartItems.length === 0) {
       Swal.fire({
@@ -33,7 +33,7 @@ export default function CartOrderPage() {
         }
       });
     }
-  }, [cartItems, router]); // 依賴項包含 items 和 router
+  }, [router]); // 依賴項包含 items 和 router
 
   // 處理全選/取消全選
   const handleSelectAll = (checked) => {
@@ -90,7 +90,7 @@ export default function CartOrderPage() {
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         cancelButtonText: "取消",
-        confirmButtonText: "確認刪除!",
+        confirmButtonText: "確認刪除",
       }).then((result) => {
         // 如果使用者按下確認按鈕後執行這裡
         if (result.isConfirmed) {
@@ -151,7 +151,7 @@ export default function CartOrderPage() {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       cancelButtonText: "取消",
-      confirmButtonText: "確認刪除!",
+      confirmButtonText: "確認刪除",
     }).then((result) => {
       // 如果使用者按下確認按鈕後執行這裡
       if (result.isConfirmed) {
