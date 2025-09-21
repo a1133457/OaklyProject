@@ -266,6 +266,23 @@ export default function CartEcpayCheck() {
       console.log("buyerData:", buyerData);
       console.log("recipientData:", recipientData);
 
+      // 新增：讀取配送方式和門市資訊
+      const deliveryMethod = localStorage.getItem("delivery");
+      const storeDataRaw = localStorage.getItem("store711");
+
+      let storeData = {};
+      if (storeDataRaw) {
+        try {
+          storeData = JSON.parse(storeDataRaw);
+        } catch (error) {
+          console.error("解析門市資料失敗:", error);
+        }
+      }
+
+      console.log("=== 配送方式和門市資訊 ===");
+      console.log("deliveryMethod:", deliveryMethod);
+      console.log("storeData:", storeData);
+
       // 8. 準備付款請求（使用從 orderData 中獲取的完整信息）
       const paymentRequest = {
         // 金額相關
@@ -290,6 +307,11 @@ export default function CartEcpayCheck() {
         recipientPhone: recipientData?.phone || shippingInfo?.recipientPhone || buyerData?.phone || '',
         postcode: recipientData?.postcode || shippingInfo?.postcode || '',
         address: recipientData?.address || shippingInfo?.recipientAddress || shippingInfo?.address || '',
+
+        // 新增：配送方式和門市資訊
+        deliveryMethod: deliveryMethod || "宅配",
+        storeName: storeData.storename || null,
+        storeAddress: storeData.storeaddress || null,
 
         // 購物車商品
         cartItems: cartItems.map(item => ({
@@ -397,7 +419,7 @@ export default function CartEcpayCheck() {
           <div className="card-body p-4">
             <div className="text-center">
               <div className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
-                style={{ width: '64px', height: '64px',backgroundColor:'var(--primary-04)' }}>
+                style={{ width: '64px', height: '64px', backgroundColor: 'var(--primary-04)' }}>
                 <div className="spinner-border text-white" role="status" style={{ width: '24px', height: '24px' }}>
                   <span className="visually-hidden">Loading...</span>
                 </div>

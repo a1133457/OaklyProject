@@ -54,7 +54,39 @@ router.post("/add", async (req, res) => {
       recipient_city,
       recipient_address,
       items,
+      deliveryMethod,    // "宅配" 或 "超商自取"
+      storeName,         // 門市名稱（如果是超商自取）
+      storeAddress       // 門市地址（如果是超商自取）
     } = req.body;
+
+    // === 處理配送地址：根據配送方式決定最終地址 ===
+    let finalAddress = recipient_address; // 預設使用原始地址
+    let finalDeliveryMethod = deliveryMethod || "宅配";
+
+    console.log("=== 處理配送方式和地址 ===");
+    console.log("deliveryMethod:", deliveryMethod);
+    console.log("原始 recipient_address:", recipient_address);
+    console.log("storeName:", storeName);
+    console.log("storeAddress:", storeAddress);
+
+    if (deliveryMethod === "超商自取") {
+      // 超商自取：驗證門市資訊並替換地址
+      if (!storeName || !storeAddress) {
+        const err = new Error("超商自取需要提供門市名稱和地址");
+        err.code = 400;
+        err.status = "fail";
+        throw err;
+      }
+
+      // 將地址替換為格式化的門市資訊
+      finalAddress = `${storeName} - ${storeAddress}`;
+
+      console.log("✅ 超商自取 - 地址已更新為:", finalAddress);
+    } else {
+      // 宅配：使用原始收件地址
+      console.log("✅ 宅配 - 使用原始收件地址:", finalAddress);
+    }
+
     if (
       !user_id ||
       !total_amount ||
@@ -102,11 +134,15 @@ router.post("/add", async (req, res) => {
       buyer_phone,
       recipient_name,
       recipient_phone,
-      postal_code,
-      address,
+      finalAddress, // 使用處理後的地址
+      finalDeliveryMethod
     ]);
 
     const orderId = orderResult.insertId;
+    console.log("✅ 訂單主表創建成功, ID:", orderId);
+    console.log("✅ 已保存配送方式:", finalDeliveryMethod);
+    console.log("✅ 已保存地址:", finalAddress);
+
     // 新增訂單商品
     for (const item of items) {
       const sqlCheckItem = `
@@ -203,6 +239,7 @@ router.get("/detail", async (req, res) => {
         o.recipient_name,
         o.recipient_phone,
         o.address,
+        o.delivery_method,
         oi.product_id,
         oi.quantity,
         oi.price,
@@ -260,6 +297,7 @@ router.get("/detail", async (req, res) => {
       recipient_name: orders[0].recipient_name,
       recipient_phone: orders[0].recipient_phone,
       address: orders[0].address,
+      delivery_method: orders[0].delivery_method, // 新增這個欄位
       coupon_discount: couponDiscount,
       coupon_name: orders[0].coupon_name || null,
       items: orders.map(item => ({
@@ -349,6 +387,7 @@ router.get("/", async (req, res) => {
     o.order_number,
     o.total_amount,
     o.create_at,
+    o.delivery_method,
     oi.product_id,
     oi.quantity,
     oi.price,
@@ -413,7 +452,10 @@ router.post("/create", async (req, res) => {
       paymentMethod,
       coupon,
       coupon_id,
-      discountAmount
+      discountAmount,
+      deliveryMethod,    // "宅配" 或 "超商自取"
+      storeName,         // 門市名稱（如果是超商自取）
+      storeAddress       // 門市地址（如果是超商自取）
     } = req.body;
 
     // 處理購物車商品資料
@@ -459,6 +501,42 @@ router.post("/create", async (req, res) => {
     }
 
     console.log("最終 cartItems:", cartItems);
+
+    // === 處理配送地址：根據配送方式決定最終地址 ===
+    let finalAddress = address; // 預設使用原始地址
+    let finalDeliveryMethod = deliveryMethod;
+
+    console.log("=== 處理配送方式和地址 ===");
+    console.log("deliveryMethod:", deliveryMethod);
+    console.log("原始 address:", address);
+    console.log("storeName:", storeName);
+    console.log("storeAddress:", storeAddress);
+
+    if (deliveryMethod === "超商自取") {
+      // 超商自取：驗證門市資訊並替換地址
+      if (!storeName || !storeAddress) {
+        return res.status(400).json({
+          success: false,
+          message: "超商自取需要提供門市名稱和地址"
+        });
+      }
+
+      // 將地址替換為格式化的門市資訊
+      finalAddress = `${storeName} - ${storeAddress}`;
+
+      console.log("✅ 超商自取 - 地址已更新為:", finalAddress);
+    } else {
+      // 宅配：使用原始收件地址
+      console.log("✅ 宅配 - 使用原始收件地址:", finalAddress);
+    }
+
+    // 驗證必要資料（使用處理後的地址）
+    if (!totalAmount || !userId || !recipientName || !recipientPhone || !finalAddress) {
+      return res.status(400).json({
+        success: false,
+        message: '缺少必要資訊：totalAmount, userId, recipientName, recipientPhone, address'
+      });
+    }
 
     // === 1. 驗證商品資料與計算金額 ===
     let calculatedAmount = 0;
@@ -534,10 +612,11 @@ router.post("/create", async (req, res) => {
           recipient_name, 
           recipient_phone, 
           address,
+          delivery_method,
           payment_status,
           payment_method,
           coupon_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
       `, [
         orderNo,
         userId,
@@ -547,7 +626,8 @@ router.post("/create", async (req, res) => {
         buyerPhone || null,
         recipientName,
         recipientPhone,
-        address,
+        finalAddress, // 使用處理後的地址
+        finalDeliveryMethod,
         'pending', // 超商付款狀態為待付款
         paymentMethod || '超商付款',
         coupon_id || null // 使用 coupon_id 而不是 coupon_code
@@ -555,6 +635,8 @@ router.post("/create", async (req, res) => {
 
       const orderId = orderResult.insertId;
       console.log("✅ 訂單主表創建成功, ID:", orderId);
+      console.log("✅ 已保存配送方式:", finalDeliveryMethod);
+      console.log("✅ 已保存地址:", finalAddress);
 
       // 創建訂單明細
       let itemCount = 0;
@@ -589,7 +671,7 @@ router.post("/create", async (req, res) => {
           UPDATE user_coupons 
           SET status = 1, used_at = NOW() 
           WHERE user_id = ? AND coupon_id = ? AND status = 0`
-        , [userId, coupon_id]);
+          , [userId, coupon_id]);
 
         console.log("✅ 優惠券狀態已更新為已使用");
       }

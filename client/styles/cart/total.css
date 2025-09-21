@@ -51,6 +51,9 @@
   align-self: stretch;
 
 }
+.total h5{
+  width: fit-content;
+}
 
 
 .nextOrBack {

@@ -54,11 +54,11 @@ export default function Payment() {
               type="radio"
               name="payment"
               value="credit"
-              id="radioDefault1"
+              id="radioDefault2-1"
               checked={selectP === "信用卡"}
               onChange={() => setSelectP("信用卡")}
             />
-            <label className="form-check-label pc" htmlFor="radioDefault1">
+            <label className="form-check-label pc" htmlFor="radioDefault2-1">
               <h6>信用卡</h6>
             </label>
           </div>
@@ -69,11 +69,11 @@ export default function Payment() {
               type="radio"
               name="payment"
               value="store"
-              id="radioDefault2"
+              id="radioDefault2-2"
               checked={selectP === "超商付款"}
               onChange={() => setSelectP("超商付款")}
             />
-            <label className="form-check-label pc" htmlFor="radioDefault2">
+            <label className="form-check-label pc" htmlFor="radioDefault2-2">
               <h6>超商付款</h6>
             </label>
           </div>
@@ -86,11 +86,11 @@ export default function Payment() {
               className="form-check-input pc"
               type="radio"
               name="invoice"
-              id="radioDefault1"
+              id="radioDefault3-1"
               checked={selectI === "電子發票"}
               onChange={() => setSelectI("電子發票")}
             />
-            <label className="form-check-label pc" htmlFor="radioDefault1">
+            <label className="form-check-label pc" htmlFor="radioDefault3-1">
               <h6>電子發票</h6>
             </label>
             {/* 額外輸入框 (只有某些選項會出現) */}
@@ -105,11 +105,11 @@ export default function Payment() {
               className="form-check-input pc"
               type="radio"
               name="invoice"
-              id="radioDefault2"
+              id="radioDefault3-2"
               checked={selectI === "紙本發票"}
               onChange={() => setSelectI("紙本發票")}
             />
-            <label className="form-check-label pc" htmlFor="radioDefault2">
+            <label className="form-check-label pc" htmlFor="radioDefault3-2">
               <h6>紙本發票</h6>
             </label>
           </div>

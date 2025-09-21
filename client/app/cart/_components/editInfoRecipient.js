@@ -65,16 +65,7 @@ export default function EditInfoRecipient({ type, onClose }) {
   console.log("user.buyer:", user?.buyer);
   console.log("user.recipient:", user?.recipient);
 
-  // 沒有抓到 user 資料
-  if (!isClient || !user) {
-    return (
-      <div className="overlay">
-        <div className="list">
-          <div>載入中...</div>
-        </div>
-      </div>
-    );
-  }
+
   const cleanType = String(type).trim();
 
   const handleSave = () => {

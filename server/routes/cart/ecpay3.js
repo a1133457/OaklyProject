@@ -44,6 +44,9 @@ router.post("/ecpay/create", async (req, res) => {
       recipientName,
       recipientPhone,
       address,
+      deliveryMethod,
+      storeName,
+      storeAddress
     } = req.body;
 
     // 特別處理 cartItems
@@ -90,12 +93,40 @@ router.post("/ecpay/create", async (req, res) => {
     console.log("cartItems 是陣列:", Array.isArray(cartItems));
     console.log("cartItems 長度:", cartItems?.length);
 
+    // === 處理配送地址：根據配送方式決定最終地址 ===
+    let finalAddress = address; // 預設使用原始地址
+    let finalDeliveryMethod = deliveryMethod || "宅配";
+
+    console.log("=== 處理配送方式和地址 ===");
+    console.log("deliveryMethod:", deliveryMethod);
+    console.log("原始 address:", address);
+    console.log("storeName:", storeName);
+    console.log("storeAddress:", storeAddress);
+
+    if (deliveryMethod === "超商自取") {
+      // 超商自取：驗證門市資訊並替換地址
+      if (!storeName || !storeAddress) {
+        return res.status(400).json({
+          status: "fail",
+          message: "超商自取需要提供門市名稱和地址"
+        });
+      }
+
+      // 將地址替換為格式化的門市資訊
+      finalAddress = `${storeName} - ${storeAddress}`;
+
+      console.log("✅ 超商自取 - 地址已更新為:", finalAddress);
+    } else {
+      // 宅配：使用原始收件地址
+      console.log("✅ 宅配 - 使用原始收件地址:", finalAddress);
+    }
+
     if (
       !totalAmount ||
       !userId ||
       !recipientName ||
       !recipientPhone ||
-      !address
+      !finalAddress
     ) {
       return res.status(400).json({
         status: "fail",
@@ -465,7 +496,8 @@ router.post("/ecpay/create", async (req, res) => {
       buyer_phone: buyerPhone || null,
       recipient_name: recipientName,
       recipient_phone: recipientPhone,
-      address: address,
+      address: finalAddress,
+      delivery_method: finalDeliveryMethod,
       original_amount: calculatedAmount, // 原始金額
       discount_amount: validatedDiscountAmount, // 折扣金額
       total_amount: expectedFinalAmount, // 最終金額
@@ -482,6 +514,8 @@ router.post("/ecpay/create", async (req, res) => {
     console.log("=== 暫存資料確認 ===");
     console.log("actualCouponId:", actualCouponId);
     console.log("appliedCoupon:", appliedCoupon);
+    console.log("暫存地址:", finalAddress);
+    console.log("配送方式:", finalDeliveryMethod);
 
     // === 5. 產生付款頁面並跳轉 ===
     const create = new ecpay_payment(options);
@@ -578,10 +612,11 @@ router.post("/ecpay/confirm", async (req, res) => {
           recipient_name, 
           recipient_phone, 
           address,
+          delivery_method,
           payment_status,
           payment_method,
           coupon_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)
       `,
         [
           orderNo,
@@ -593,6 +628,7 @@ router.post("/ecpay/confirm", async (req, res) => {
           orderData.recipient_name,
           orderData.recipient_phone,
           orderData.address,
+          orderData.delivery_method,
           "paid",
           "信用卡",
           finalCouponId,
@@ -601,6 +637,8 @@ router.post("/ecpay/confirm", async (req, res) => {
 
       const orderId = orderResult.insertId;
       console.log("✅ 訂單主表創建成功, ID:", orderId);
+      console.log("✅ 已保存配送方式:", orderData.delivery_method);
+      console.log("✅ 已保存地址:", orderData.address);
 
       // 創建訂單明細
       let itemCount = 0;
@@ -686,12 +724,7 @@ router.get("/orders/:orderId", async (req, res) => {
     // 查詢訂單主資料
     const [orderRows] = await connection.execute(
       `
-      SELECT 
-        id, order_number, user_id, total_amount, buyer_name, buyer_email, 
-        buyer_phone, recipient_name, recipient_phone, address, payment_status, 
-        payment_method, create_at
-      FROM orders 
-      WHERE id = ?
+      SELECT * FROM orders WHERE id = ?
     `,
       [orderId]
     );

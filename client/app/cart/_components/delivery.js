@@ -15,7 +15,7 @@ export default function Delivery() {
     if (typeof window !== "undefined") {
       // 使用 cloudflare 臨時 tunnel，每次重啟都會變
       const CLOUDFLARE_URL =
-        "https://trial-transform-lauderdale-hourly.trycloudflare.com";
+        "https://utilities-reproductive-federal-hdtv.trycloudflare.com";
 
       // 組成完整的 URL，包含 protocol + host + path
       const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;
@@ -95,11 +95,11 @@ export default function Delivery() {
               className="form-check-input pc"
               type="radio"
               name="delivery"
-              id="radioDefault1"
+              id="radioDefault1-2"
               checked={selectedDelivery === "超商自取"}
               onChange={() => setSelectedDelivery("超商自取")}
             />
-            <label className="form-check-label pc" htmlFor="radioDefault1">
+            <label className="form-check-label pc" htmlFor="radioDefault1-2">
               <h6>超商自取</h6>
             </label>
           </div>
@@ -179,16 +179,16 @@ export default function Delivery() {
               <div className="d-list phone">
                 <div className="form-check phone">
                   <input
-                    className="form-check-input phone"
+                    className="form-check-input"
                     type="radio"
                     name="delivery"
-                    id="radioDefault1"
+                    id="radioDefault1-1"
                     checked={selectedDelivery === "宅配"}
                     onChange={() => setSelectedDelivery("宅配")}
                   />
                   <label
                     className="form-check-label phone"
-                    htmlFor="radioDefault1"
+                    htmlFor="radioDefault1-1"
                   >
                     <h6>宅配</h6>
                   </label>
@@ -197,18 +197,23 @@ export default function Delivery() {
               <div className="d-list phone">
                 <div className="form-check phone">
                   <input
-                    className="form-check-input phone"
+                    className="form-check-input"
                     type="radio"
                     name="delivery"
-                    id="radioDefault2"
+                    id="radioDefault2-1"
                     checked={selectedDelivery === "超商自取"}
                     onChange={() => setSelectedDelivery("超商自取")}
                   />
                   <label
                     className="form-check-label phone"
-                    htmlFor="radioDefault2"
+                    htmlFor="radioDefault2-1"
                   >
                     <h6>超商自取</h6>
+                    <p>
+                      超商取貨之包裹規格限制為重量不超過 5
+                      公斤（含包裝），三邊長度合計不得超過 105 公分，且最長邊長度不得超過
+                      45 公分。
+                    </p>
                   </label>
                 </div>
                 {selectedDelivery === "超商自取" && (

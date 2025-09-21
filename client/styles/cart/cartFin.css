@@ -3,6 +3,7 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    margin-bottom: 40px;
 }
 
 .main-side {
@@ -41,6 +42,10 @@
     flex-direction: column;
     align-items: start;
     gap: 20px;
+}
+
+.cart-main-first.fin-card.pc h5{
+    width: 100%;
 }
 
 .card-left {

@@ -19,6 +19,15 @@ function CartFinContent() {
   const [couponData, setCouponData] = useState([]);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed2, setIsCollapsed2] = useState(true);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+  const toggleCollapse2 = () => {
+    setIsCollapsed2(!isCollapsed2);
+  };
 
   useEffect(() => {
     // 清空 localStorage 的函數
@@ -218,6 +227,18 @@ function CartFinContent() {
     return new Date(dateString).toLocaleString("zh-TW");
   };
 
+  // 添加這兩個函數來處理地址顯示
+  const getAddressLabel = () => {
+    return orderData?.delivery_method === "超商自取" ? "取貨門市" : "收件地址";
+  };
+
+  const getDisplayAddress = () => {
+    // 直接顯示 address 欄位的內容
+    // 如果是超商自取，address 已經是 "門市名稱 - 門市地址" 的格式
+    // 如果是宅配，address 就是一般收件地址
+    return orderData?.address || "地址載入中...";
+  };
+
   // 載入中狀態
   if (pageStatus === "loading") {
     return (
@@ -227,8 +248,8 @@ function CartFinContent() {
           <div className="main-side pc">
             <div className="cart-main-first pc">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <h2>處理付款結果中...</h2>
-              <h4>{message}</h4>
+              <h4>處理付款結果中...</h4>
+              <h6>{message}</h6>
             </div>
           </div>
         </div>
@@ -244,16 +265,16 @@ function CartFinContent() {
         <div className="cart">
           <div className="main-side pc">
             <div className="cart-main-first pc">
-              <h2>處理失敗</h2>
+              <h4>處理失敗</h4>
               <i
                 className="fa-regular fa-circle-xmark"
                 style={{ color: "red", fontSize: "48px" }}
               ></i>
-              <h4>{message}</h4>
+              <p>{message}</p>
               <div className="info-button pc" style={{ marginTop: "20px" }}>
                 <button
                   onClick={() => router.push("/cart")}
-                  className="btn btn-primary"
+                  className="btn" style={{ color: "var(--white)", backgroundColor: "var(--primary-05)" }}
                 >
                   返回購物車
                 </button>
@@ -282,59 +303,98 @@ function CartFinContent() {
           </div>
 
           <div className="cart-main-first fin-card pc">
-            <h4>
+            <h5
+              onClick={toggleCollapse}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
               訂單編號:{" "}
               {orderData?.order_number || orderData?.orderNo || "14356457856"}
-            </h4>
+              <span style={{
+                fontSize: '14px',
+                color: '#666',
+                transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease'
+              }}>
+                ▼
+              </span>
+            </h5>
 
-            {/* 顯示從資料庫取得的商品資料 */}
+            {!isCollapsed && (
+              <>
+                {/* 顯示從資料庫取得的商品資料 */}
 
-            <CartCard />
+                < CartCard />
 
-            <div className="orange-side fin pc">
+                <div className="orange-side fin pc">
 
-              <Total />
-            </div>
+                  <Total />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="cart-main-first fin-card pc">
-            <h4>訂單資訊</h4>
-            <div className="fin-info pc">
-              <div className="orange-side pc">
-                <div className="information pc">
-                  <div className="info-1 pc">
-                    <h6>成立時間</h6>
-                    <h6>付款狀態</h6>
-                    <h6>付款方式</h6>
-                  </div>
-                  <div className="info-2 pc">
-                    <p>{formatDateTime(orderData?.create_at)}</p>
-                    <p>
-                      {orderData?.status === "paid"
-                        ? "已付款"
-                        : pageStatus === "success"
+            <h5
+              onClick={toggleCollapse2}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >訂單資訊
+              <span style={{
+                fontSize: '14px',
+                color: '#666',
+                transform: isCollapsed2 ? 'rotate(-90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease'
+              }}>
+                ▼
+              </span>
+            </h5>
+            {!isCollapsed2 && (
+              <div className="fin-info pc">
+                <div className="orange-side pc">
+                  <div className="information pc">
+                    <div className="info-1 pc">
+                      <h6>成立時間</h6>
+                      <h6>付款狀態</h6>
+                      <h6>付款方式</h6>
+                    </div>
+                    <div className="info-2 pc">
+                      <p>{formatDateTime(orderData?.create_at)}</p>
+                      <p>
+                        {orderData?.status === "paid"
                           ? "已付款"
-                          : "已付款"}
-                    </p>
-                    <p>{orderData?.payment_method}</p>
+                          : pageStatus === "success"
+                            ? "已付款"
+                            : "未付款"}
+                      </p>
+                      <p>{orderData?.payment_method}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="orange-side pc">
+                  <div className="information pc">
+                    <div className="info-1 pc">
+                      <h6>收件人</h6>
+                      <h6>收件人電話</h6>
+                      <h6>{getAddressLabel()}</h6>
+                    </div>
+                    <div className="info-2 pc">
+                      <p>{orderData?.recipient_name}</p>
+                      <p>{orderData?.recipient_phone}</p>
+                      <p>{getDisplayAddress()}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="orange-side pc">
-                <div className="information pc">
-                  <div className="info-1 pc">
-                    <h6>收件人</h6>
-                    <h6>收件人電話</h6>
-                    <h6>收件地址</h6>
-                  </div>
-                  <div className="info-2 pc">
-                    <p>{orderData?.recipient_name}</p>
-                    <p>{orderData?.recipient_phone}</p>
-                    <p>{orderData?.address}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="info-button pc">
@@ -372,14 +432,13 @@ function CartFinContent() {
                           <td>訂單編號</td>
                           <td>
                             {orderData?.order_number ||
-                              orderData?.orderNo ||
-                              "14356457856"}
+                              orderData?.orderNo}
                           </td>
                         </tr>
                         <tr>
                           <td>訂單金額</td>
                           <td>
-                            NT${" "}
+                            NT$
                             {orderData?.total_amount?.toLocaleString() || "0"}
                           </td>
                         </tr>
@@ -390,7 +449,7 @@ function CartFinContent() {
                         <tr>
                           <td>詳細資訊</td>
                           <td>
-                            <Link href={`/orders/${orderData?.orderId || ""}`}>
+                            <Link href={"/user/orders"}>
                               前往查看
                             </Link>
                           </td>
@@ -420,7 +479,7 @@ function CartFinContent() {
                               ? "已付款"
                               : pageStatus === "success"
                                 ? "已付款"
-                                : "已付款"}
+                                : "未付款"}
                           </td>
                         </tr>
                         <tr>
@@ -454,7 +513,7 @@ function CartFinContent() {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

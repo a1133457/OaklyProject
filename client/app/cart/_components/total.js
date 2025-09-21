@@ -200,6 +200,7 @@ export default function Total({ type }) {
       if (!items || items.length === 0) {
         throw new Error("購物車為空");
       }
+
       // 從 localStorage 取得收件人資訊
       const recipientData = JSON.parse(localStorage.getItem("recipient"));
       const buyerData = JSON.parse(localStorage.getItem("buyer"));
@@ -210,9 +211,113 @@ export default function Total({ type }) {
       const buyerName = buyerData.name;
       const buyerEmail = buyerData.email;
       const buyerPhone = buyerData.phone;
+      const deliveryMethod = localStorage.getItem("delivery"); // 添加這行
+      const storeData = JSON.parse(localStorage.getItem("store711") || "{}");
 
       const currentPaymentMethod = localStorage.getItem("payment");
       setPaymentMethod(currentPaymentMethod);
+
+      console.log("=== 配送方式檢查 ===");
+      console.log("deliveryMethod:", deliveryMethod);
+      console.log("storeData:", storeData);
+
+     // === 開始驗證各項必填資料 ===
+
+      // 1. 驗證聯絡人資訊
+      if (!recipientData.name && !buyerData.name) {
+        Swal.fire({
+          title: "資料不完整",
+          text: "請先填寫聯絡人資訊",
+          icon: "warning",
+          confirmButtonText: "確定",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!recipientData.phone && !buyerData.phone) {
+        Swal.fire({
+          title: "資料不完整",
+          text: "請先填寫聯絡人電話",
+          icon: "warning",
+          confirmButtonText: "確定",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!recipientData.address && !buyerData.address) {
+        Swal.fire({
+          title: "資料不完整",
+          text: "請先填寫聯絡人地址",
+          icon: "warning",
+          confirmButtonText: "確定",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 2. 驗證運送方式
+      if (!deliveryMethod) {
+        Swal.fire({
+          title: "資料不完整",
+          text: "請先選擇運送方式",
+          icon: "warning",
+          confirmButtonText: "確定",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 3. 驗證付款方式
+      if (!currentPaymentMethod) {
+        Swal.fire({
+          title: "資料不完整",
+          text: "請先選擇付款方式",
+          icon: "warning",
+          confirmButtonText: "確定",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 4. 驗證發票類型
+      const invoiceType = localStorage.getItem("invoice");
+      if (!invoiceType) {
+        Swal.fire({
+          title: "資料不完整",
+          text: "請先選擇發票類型",
+          icon: "warning",
+          confirmButtonText: "確定",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 5. 如果選擇超商自取，驗證是否已選擇門市
+      if (deliveryMethod === "超商自取") {
+        if (!storeData.storename || !storeData.storeaddress) {
+          Swal.fire({
+            title: "資料不完整",
+            text: "請先選擇取貨門市",
+            icon: "warning",
+            confirmButtonText: "確定",
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 處理地址邏輯
+      let finalAddress = address;
+      if (deliveryMethod === "超商自取") {
+        if (storeData.storename && storeData.storeaddress) {
+          finalAddress = `${storeData.storename} - ${storeData.storeaddress}`;
+          console.log("✅ 超商自取地址已處理:", finalAddress);
+        } else {
+          throw new Error("請先選擇取貨門市");
+        }
+      }
 
       // 準備完整的訂單資料並存到 localStorage
       const orderDataForPayment = {
@@ -224,7 +329,9 @@ export default function Total({ type }) {
         coupon_id: selectedCoupon ? selectedCoupon.coupon_id : null,
         discountAmount: discountAmount,
         paymentMethod: currentPaymentMethod,
-        delivery: delivery,
+        deliveryMethod: deliveryMethod,
+        storeName: storeData.storename || null,
+        storeAddress: storeData.storeaddress || null,
         orderNo: `ORD${Date.now()}`, // 生成訂單編號
         timestamp: new Date().toISOString(),
 
@@ -330,7 +437,7 @@ export default function Total({ type }) {
           </div>
           <div className="t-line"></div>
           <div className="total">
-            <h5>總金額</h5>
+            <h5 >總金額</h5>
             <h4>${finalAmount}</h4>
           </div>
           <div className="total phone">
@@ -406,7 +513,7 @@ export default function Total({ type }) {
           <div className="t-line"></div>
           <div className="total">
             <h6>總金額</h6>
-            <h5>${finalAmount}</h5>
+            <h5 style={{ width: "fit-content" }}>${finalAmount}</h5>
           </div>
         </div>
       </>
