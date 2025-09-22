@@ -155,7 +155,13 @@ export function AuthProvider({ children }) {
 
       // 清掉前端狀態
       setUser(null);
-      localStorage.clear();
+
+      // 只清理認證相關資料，保留購物車和其他重要資料
+      const authItemsToRemove = ['reactLoginToken', 'user'];
+      authItemsToRemove.forEach(item => {
+        localStorage.removeItem(item);
+      });
+
       // ✅ 新增登出提示
       toast.success("已登出");
       router.push("/"); // 導回首頁
@@ -313,7 +319,7 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem(appKey);
     // console.log("checkToken token:", token);
 
-    if (!token) {
+    if (!token || token === 'null' || token === 'undefined') {
       setUser(null);
       setIsLoading(false);
       return;
@@ -327,15 +333,40 @@ export function AuthProvider({ children }) {
           },
         });
         const result = await res.json();
+
         if (result.status == "success") {
-          const token = result.data.token; // 伺服器會回新的 30 分 token
-          setUser(result.data.user);
-          localStorage.setItem(appKey, token); // 覆蓋舊的 token
-          setIsLoading(false);
+          const newToken = result.data.token;
+          const userData = result.data.user;
+
+          // 確保後端返回的 token 有效
+          if (newToken && newToken !== 'null' && newToken !== 'undefined') {
+            setUser(userData);
+            localStorage.setItem(appKey, newToken);
+            setIsLoading(false);
+          } else {
+            // 後端返回無效 token
+            console.error('後端返回無效 token:', newToken);
+            setIsLoading(false);
+            setUser(null);
+
+            const authItemsToRemove = ['reactLoginToken', 'user'];
+            authItemsToRemove.forEach(item => {
+              localStorage.removeItem(item);
+            });
+
+            toast.warning("登入狀態異常，請重新登入");
+          }
         } else {
 
           setIsLoading(false);
-          localStorage.clear();
+          setUser(null);
+
+          // 只清理認證相關資料，保留購物車等其他資料
+          const authItemsToRemove = ['reactLoginToken', 'user'];
+          authItemsToRemove.forEach(item => {
+            localStorage.removeItem(item);
+          });
+
           toast.warning(result.message || "登入已過期，請重新登入"); // ✅ 新增
           // router.push('/auth/login');
 

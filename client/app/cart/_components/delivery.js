@@ -15,7 +15,7 @@ export default function Delivery() {
     if (typeof window !== "undefined") {
       // 使用 cloudflare 臨時 tunnel，每次重啟都會變
       const CLOUDFLARE_URL =
-        "https://utilities-reproductive-federal-hdtv.trycloudflare.com";
+        "https://quantum-rice-saves-usual.trycloudflare.com";
 
       // 組成完整的 URL，包含 protocol + host + path
       const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;
@@ -69,6 +69,45 @@ export default function Delivery() {
     console.log("📍 使用回調 URL:", callbackUrl);
     openWindow();
   };
+
+  useEffect(() => {
+    // 當選擇超商自取時，啟動保護機制
+    if (selectedDelivery === "超商自取") {
+      const loginToken = localStorage.getItem("reactLoginToken");
+      const userData = localStorage.getItem("user");
+
+      if (loginToken && loginToken !== 'null' && loginToken !== 'undefined') {
+        console.log("啟動 711 選擇保護機制");
+
+        // 多重備份
+        sessionStorage.setItem("protectToken", loginToken);
+        sessionStorage.setItem("protectUser", userData || "");
+
+        // 強制監控和恢復
+        const protectInterval = setInterval(() => {
+          const current = localStorage.getItem("reactLoginToken");
+          const backup = sessionStorage.getItem("protectToken");
+
+          if ((!current || current === 'null' || current === 'undefined') && backup) {
+            console.log("檢測到登入被清除，立即恢復");
+            localStorage.setItem("reactLoginToken", backup);
+            const userBackup = sessionStorage.getItem("protectUser");
+            if (userBackup) {
+              localStorage.setItem("user", userBackup);
+            }
+          }
+        }, 100); // 每 100ms 檢查一次
+
+        // 5 分鐘後停止保護
+        setTimeout(() => {
+          clearInterval(protectInterval);
+          sessionStorage.removeItem("protectToken");
+          sessionStorage.removeItem("protectUser");
+          console.log("保護機制已停止");
+        }, 5 * 60 * 1000);
+      }
+    }
+  }, [selectedDelivery]);
 
   return (
     <>
@@ -185,6 +224,7 @@ export default function Delivery() {
                     id="radioDefault1-1"
                     checked={selectedDelivery === "宅配"}
                     onChange={() => setSelectedDelivery("宅配")}
+                    onClick={(e) => e.stopPropagation()}// 防止重複觸發
                   />
                   <label
                     className="form-check-label phone"
@@ -203,6 +243,7 @@ export default function Delivery() {
                     id="radioDefault2-1"
                     checked={selectedDelivery === "超商自取"}
                     onChange={() => setSelectedDelivery("超商自取")}
+                    onClick={(e) => e.stopPropagation()}// 防止重複觸發
                   />
                   <label
                     className="form-check-label phone"

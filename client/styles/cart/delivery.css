@@ -27,8 +27,9 @@
   .phone {
     display: block;
   }
-  .delivery.phone{
-     overflow: hidden;
+
+  .delivery.phone {
+    overflow: hidden;
   }
 
   /* .toggleBtn.phone {
@@ -55,4 +56,49 @@
     padding: 20px 20px;
     gap: 20px;
   }
+
+  .form-check.phone {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+  }
+
+  .form-check-input.phone {
+    /* 確保 radio 按鈕可見且功能正常 */
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    margin-top: 2px;
+    flex-shrink: 0;
+
+    /* 重置可能被覆蓋的樣式 */
+    appearance: auto !important;
+    -webkit-appearance: radio !important;
+    -moz-appearance: radio !important;
+
+    /* 確保可以點擊 */
+    pointer-events: auto !important;
+    cursor: pointer !important;
+
+    /* 確保在手機上可見 */
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .form-check-input.phone:checked {
+    /* 確保選中狀態可見 */
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+  }
+
+  .form-check-label.phone {
+    flex: 1;
+    cursor: pointer !important;
+    /* 確保 label 可以觸發 radio */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
 }

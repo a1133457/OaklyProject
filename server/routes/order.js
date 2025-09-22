@@ -123,8 +123,8 @@ router.post("/add", async (req, res) => {
     const orderNumber = randomOrderNumber();
     // 新增訂單
     const sqlCheck = `INSERT INTO orders
-            (order_number, user_id, total_amount, buyer_name, buyer_email, buyer_phone, recipient_name, recipient_phone, postal_code, address)
-            VALUES(?,?,?,?,?,?,?,?,?,?)`;
+            (order_number, user_id, total_amount, buyer_name, buyer_email, buyer_phone, recipient_name, recipient_phone, address, delivery_method, payment_method)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?)`;
     const [orderResult] = await connection.execute(sqlCheck, [
       orderNumber,
       user_id,
@@ -135,7 +135,8 @@ router.post("/add", async (req, res) => {
       recipient_name,
       recipient_phone,
       finalAddress, // 使用處理後的地址
-      finalDeliveryMethod
+      finalDeliveryMethod,
+      '超商付款'
     ]);
 
     const orderId = orderResult.insertId;
@@ -594,10 +595,25 @@ router.post("/create", async (req, res) => {
     }
 
     // === 2. 生成訂單編號 ===
-    const orderNo = "ORD" + Date.now() + userId;
+    function randomOrderNumber(length = 6) {  // 改為 6
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const dateStr = `${year}${month}${day}`;  // 8 位
+      const chars = "01234567890";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `${dateStr}${result}`;  // 8 + 6 = 14 位數
+    }
+    const orderNo = randomOrderNumber();
 
     // === 3. 開始資料庫事務 ===
     await connection.beginTransaction();
+
+    const finalPaymentMethod = paymentMethod || '超商付款';
 
     try {
       // 創建正式訂單記錄（根據實際資料庫結構）
@@ -629,7 +645,7 @@ router.post("/create", async (req, res) => {
         finalAddress, // 使用處理後的地址
         finalDeliveryMethod,
         'pending', // 超商付款狀態為待付款
-        paymentMethod || '超商付款',
+        finalPaymentMethod,
         coupon_id || null // 使用 coupon_id 而不是 coupon_code
       ]);
 
@@ -686,8 +702,9 @@ router.post("/create", async (req, res) => {
         message: "超商付款訂單建立成功",
         orderNo: orderNo,
         orderId: orderId,
+        redirectUrl: `/cart/fin?orderNo=${orderNo}`,
         status: 'pending',
-        paymentMethod: paymentMethod || '超商付款',
+        paymentMethod: finalPaymentMethod,
         totalAmount: finalAmount,
         data: {
           order_number: orderNo,
@@ -696,9 +713,9 @@ router.post("/create", async (req, res) => {
           items: validatedItems,
           recipient_name: recipientName,
           recipient_phone: recipientPhone,
-          address: address,
+          address: finalAddress,
           payment_status: 'pending',
-          payment_method: paymentMethod || '超商付款',
+          payment_method: finalPaymentMethod,
           created_at: new Date().toISOString()
         }
       });
@@ -715,6 +732,43 @@ router.post("/create", async (req, res) => {
       success: false,
       message: "系統錯誤: " + error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+// 新增：根據 order_number 查找訂單 ID 的 API
+router.get("/find-order-by-number/:orderNumber", async (req, res) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const { orderNumber } = req.params;
+
+    const [orders] = await connection.execute(
+      `SELECT id, order_number FROM orders WHERE order_number = ?`,
+      [orderNumber]
+    );
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "找不到對應的訂單"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: orders[0].id,
+        order_number: orders[0].order_number
+      }
+    });
+  } catch (error) {
+    console.error("查找訂單失敗:", error);
+    res.status(500).json({
+      success: false,
+      message: "系統錯誤: " + error.message
     });
   } finally {
     if (connection) connection.release();

@@ -127,29 +127,27 @@ export default function CartCard({ type, selectedItems, onItemSelect }) {
                     />
                     <div className="card-title">
                       <h6>{item.name}</h6>
-                      <p>顏色: {item.color || "無顏色"}</p>
-                      <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
-                      <p>
-                        材質:
-                        {item.materials.find((m) => m.id === item.materials_id)
-                          ?.material_name || "無材質"}
-                      </p>
-                      <div className="price-one">
-                        <h6>${item.price}</h6>
-                        <div className="quantity">
-                          <button
-                            onClick={() => onDecrease(item.id)}
-                            className="minus"
-                          >
-                            <i className="fa-solid fa-minus"></i>
-                          </button>
-                          <div className="num">{item.quantity}</div>
-                          <button
-                            onClick={() => onIncrease(item.id)}
-                            className="plus"
-                          >
-                            <i className="fa-solid fa-plus"></i>
-                          </button>
+                      <div className="cart-content">
+                        <p>顏色: {item.color || "無顏色"}</p>
+                        <p>size: {item.sizes[0].size_label || "無尺寸"}</p>
+                        <div className="price-one">
+                          <h6>${item.price}</h6>
+                          <div className="quantity">
+                            <button
+                              onClick={() => onDecrease(item.id)}
+                              disabled={item.quantity <= 1}
+                              className="minus"
+                            >
+                              <i className="fa-solid fa-minus"></i>
+                            </button>
+                            <div className="num">{item.quantity}</div>
+                            <button
+                              onClick={() => onIncrease(item.id)}
+                              className="plus"
+                            >
+                              <i className="fa-solid fa-plus"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

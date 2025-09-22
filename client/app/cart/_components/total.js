@@ -221,7 +221,7 @@ export default function Total({ type }) {
       console.log("deliveryMethod:", deliveryMethod);
       console.log("storeData:", storeData);
 
-     // === 開始驗證各項必填資料 ===
+      // === 開始驗證各項必填資料 ===
 
       // 1. 驗證聯絡人資訊
       if (!recipientData.name && !buyerData.name) {
@@ -383,6 +383,7 @@ export default function Total({ type }) {
         if (result.success) {
           // 清理購物車
           localStorage.removeItem("cart");
+
           // 導向完成頁面（不需要 orderNo 參數）
           // 顯示處理中訊息
           Swal.fire({
@@ -398,8 +399,9 @@ export default function Total({ type }) {
               Swal.showLoading();
             }
           }).then(() => {
-            router.push("/cart/fin");
-          });
+
+            router.push(`/cart/fin?orderNo=${result.orderNo}`);
+          })
         } else {
           throw new Error(result.message || "訂單建立失敗");
         }

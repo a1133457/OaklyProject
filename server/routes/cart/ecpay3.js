@@ -724,7 +724,12 @@ router.get("/orders/:orderId", async (req, res) => {
     // 查詢訂單主資料
     const [orderRows] = await connection.execute(
       `
-      SELECT * FROM orders WHERE id = ?
+      SELECT 
+         id, order_number, user_id, total_amount, create_at,
+          buyer_name, buyer_email, buyer_phone,
+          recipient_name, recipient_phone, address,
+          payment_method, payment_status, delivery_method
+      FROM orders WHERE id = ?
     `,
       [orderId]
     );

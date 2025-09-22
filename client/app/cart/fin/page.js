@@ -30,66 +30,44 @@ function CartFinContent() {
   };
 
   useEffect(() => {
-    // 清空 localStorage 的函數
-    const clearCartData = () => {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("cart");
-        localStorage.removeItem("selectedCoupon");
-        localStorage.removeItem("orderData");
-        localStorage.removeItem("finalAmount");
-        localStorage.removeItem("buyer");
-        localStorage.removeItem("recipient");
-        localStorage.removeItem("store711");
-        localStorage.removeItem("payment");
-        localStorage.removeItem("delivery");
-        localStorage.removeItem("invoice");
-        console.log("✅ localStorage 已清理");
-      }
-    };
-
-    // 監聽頁面即將離開的事件
-    const handleBeforeUnload = () => {
-      clearCartData();
-    };
-
-    // 監聽頁面隱藏事件（更可靠）
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        clearCartData();
-      }
-    };
-
-    // 監聽頁面離開事件
-    const handlePageHide = () => {
-      clearCartData();
-    };
-
-    // 綁定事件監聽器
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", handlePageHide);
-
-    // 針對 Next.js 路由變化的處理
-    const handleRouteChange = () => {
-      clearCartData();
-    };
-
-    // 如果使用 Next.js router，監聽路由變化
-    if (router.events) {
-      router.events.on("routeChangeStart", handleRouteChange);
+    if (orderData) {
+      console.log("=== orderData 已更新 ===");
+      console.log("orderData 完整內容:", orderData);
+      console.log("payment_method:", orderData.payment_method);
+      console.log("recipient_name:", orderData.recipient_name);
+      console.log("recipient_phone:", orderData.recipient_phone);
+      console.log("address:", orderData.address);
+      console.log("delivery_method:", orderData.delivery_method);
     }
+  }, [orderData]);
 
-    // 清理函數：組件卸載時移除事件監聽器
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", handlePageHide);
+  useEffect(() => {
+    if (pageStatus === 'success' && orderData) {
+      const clearCartDataAfterSuccess = () => {
+        const loginToken = localStorage.getItem("reactLoginToken");
+        const userData = localStorage.getItem("userData");
 
-      if (router.events) {
-        router.events.off("routeChangeStart", handleRouteChange);
-      }
-    };
-  }, [router]);
+        const itemsToRemove = [
+          "cart", "selectedCoupon", "orderData", "finalAmount",
+          "buyer", "recipient", "store711", "payment", "delivery", "invoice"
+        ];
+
+        itemsToRemove.forEach(item => {
+          localStorage.removeItem(item);
+        });
+
+        if (loginToken) localStorage.setItem("reactLoginToken", loginToken);
+        if (userData) localStorage.setItem("userData", userData);
+
+        console.log("✅ 訂單完成後清理購物車資料");
+      };
+
+      // 延遲清理，讓用戶看到完成頁面
+      const timer = setTimeout(clearCartDataAfterSuccess, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [pageStatus, orderData]);
 
   useEffect(() => {
     const userCoupons = localStorage.getItem("selectedCoupon");
@@ -145,6 +123,10 @@ function CartFinContent() {
 
   const handleOrderProcess = async (orderNo) => {
     try {
+      console.log("開始處理訂單:", orderNo); // ✅ 移到開頭
+      setMessage("正在確認付款並建立訂單..."); // ✅ 移到開頭
+
+
       // 在處理訂單前先保存優惠券數據
       const savedCoupons = localStorage.getItem("selectedCoupon");
       let parsedCoupons = [];
@@ -158,61 +140,129 @@ function CartFinContent() {
         }
       }
 
-      // ... 原有的訂單處理邏輯 ...
 
-      // 1. 確認付款並創建訂單（一步完成）
-      const confirmResponse = await fetch(
-        "http://localhost:3005/api/cart/ecpay/confirm",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ orderNo }),
+      // 判斷訂單類型：根據 orderNo 格式或其他方式判斷
+      const isEcpayOrder = orderNo.startsWith("ORD") && orderNo.length > 15; // 綠界訂單格式
+      const isStorePaymentOrder = orderNo.startsWith("ORD") && orderNo.length <= 15; // 超商付款格式
+
+      console.log("訂單類型判斷:");
+      console.log("isEcpayOrder:", isEcpayOrder);
+      console.log("isStorePaymentOrder:", isStorePaymentOrder);
+
+      if (isEcpayOrder) {
+        // === 綠界支付流程：需要先確認付款再創建訂單 ===
+        console.log("=== 處理綠界支付訂單 ===");
+
+        // 1. 確認付款並創建訂單（一步完成）
+        const confirmResponse = await fetch(
+          "http://localhost:3005/api/cart/ecpay/confirm",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ orderNo }),
+          }
+        );
+
+        const confirmResult = await confirmResponse.json();
+        console.log("確認結果:", confirmResult);
+
+        if (!confirmResult.success) {
+          setPageStatus("error");
+          setMessage(confirmResult.message || "訂單確認失敗");
+          return;
         }
-      );
 
-      const confirmResult = await confirmResponse.json();
-      console.log("確認結果:", confirmResult);
+        // 2. 從資料庫讀取剛創建的完整訂單資料
+        setMessage("正在讀取訂單資料...");
+        const orderResponse = await fetch(
+          `http://localhost:3005/api/cart/orders/${confirmResult.orderId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (!confirmResult.success) {
-        setPageStatus("error");
-        setMessage(confirmResult.message || "訂單確認失敗");
-        return;
+        const orderResult = await orderResponse.json();
+        console.log("API 回應:", orderResult);
+        console.log("orderResult.data:", orderResult.data);
+
+        if (!orderResult.success) {
+          setPageStatus("error");
+          setMessage("讀取訂單資料失敗: " + orderResult.message);
+          return;
+        }
+
+        // 3. 設置成功狀態和資料（包含優惠券）
+        console.log("設置訂單資料:", orderResult.data);
+
+        const finalOrderData = {
+          ...confirmResult,
+          ...orderResult.data,
+          usedCoupons: parsedCoupons, // 保存使用的優惠券
+        };
+
+        console.log("最終 orderData:", finalOrderData);
+
+        setPageStatus("success");
+        setOrderData(finalOrderData);
+        setCouponData(parsedCoupons); // 確保 couponData 有數據
+
+        console.log("✅ 訂單處理完成");
+      } else {
+        // === 超商付款流程：訂單已存在，直接讀取 ===
+        console.log("=== 處理超商付款訂單 ===");
+        try {
+
+          const findOrderResponse = await fetch(
+            `http://localhost:3005/api/order/find-order-by-number/${orderNo}`,
+            { method: "GET", headers: { "Content-Type": "application/json" } }
+          );
+
+          if (!findOrderResponse.ok) {
+            throw new Error("找不到訂單");
+          }
+
+          const findResult = await findOrderResponse.json();
+          const orderId = findResult.data?.id;
+
+          if (!orderId) {
+            throw new Error("無法獲取訂單ID");
+          }
+
+          // 讀取訂單詳情
+          const orderResponse = await fetch(
+            `http://localhost:3005/api/cart/orders/${orderId}`,
+            { method: "GET", headers: { "Content-Type": "application/json" } }
+          );
+
+          const orderResult = await orderResponse.json();
+          if (!orderResult.success) {
+            setPageStatus("error");
+            setMessage("讀取訂單資料失敗: " + orderResult.message);
+            return;
+          }
+
+          // 設置成功狀態
+          setPageStatus("success");
+          setOrderData({
+            ...orderResult.data,
+            usedCoupons: parsedCoupons,
+          });
+          setCouponData(parsedCoupons);
+
+        } catch (error) {
+          console.error("處理超商付款訂單失敗:", error);
+          setPageStatus("error");
+          setMessage("找不到訂單資料，請聯繫客服");
+          return;
+        }
       }
 
-      // 2. 從資料庫讀取剛創建的完整訂單資料
-      setMessage("正在讀取訂單資料...");
-      const orderResponse = await fetch(
-        `http://localhost:3005/api/cart/orders/${confirmResult.orderId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const orderResult = await orderResponse.json();
-      console.log("訂單資料:", orderResult);
-
-      if (!orderResult.success) {
-        setPageStatus("error");
-        setMessage("讀取訂單資料失敗: " + orderResult.message);
-        return;
-      }
-      // 3. 設置成功狀態和資料（包含優惠券）
-      setPageStatus("success");
-      setOrderData({
-        ...confirmResult,
-        ...orderResult.data,
-        usedCoupons: parsedCoupons, // 保存使用的優惠券
-      });
-      setCouponData(parsedCoupons); // 確保 couponData 有數據
-
-      console.log("開始處理訂單:", orderNo);
-      setMessage("正在確認付款並建立訂單...");
-
+      console.log("訂單處理完成");
 
     } catch (error) {
       console.error("處理訂單時發生錯誤:", error);
@@ -369,10 +419,10 @@ function CartFinContent() {
                     <div className="info-2 pc">
                       <p>{formatDateTime(orderData?.create_at)}</p>
                       <p>
-                        {orderData?.status === "paid"
+                        {orderData?.payment_status === "paid"
                           ? "已付款"
-                          : pageStatus === "success"
-                            ? "已付款"
+                          : orderData?.payment_status === "pending"
+                            ? "待付款"
                             : "未付款"}
                       </p>
                       <p>{orderData?.payment_method}</p>
@@ -449,7 +499,7 @@ function CartFinContent() {
                         <tr>
                           <td>詳細資訊</td>
                           <td>
-                            <Link href={"/user/orders"}>
+                            <Link href={"/user/order"}>
                               前往查看
                             </Link>
                           </td>
@@ -470,15 +520,15 @@ function CartFinContent() {
                       <tbody>
                         <tr>
                           <td>付款方式</td>
-                          <td>信用卡</td>
+                          <td>{orderData?.payment_method}</td>
                         </tr>
                         <tr>
                           <td>付款狀態</td>
                           <td>
-                            {orderData?.status === "paid"
+                            {orderData?.payment_status === "paid"
                               ? "已付款"
-                              : pageStatus === "success"
-                                ? "已付款"
+                              : orderData?.payment_status === "pending"
+                                ? "待付款"
                                 : "未付款"}
                           </td>
                         </tr>
@@ -486,7 +536,7 @@ function CartFinContent() {
                           <td>付款時間</td>
                           <td>
                             {formatDateTime(
-                              orderData?.paid_at || orderData?.create_at
+                              orderData?.create_at
                             )}
                           </td>
                         </tr>

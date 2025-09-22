@@ -28,6 +28,38 @@ export default function ShipCallbackPage() {
         window.close();
     };
 
+    useEffect(() => {
+        // 在 shipCallback 頁面也啟動保護
+        const loginToken = localStorage.getItem("reactLoginToken");
+        const userData = localStorage.getItem("user");
+
+        if (loginToken && loginToken !== 'null') {
+            sessionStorage.setItem("callbackProtectToken", loginToken);
+            sessionStorage.setItem("callbackProtectUser", userData || "");
+
+            const callbackProtect = setInterval(() => {
+                const current = localStorage.getItem("reactLoginToken");
+                const backup = sessionStorage.getItem("callbackProtectToken");
+
+                if ((!current || current === 'null') && backup) {
+                    localStorage.setItem("reactLoginToken", backup);
+                    const userBackup = sessionStorage.getItem("callbackProtectUser");
+                    if (userBackup) {
+                        localStorage.setItem("user", userBackup);
+                    }
+                    console.log("shipCallback 頁面恢復登入狀態");
+                }
+            }, 50);
+
+            // 30 秒後停止
+            setTimeout(() => {
+                clearInterval(callbackProtect);
+                sessionStorage.removeItem("callbackProtectToken");
+                sessionStorage.removeItem("callbackProtectUser");
+            }, 30000);
+        }
+    }, []);
+
     return (
         <>
             {/* Bootstrap CSS */}
@@ -37,7 +69,7 @@ export default function ShipCallbackPage() {
             />
 
             <div className="min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
-               
+
 
                 {/* Progress Bar */}
                 <div className="bg-white border-bottom">
@@ -218,7 +250,7 @@ export default function ShipCallbackPage() {
                     </div>
                 </div>
 
-               
+
             </div>
         </>
     );

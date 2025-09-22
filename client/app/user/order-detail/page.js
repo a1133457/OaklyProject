@@ -83,6 +83,35 @@ export default function OrderDetailPage() {
     const orderData = rawData;
     console.log('訂單資料:', orderData);
 
+    // 計算商品總金額
+    const itemsTotal = orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+
+    // 計算優惠券折扣金額
+    let calculatedCouponDiscount = 0;
+    if (orderData.coupon_discount && orderData.discount_type) {
+      const discountValue = parseFloat(orderData.coupon_discount);
+
+      // 判斷 discount_type 是數字（固定金額）還是小數（百分比）
+      if (orderData.discount_type === 1) {
+        // 固定金額折扣
+        calculatedCouponDiscount = discountValue;
+      } else {
+        // 百分比折扣：discountValue 是「折扣後價格比例」，所以實際折扣 = 總金額 * (1 - 折扣後價格比例)
+        // 例如：0.98 表示付 98%，實際折扣 = 總金額 * (1 - 0.98) = 總金額 * 0.02
+        calculatedCouponDiscount = Math.round(itemsTotal * (1 - discountValue));
+      }
+    } else if (orderData.coupon_discount) {
+      // 如果沒有 discount_type，根據數值大小判斷
+      const discountValue = parseFloat(orderData.coupon_discount);
+      if (discountValue >= 1) {
+        // 大於等於1視為固定金額
+        calculatedCouponDiscount = discountValue;
+      } else {
+        // 小於1視為百分比（折扣後價格比例）
+        calculatedCouponDiscount = Math.round(itemsTotal * (1 - discountValue));
+      }
+    }
+
     return {
       id: orderData.order_number,
       orderId: orderData.order_id,
@@ -96,15 +125,19 @@ export default function OrderDetailPage() {
         quantity: orderData.items?.reduce((sum, item) => sum + item.quantity, 0) || 1,
         price: orderData.items?.[0]?.price || 0
       },
-      couponDiscount: orderData.coupon_discount || 0,
+      couponDiscount: calculatedCouponDiscount,
       shippingDiscount: orderData.shipping_discount || 0,
       couponName: orderData.coupon_name || null,
-      total: orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+      discountType: orderData.discount_type,
+
+      originalCouponDiscount: orderData.coupon_discount,
+      total: itemsTotal,
       total_amount: orderData.total_amount,
       recipient: orderData.recipient_name || '收件人',
       phone: orderData.recipient_phone || '聯絡電話',
       address: `${orderData.postal_code || ''} ${(orderData.address || '').replace(/^240\s*/, '')}`.trim() || '配送地址', shippingMethod: '宅配',
-      paymentMethod: '信用卡',
+      shippingMethod: orderData.delivery_method,
+      paymentMethod: orderData.payment_method,
       buyerInfo: {
         name: orderData.buyer_name,
         email: orderData.buyer_email,
