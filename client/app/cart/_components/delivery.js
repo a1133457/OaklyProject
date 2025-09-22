@@ -15,7 +15,7 @@ export default function Delivery() {
     if (typeof window !== "undefined") {
       // 使用 cloudflare 臨時 tunnel，每次重啟都會變
       const CLOUDFLARE_URL =
-        "https://utilities-reproductive-federal-hdtv.trycloudflare.com";
+        "https://using-faq-murray-kick.trycloudflare.com";
 
       // 組成完整的 URL，包含 protocol + host + path
       const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;

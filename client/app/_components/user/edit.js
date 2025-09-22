@@ -161,7 +161,14 @@ export default function UserEditForm() {
             if (password) {
                 const pw = await updateUserPassword(user.id, password);
                 // messages.push(`密碼：${pw.success ? '✔ 成功' : `✘ 失敗（${pw.message || '未知原因'}）`}`);
-                if (pw.success) { setPassword(''); setPassword2(''); }
+                if (pw.success) {
+                    setPassword('');
+                    setPassword2('');
+                    // ✅ 密碼修改成功 → 登出並導到登入頁
+                    await logout();
+                    router.replace("/auth/login");
+                    return; // 直接結束，不要再跑後面
+                }
             }
 
             // 2-3 頭像（有選檔才送）

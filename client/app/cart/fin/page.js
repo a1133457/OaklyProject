@@ -43,7 +43,7 @@ function CartFinContent() {
         localStorage.removeItem("payment");
         localStorage.removeItem("delivery");
         localStorage.removeItem("invoice");
-        console.log("✅ localStorage 已清理");
+        console.log("localStorage 已清理");
       }
     };
 
@@ -313,7 +313,7 @@ function CartFinContent() {
               }}
             >
               訂單編號:{" "}
-              {orderData?.order_number || orderData?.orderNo || "14356457856"}
+              {orderData?.order_number || orderData?.orderNo}
               <span style={{
                 fontSize: '14px',
                 color: '#666',
@@ -431,8 +431,7 @@ function CartFinContent() {
                         <tr>
                           <td>訂單編號</td>
                           <td>
-                            {orderData?.order_number ||
-                              orderData?.orderNo}
+                            {orderData?.order_number || orderData?.orderNo}
                           </td>
                         </tr>
                         <tr>
