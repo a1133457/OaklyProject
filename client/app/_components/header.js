@@ -9,7 +9,6 @@ import "@/styles/header.css";
 import UserSidebarPage from "../user/_components/sidebar";
 import styles from "../user/_components/sidebar.module.css";
 
-
 export default function Header() {
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
@@ -30,7 +29,7 @@ export default function Header() {
   //     alert(result?.message || "登出失敗");
   //   }
   // };
-  const hideHeaderPaths = ['/admin/customer-service'];
+  const hideHeaderPaths = ["/admin/customer-service"];
 
   if (hideHeaderPaths.includes(pathname)) {
     return null; // 客服不渲染 Header
@@ -299,6 +298,12 @@ export default function Header() {
                 <div className="menu-item">
                   <a href="/organizer">
                     <i className="fa-solid fa-pen-to-square"></i>
+                    <p>預約整理師</p>
+                  </a>
+                </div>
+                <div className="menu-item">
+                  <a href="/coupons">
+                    <i class="fa-solid fa-ticket-simple"></i>
                     <p>預約整理師</p>
                   </a>
                 </div>

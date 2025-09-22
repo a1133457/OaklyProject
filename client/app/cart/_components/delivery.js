@@ -15,7 +15,7 @@ export default function Delivery() {
     if (typeof window !== "undefined") {
       // 使用 cloudflare 臨時 tunnel，每次重啟都會變
       const CLOUDFLARE_URL =
-        "https://using-faq-murray-kick.trycloudflare.com";
+        "https://valued-supervisors-retained-vacancies.trycloudflare.com";
 
       // 組成完整的 URL，包含 protocol + host + path
       const fullCallbackUrl = `${CLOUDFLARE_URL}/api/ship/711/callback`;
@@ -211,8 +211,8 @@ export default function Delivery() {
                     <h6>超商自取</h6>
                     <p>
                       超商取貨之包裹規格限制為重量不超過 5
-                      公斤（含包裝），三邊長度合計不得超過 105 公分，且最長邊長度不得超過
-                      45 公分。
+                      公斤（含包裝），三邊長度合計不得超過 105
+                      公分，且最長邊長度不得超過 45 公分。
                     </p>
                   </label>
                 </div>
