@@ -303,7 +303,7 @@ export default function Header() {
                 </div>
                 <div className="menu-item">
                   <a href="/coupons">
-                    <i class="fa-solid fa-ticket-simple"></i>
+                    <i className="fa-solid fa-ticket-simple"></i>
                     <p>預約整理師</p>
                   </a>
                 </div>

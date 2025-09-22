@@ -205,9 +205,9 @@ export default function Total({ type }) {
       const recipientData = JSON.parse(localStorage.getItem("recipient"));
       const buyerData = JSON.parse(localStorage.getItem("buyer"));
 
-      const recipientName = recipientData.name || buyerData.name;
-      const recipientPhone = recipientData.phone || buyerData.phone;
-      const address = recipientData.address || buyerData.address;
+      const recipientName = recipientData.name;
+      const recipientPhone = recipientData.phone;
+      const address = recipientData.address;
       const buyerName = buyerData.name;
       const buyerEmail = buyerData.email;
       const buyerPhone = buyerData.phone;

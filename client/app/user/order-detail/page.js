@@ -99,7 +99,8 @@ export default function OrderDetailPage() {
       couponDiscount: orderData.coupon_discount || 0,
       shippingDiscount: orderData.shipping_discount || 0,
       couponName: orderData.coupon_name || null,
-      total: orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+      
+      // total: orderData.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0),
       total_amount: orderData.total_amount,
       recipient: orderData.recipient_name || '收件人',
       phone: orderData.recipient_phone || '聯絡電話',
