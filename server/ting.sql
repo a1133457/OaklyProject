@@ -11,7 +11,10 @@ SELECT DATABASE();
 SELECT * FROM users WHERE email = 'li.meihao@example.com';
 
 
-
+SELECT *
+FROM products
+WHERE products_id = 123
+  AND is_valid = 0;
 SHOW CREATE TABLE users;
 
 SHOW CREATE TABLE favorites;

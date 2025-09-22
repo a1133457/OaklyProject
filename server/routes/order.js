@@ -241,6 +241,9 @@ router.get("/detail", async (req, res) => {
         o.recipient_phone,
         o.address,
         o.delivery_method,
+        o.payment_status,
+        o.payment_method,
+        o.coupon_id,
         oi.product_id,
         oi.quantity,
         oi.price,
@@ -260,10 +263,7 @@ router.get("/detail", async (req, res) => {
           FROM product_img
           GROUP BY product_id
       ) pi ON p.id = pi.product_id
-      LEFT JOIN user_coupons uc ON o.user_id = uc.user_id 
-        AND uc.used_at IS NOT NULL 
-        AND DATE(uc.used_at) = DATE(o.create_at)
-      LEFT JOIN coupons c ON uc.coupon_id = c.id
+      LEFT JOIN coupons c ON o.coupon_id = c.id
       WHERE o.user_id = ? AND o.id = ?
       ORDER BY oi.id ASC;
     `;
