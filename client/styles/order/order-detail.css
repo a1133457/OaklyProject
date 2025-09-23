@@ -722,6 +722,11 @@ word-wrap: break-word
         min-width: 430px;
     }
 
+    .offcanvas-backdrop{
+        width: 100%;
+        height: 100%;
+
+    }
     .container {
         padding: 0 16px;
     }
@@ -735,10 +740,10 @@ word-wrap: break-word
         background: transparent;
     }
 
-    /* 隱藏側邊欄 */
+    /* 隱藏側邊欄
     .sidebar {
         display: none;
-    }
+    } */
 
     /* 右側訂單詳情內容調整 */
     .order-detail-content {
@@ -1248,8 +1253,10 @@ word-wrap: break-word
 
 
     }
+
     .user_userContainer__HVfA3{
-        min-width:100%;        
+        min-width:100%;  
+        padding: 0;      
     }
     .container-fluid header{
         width: fit-content;

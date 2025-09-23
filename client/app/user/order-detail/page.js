@@ -137,7 +137,7 @@ export default function OrderDetailPage() {
       phone: orderData.recipient_phone || '聯絡電話',
       address: `${orderData.postal_code || ''} ${(orderData.address || '').replace(/^240\s*/, '')}`.trim() || '配送地址', shippingMethod: '宅配',
       shippingMethod: orderData.delivery_method,
-      paymentMethod: orderData.payment_method,
+      paymentMethod: orderData.payment_method ,
       buyerInfo: {
         name: orderData.buyer_name,
         email: orderData.buyer_email,

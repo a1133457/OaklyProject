@@ -158,14 +158,7 @@ export default function FavoritesPage() {
                                 </span>
                             )}
                             {/* ✅ 安全判斷材質 */}
-                            <span className={styles.optionPill} aria-label="材質">
-                                {
-                                    Array.isArray(item.materials)
-                                        ? item.materials.find(m => m.id === item.materials_id)?.material_name
-                                        : item.materials?.material_name
-                                        || '無材質'
-                                }
-                            </span>
+                            
                         </div>
                     </div>
 

@@ -299,6 +299,7 @@ router.get("/detail", async (req, res) => {
       recipient_phone: orders[0].recipient_phone,
       address: orders[0].address,
       delivery_method: orders[0].delivery_method, // 新增這個欄位
+      payment_method: orders[0].payment_method,
       coupon_discount: couponDiscount,
       coupon_name: orders[0].coupon_name || null,
       items: orders.map(item => ({
