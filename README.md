@@ -96,9 +96,3 @@ npm run dev
 
 待部署（預計使用 Railway 或 Vercel）
 
-
----
-
-**這樣可以嗎？要調整哪裡隨時跟我說！**
-
-要我幫你直接貼到 GitHub 的 README 編輯器嗎？
